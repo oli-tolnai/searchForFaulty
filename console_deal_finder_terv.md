@@ -1,4 +1,4 @@
-# Console Deal Finder – 17 részes fejlesztési terv
+# Console Deal Finder – fejlesztési terv
 
 ## 1. A projekt célja
 
@@ -20,35 +20,78 @@ Első körben:
 - Xbox Series X
 - Xbox Series S
 
-A rendszer felépítése tegye lehetővé további modellek hozzáadását, például Nintendo Switch, Switch OLED és Steam Deck.
+A rendszer felépítése tegye lehetővé további modellek hozzáadását, például Nintendo Switch, Switch OLED és Steam Deck. A modellek (név, eBay-kategória, felismerési szabályok) konfigurációs adatként legyenek tárolva, ne a kódba égetve.
 
 ## 3. Hirdetési források
 
 ### eBay – elsődleges adatforrás
 
-Az első teljesen működő integráció az eBay legyen, lehetőleg a hivatalos **eBay Browse API** segítségével, a hozzáférési jogosultságok és API-korlátok figyelembevételével.
+Az első teljesen működő integráció az eBay legyen, a hivatalos **eBay Browse API** (`item_summary/search`, `getItem`, `getItems`) segítségével, application tokennel (OAuth client credentials). Felhasználói bejelentkezés nem szükséges. A hozzáférés beszerzését a 18. pont írja le.
 
-Keresési célpiacok: Németország, Ausztria, Franciaország, Olaszország, Spanyolország, Hollandia, Belgium, Lengyelország, Írország. A tényleges elérhető piactér/API-támogatást a fejlesztés során ellenőrizni kell; nem minden felsorolt ország rendelkezik feltétlenül külön, azonos módon támogatott eBay marketplace-azonosítóval.
+#### Keresési stratégia: állapot + kategória az alap, a kulcsszó csak kiegészítés
 
-**Csak EU-tagállamban fizikailag található termékeket engedj be.** Ne keverd össze az eladó országát, a piactér országát és a termék tényleges feladási helyét. Egyesült Királyság, Svájc, USA és minden más EU-n kívüli hely kizárandó.
+A keresés elsődlegesen **ne kulcsszavakra** épüljön, hanem az eBay strukturált szűrőire:
 
-Támogatandó hirdetési típusok:
+- `conditionIds:{7000}` – „For parts or not working / Defekt / Für Bastler” állapot
+- kategória: Video Game Consoles (`category_ids=139971`; az aktuális azonosítót a Taxonomy API-val ellenőrizni kell)
+- modellnév a lekérdezésben (pl. `ps5 slim`, `xbox series s`)
 
-- Fix ár (Buy It Now)
-- Licitálós aukció
-- Ajánlattétel (Best Offer), ahol az adatforrás jelzi
+Ez a megközelítés a hibás konzolok nagy részét kulcsszavak nélkül is megtalálja, és a kiegészítők (kontroller, burkolat, doboz, kábel) többségét eleve kizárja.
 
-Kezelendő mezők: aktuális ár vagy licit, licitszám (ha elérhető), aukció vége, hirdetés URL-je, azonosítója, termék helye, szállítási díj és elérhetőség. Ellenőrizni kell, hogy az adott API-hozzáférés minden szükséges aukciós adatot biztosít-e; ha nem, az app jelezze a korlátot, ne találjon ki értéket.
+**Kiegészítő kulcsszavas keresés:** mivel vannak eladók, akik „Used / Gebraucht” állapotot adnak meg, de a címben vagy leírásban jelzik a hibát („defekt”, „for parts”), futtass néhány célzott kulcsszavas lekérdezést is állapotszűrő nélkül, de kategóriaszűrővel. Ezeknél a találatoknál jelezd, hogy a hiba csak a címből/leírásból derül ki.
 
-A magyarországi szállíthatóságot és a szállítási díjat, amennyiben hozzáférhető, ellenőrizze. Ha nem ellenőrizhető: **„Nem ismert”**. Ne legyen a nulla szállítási díj az alapértelmezés.
+#### Földrajzi szűrés: EU egyetlen lekérdezéssel, nem 9 piactérrel
+
+Nem kell 9 külön piactéren (DE, AT, FR, IT, ES, NL, BE, PL, IE) külön keresni. A Browse API `itemLocationRegion:EUROPEAN_UNION` szűrője régió szintjén, több piactérre kiterjedően szűr a termék helyére. Alapértelmezés:
+
+- **Egy piactér** (`X-EBAY-C-MARKETPLACE-ID: EBAY_DE` – a legnagyobb EU-s eBay-oldal),
+- `itemLocationRegion:EUROPEAN_UNION`,
+- `deliveryCountry:HU` – csak Magyarországra szállítható tételek,
+- `X-EBAY-C-ENDUSERCTX: contextualLocation=country=HU` – a szállítási díj Magyarországra vonatkozzon.
+
+Megkötések és ellenőrzések:
+
+- Az `itemLocationRegion` nem használható együtt az `itemLocationCountry` szűrővel.
+- **A régiószűrőre nem szabad vakon hagyatkozni.** A backend minden találatnál ellenőrizze az `itemLocation.country` mezőt egy fix EU-tagállam-listával szemben. Ami nem EU-s (Egyesült Királyság, Svájc, USA, Kína stb.) vagy aminek nincs ismert helye, az kerüljön ki az aktív listából.
+- Ne keverd össze az eladó országát, a piactér országát és a termék tényleges feladási helyét; a szűrés a termék helyére vonatkozik.
+- Az MVP első lépéseként egy teszttel ellenőrizd, hogy az `EUROPEAN_UNION` régiószűrő ténylegesen visszaad-e más EU-s piactereken (pl. eBay.fr, eBay.it) feladott hirdetéseket is. Ha nem, a konfigurációban legyen lehetőség további piacterek (pl. `EBAY_FR`, `EBAY_IT`, `EBAY_ES`) bekapcsolására; ezek külön lekérdezést jelentenek.
+
+#### Hívásszám-keret
+
+A Browse API alapkerete nagyságrendileg **napi 5000 hívás** (az aktuális értéket az eBay Developer Portal „Application Growth Check / API call limits” oldalán ellenőrizni kell). A keresést úgy kell tervezni, hogy egy teljes futás ennek csak kis részét használja:
+
+| Lekérdezés | Darab |
+|---|---|
+| Állapotszűrős keresés modellenként | 5 |
+| Kiegészítő kulcsszavas keresés (modellenként 2–3 kulcsszócsoport) | 10–15 |
+| Lapozás (találatonként max. 200/oldal, csak ha szükséges) | néhány |
+| Tárolt tételek státuszellenőrzése `getItems`-szel (20 tétel/hívás) | tárolt tételek / 20 |
+
+**Cél: egy teljes keresés < 50 API-hívás.** Az app számolja és jelenítse meg a napi felhasznált hívások számát, és a keret közelében figyelmeztessen.
+
+#### Hirdetési típusok és mezők
+
+Támogatandó hirdetési típusok (`buyingOptions`):
+
+- Fix ár (`FIXED_PRICE`)
+- Licitálós aukció (`AUCTION`)
+- Ajánlattétel (`BEST_OFFER`), ahol az adatforrás jelzi
+
+Kezelendő mezők: aktuális ár vagy licit (`price` / `currentBidPrice`), licitszám (`bidCount`), aukció vége (`itemEndDate`), hirdetés URL-je (`itemWebUrl`), azonosítója (`itemId`), termék helye (`itemLocation`), szállítási díj (`shippingOptions`), elérhetőség. Ha az API valamelyik adatot nem adja vissza, az app jelezze a hiányt, ne találjon ki értéket.
+
+A magyarországi szállítási díjat a fenti `contextualLocation` fejléc biztosítja. Ha a válaszban mégsem szerepel díj, vagy a díj „számított” (calculated) típusú, értéke: **„Nem ismert”**. A nulla szállítási díj soha ne legyen alapértelmezés.
 
 ### Jófogás és HardverApró
 
-Keressen „hibás”, „javításra”, „alkatrésznek” stb. megjelölésű konzolokat. Minden forráshoz külön adapter készüljön, amely az oldal hozzáférési és felhasználási feltételeit tiszteletben tartja. Ha automatikus lekérdezés nem érhető el szabályosan vagy megbízhatóan, jelenjen meg előre kitöltött, megnyitható keresőlink.
+Egyik oldalnak sincs nyilvános API-ja, és a felhasználási feltételeik a gépi lekérdezést jellemzően nem engedik. Ezért:
+
+- **Alapmegoldás:** előre kitöltött, megnyitható keresőlinkek a kiválasztott modellekre és a hibát jelző kulcsszavakra („hibás”, „javításra”, „alkatrésznek” stb.).
+- Ajánlott kiegészítés: a Jófogás saját „mentett keresés” e-mail értesítőjének használata (ezt a felhasználó a Jófogás oldalán állítja be; az app csak útmutatót ad).
+- Automatikus lekérdezés csak akkor készüljön, ha az adott oldal feltételei ezt kifejezetten engedik (pl. hivatalos RSS vagy API). Ezt a 3. fázis elején kell ellenőrizni.
 
 ### Facebook Marketplace
 
-Opcionális, későbbi integráció. Csak engedélyezett és megbízható hozzáférési módszerekkel működjön; ne kerüljön meg bejelentkezési, CAPTCHA- vagy hozzáférés-korlátozásokat.
+Engedélyezett gépi hozzáférés nincs, ezért **nem integráció**, hanem csak előre kitöltött keresőlink. Bejelentkezési, CAPTCHA- vagy hozzáférés-korlátozást az app semmilyen formában ne kerüljön meg.
 
 **Prioritás:** a Jófogás, HardverApró és Marketplace ne blokkolja a működő eBay MVP elkészítését.
 
@@ -62,14 +105,16 @@ Szűrők:
 - Maximális vételár
 - Maximális teljes ár szállítással együtt
 - Pénznem: EUR / HUF
-- Piacterek be-/kikapcsolása
-- Országok
+- Termék helye: alapértelmezés „EU (összes tagállam)”, opcionálisan egyes országokra szűkítve (ez helyi szűrés a már letöltött találatokon, nem extra API-hívás)
+- További eBay-piacterek be-/kikapcsolása (haladó beállítás)
 - Aukció / fix ár / mindkettő
-- Keresési kulcsszavak szerkesztése
+- Kiegészítő keresési kulcsszavak szerkesztése
 
-A beállítások maradjanak meg a következő megnyitásra (pl. böngészőben vagy helyi adatbázisban).
+A beállítások maradjanak meg a következő megnyitásra (SQLite-ban a backendben).
 
 ## 5. Keresési kulcsszavak
+
+A kulcsszavak a **kiegészítő** kereséshez és a találatok helyi utószűréséhez kellenek (lásd 3. pont), nem az elsődleges kereséshez.
 
 **Angol:** faulty, broken, for parts, spares or repair, not working, no display, no power, overheating.
 
@@ -79,9 +124,17 @@ A beállítások maradjanak meg a következő megnyitásra (pl. böngészőben v
 
 A francia, olasz, spanyol és lengyel kifejezések is legyenek konfigurálhatók.
 
-Ne egyetlen túl hosszú lekérdezésre épüljön a keresés: futtass több célzott lekérdezést, majd egyesítsd és deduplikáld az eredményeket.
+Kulcsszócsoportok: egy lekérdezésbe több rokon kifejezés kerülhet az eBay `(a, b, c)` VAGY-szintaxisával, így kevesebb hívás kell. Ne egyetlen túl hosszú lekérdezésre épüljön a keresés: néhány célzott lekérdezés fusson, majd az eredmények egyesítése és deduplikálása következzen (`source` + `source_listing_id` alapján).
 
-Zárja ki az egyértelműen önálló kiegészítőket (kontroller, burkolat, doboz, kábel), de **ne** zárja ki a „console for parts” megfogalmazású, teljes hibás konzolokat. Bizonytalan termékazonosításnál inkább jelölje a találatot ellenőrzendőnek, mintsem tévesen teljes konzolnak minősítse.
+Zárja ki az egyértelműen önálló kiegészítőket (kontroller, burkolat, doboz, kábel, töltő, alaplap önmagában – utóbbi konfigurálható), de **ne** zárja ki a „console for parts” megfogalmazású, teljes hibás konzolokat.
+
+### Modellfelismerés
+
+A PS5 Fat / Slim / Pro és a Disc / Digital változat a címből gyakran nem dönthető el. A felismerés sorrendje:
+
+1. A hirdetés strukturált tulajdonságai (`localizedAspects`, pl. „Modell”, „Plattform”, „Model”) – ezek a `getItem` válaszában érhetők el.
+2. Címből és leírásrészletből szabályalapú felismerés (pl. CFI-modellszámok: CFI-10xx/11xx = Fat, CFI-20xx = Slim, CFI-70xx = Pro).
+3. Ha egyik sem egyértelmű: **„Ellenőrzendő”** jelölés. Bizonytalan esetben inkább ellenőrzendő legyen, mint tévesen besorolt.
 
 ## 6. Találati lista
 
@@ -89,17 +142,18 @@ Minden hirdetésnél látható:
 
 - Termékkép
 - Hirdetés címe
-- Konzolmodell
+- Konzolmodell (vagy „Ellenőrzendő”)
 - Forrás / piactér
 - Vételár vagy aktuális licit
-- Szállítási költség (vagy „Nem ismert”)
+- Szállítási költség Magyarországra (vagy „Nem ismert”)
 - Teljes ár, csak ha kiszámítható
 - Ország / termék helye
 - Aukció vagy fix ár
 - Licitek száma, ha elérhető
-- Aukció lejárata, ha releváns
+- Aukció lejárata és visszaszámláló, ha releváns
 - Rövid hibaleírás / leírásrészlet
-- Utolsó sikeres elérhetőség-ellenőrzés időpontja
+- Jelzés, ha a hiba csak a címből/leírásból derül ki (nem „For parts” állapotú)
+- **„Utoljára ellenőrizve: …”** időpont
 - Közvetlen eredeti hirdetéslink
 
 A kártyáról lehessen megnyitni az eredeti hirdetést. Ne generálj hamis linkeket vagy termékazonosítókat.
@@ -116,7 +170,7 @@ Rendezések:
 
 Szűrők: konzolmodell, piactér, ország, ár, hirdetési típus. Legyen keresőmező a már letöltött találatok között.
 
-Az ismeretlen szállítású hirdetéseket teljes ár szerinti rendezésnél külön, egyértelműen kell kezelni; ne tekintsd a szállítást ingyenesnek.
+Teljes ár szerinti rendezésnél az ismeretlen szállítású hirdetések **a lista végére kerüljenek, külön „Ismeretlen szállítási díj” fejléc alá**. A szállítást soha ne tekintsd ingyenesnek.
 
 ## 8. Kedvencek és elrejtett hirdetések
 
@@ -125,17 +179,21 @@ Minden hirdetésnél:
 - **Kedvencekhez adás** – mentés saját listába
 - **Elrejtés** – ne jelenjen meg a normál eredmények között, de visszaállítható legyen
 
-Legyen külön **Kedvencek** és **Elrejtett hirdetések** oldal. A mentések alkalmazás-újraindítás után is maradjanak meg.
+Legyen külön **Kedvencek** és **Elrejtett hirdetések** oldal. A mentések alkalmazás-újraindítás után is maradjanak meg (SQLite).
+
+A kedvencek oldalon is látszódjon a státusz: a lejárt/eladott kedvenc maradjon a kedvencek között, de egyértelműen „Lejárt / nem elérhető” jelöléssel.
 
 A duplikáció kezelése az eredeti forrás + hirdetésazonosító alapján történjen, hogy ugyanaz a tétel több kulcsszavas keresésből ne szerepeljen többször.
 
 ## 9. Új hirdetések jelölése
 
-Az első sikeres lekérdezéskor tárold a találatok azonosítóit. Későbbi keresésnél az addig nem látott hirdetések kapjanak **„ÚJ”** jelölést.
+Egy hirdetés akkor **„ÚJ”**, ha a `source` + `source_listing_id` páros **egyetlen korábbi keresésben sem** szerepelt (a keresési szűrőktől függetlenül). Az első keresési futás után minden találat „látott” lesz; az első futás találatai nem kapnak „ÚJ” jelölést, hanem a felület jelezze, hogy ez az első szinkronizálás.
 
-Aukciós árak változásakor frissüljön az aktuális licit. A már látott hirdetések ne kapjanak automatikusan új címkét pusztán árfrissítés miatt.
+Az „ÚJ” jelölés a következő keresésig marad meg, vagy amíg a felhasználó meg nem nyitja a hirdetést.
 
-A találatok elérhetőségét időnként ellenőrizni kell, hogy az eladott, törölt vagy lejárt tételek ne maradjanak az aktív listában (részletesen a 17. pontban).
+Aukciós árak változásakor frissüljön az aktuális licit. A már látott hirdetések ne kapjanak automatikusan új címkét pusztán árfrissítés miatt (opcionálisan „Ár változott” jelölés kaphatnak).
+
+A találatok elérhetőségét ellenőrizni kell, hogy az eladott, törölt vagy lejárt tételek ne maradjanak az aktív listában (részletesen a 17. pontban).
 
 ## 10. Felhasználói felület
 
@@ -143,12 +201,14 @@ Modern, letisztult, **sötét témájú**, magyar nyelvű, mobilon és asztali g
 
 Főoldali elemek:
 
-1. Felső navigáció
+1. Felső navigáció (Keresés, Kedvencek, Elrejtett, Beállítások)
 2. Szűrők és keresési beállítások
 3. Kiemelt **Keresés indítása** gomb
 4. Találatok száma
 5. Kártyás vagy táblázatos eredménylista
 6. Lapozás vagy „Továbbiak betöltése”
+7. Magyar piacterek keresőlinkjei (Jófogás, HardverApró, Facebook Marketplace) külön blokkban
+8. Napi API-hívásszám kijelzése
 
 A keresés közben jelenjen meg a folyamat állapota és a forrásonkénti siker/hiba, hogy egy részlegesen sikeres futás ne tűnjön teljesnek.
 
@@ -159,31 +219,34 @@ Javasolt stack:
 - **Frontend:** React + TypeScript + Tailwind CSS + Vite
 - **Backend:** Python + FastAPI + HTTPX
 - **Adatbázis:** SQLite
-- **Adatforrás:** eBay Browse API, moduláris további adapterek
-- **Futtatás:** elsőként helyben a saját számítógépen; opcionálisan Docker
+- **Adatforrás:** eBay Browse API, moduláris további adapterek (közös adapter-interfész: `search()`, `check_status()`)
+- **Árfolyam:** Európai Központi Bank napi referencia-árfolyama (ingyenes), kézi felülírási lehetőséggel
+- **Futtatás:** helyben a saját számítógépen; opcionálisan Docker
 
-Az API-kulcsokat és titkokat kizárólag backend-környezetben tárold. A frontendbe nem kerülhetnek bele.
+Az API-kulcsokat és titkokat kizárólag backend-környezetben (`.env`) tárold. A frontendbe nem kerülhetnek bele. Az eBay OAuth tokent a backend kéri le és cache-eli a lejáratáig (kb. 2 óra).
 
-Ne használj fizetős AI API-t. Olyan architektúrát válassz, amely személyes használatra lehetőleg 0 Ft/hó költségű. Az eBay developer hozzáférés és a használati feltételek aktuális állapotát ellenőrizd.
+Ne használj fizetős AI API-t. A rendszer személyes használatra 0 Ft/hó költségű: az eBay Developer Program és a Browse API alapkeretben ingyenes, az ECB-árfolyam ingyenes, és minden helyben fut.
 
 ## 12. Működés internet nélkül
 
-Az alkalmazás internet nélkül is meg tudja jeleníteni a korábban tárolt találatokat, **de kizárólag egyértelműen „korábban mentett / offline” jelzéssel**.
+Mivel a backend és az SQLite helyben fut, a korábban tárolt találatok internet nélkül is megjeleníthetők; ehhez nincs szükség PWA-ra vagy service workerre. A megjelenítés **kizárólag egyértelmű „Korábban mentett / offline” jelzéssel** történhet.
 
 Új kereséshez és az elérhetőség aktuális ellenőrzéséhez internet szükséges. Offline állapotban a régi találatokat nem szabad frissen ellenőrzött, aktív ajánlatként feltüntetni.
 
 ## 13. Technikai és hibakezelési követelmények
 
-- Párhuzamos, de API-korlátokat tiszteletben tartó lekérdezés
-- Hálózati hibák, rate limit és időtúllépések kezelése
+- Párhuzamos, de API-korlátokat tiszteletben tartó lekérdezés (korlátozott párhuzamosság, pl. max. 4 egyidejű kérés)
+- Hálózati hibák, rate limit (HTTP 429) és időtúllépések kezelése, exponenciális visszalépéssel
+- Napi API-hívásszám nyilvántartása
 - Deduplikáció
 - Hiányzó képek, árak, szállítási adatok kezelése
-- EUR/HUF átváltás megbízható árfolyamforrással vagy kézzel állítható árfolyammal; az alkalmazott árfolyam megjelenítésével
+- EUR/HUF átváltás az ECB árfolyamával vagy kézzel állítható árfolyammal; az alkalmazott árfolyam és dátuma megjelenik a felületen
 - Forrásonkénti keresési állapot
-- Naplózás, de a titkos kulcsok kitakarásával
+- Naplózás, de a titkos kulcsok és tokenek kitakarásával
 - Kizárólag valós, ellenőrizhető találatok
 - Biztonságos hitelesítési és konfigurációkezelés
-- Tesztek a szűréshez, deduplikációhoz, árkalkulációhoz és státuszkezeléshez
+- Eladói személyes adatot (felhasználónév, értékelés) az adatbázis ne tároljon (lásd 18. pont, adattárolási mentesség)
+- Tesztek a szűréshez, EU-helyszűréshez, deduplikációhoz, modellfelismeréshez, árkalkulációhoz és státuszkezeléshez
 
 Ha egy piactér lekérdezése sikertelen, az app **ne** állítsa, hogy a keresés sikeres volt az adott oldalon.
 
@@ -191,15 +254,15 @@ Ha egy piactér lekérdezése sikertelen, az app **ne** állítsa, hogy a keres�
 
 ### 1. fázis – eBay MVP
 
-Webes felület, keresési paraméterek, valós eBay API-integráció, EU-s termékhely-szűrés, aukció/fix ár megkülönböztetés, ár- és modellfilterek, közvetlen linkek, aktív státusz ellenőrzése.
+Webes felület, keresési paraméterek, valós eBay Browse API-integráció állapot- és kategóriaszűrővel, EU-régiószűrés és helyi EU-ellenőrzés, magyarországi szállítási díj, aukció/fix ár megkülönböztetés, ár- és modellfilterek, közvetlen linkek, aktív státusz ellenőrzése, API-hívásszámláló. Az első lépés egy egyszerű teszt-szkript, amely igazolja, hogy a kulcsok működnek, és ellenőrzi az `EUROPEAN_UNION` régiószűrő tényleges viselkedését.
 
 ### 2. fázis – tárolás és haladó kezelés
 
-SQLite, kedvencek, elrejtés, deduplikáció, „ÚJ” jelölés, árfrissítés, hirdetések életciklus-kezelése.
+SQLite, kedvencek, elrejtés, deduplikáció, „ÚJ” jelölés, árfrissítés, `getItems`-alapú kötegelt státuszellenőrzés, hirdetések életciklus-kezelése, modellfelismerés `localizedAspects` alapján.
 
 ### 3. fázis – magyar piacterek
 
-Jófogás és HardverApró szabályosan elérhető lekérdezési megoldásokkal; ha ez nem megvalósítható, helyette hivatalos keresőlinkek.
+Jófogás, HardverApró és Facebook Marketplace előre kitöltött keresőlinkjei. Automatikus lekérdezés csak akkor, ha az oldal feltételei ezt kifejezetten engedik.
 
 ### 4. fázis – opcionális funkciók
 
@@ -211,7 +274,7 @@ A projekt csak akkor kész, ha:
 
 1. A **Keresés indítása** gomb valós eBay API-lekérést indít.
 2. Megjeleníthetők aktív licitálós és fix áras hirdetések.
-3. A termék tényleges helye EU-tagállam, ellenőrzött adattal.
+3. A termék tényleges helye EU-tagállam, ellenőrzött adattal (`itemLocation.country`).
 4. A maximális ár szerinti szűrés helyes.
 5. Minden megjelenített hirdetéshez valódi, működő eredeti URL tartozik.
 6. A kedvencek és elrejtések újraindítás után is megmaradnak.
@@ -220,8 +283,9 @@ A projekt csak akkor kész, ha:
 9. A teljes kezelőfelület magyar nyelvű.
 10. Helyben dokumentált lépésekkel elindítható.
 11. Lejárt, eladott és nem ellenőrizhetően aktív hirdetés nem szerepel az aktív keresési eredmények között.
+12. Egy teljes keresés 50 API-hívás alatt marad az alapbeállításokkal.
 
-## 16. Elvárások a fejlesztő AI-val szemben
+## 16. Elvárások a fejlesztővel szemben
 
 **Ne csak dizájnt, látványtervet vagy statikus demót készíts; működő, futtatható alkalmazást.**
 
@@ -231,11 +295,11 @@ Hozd létre:
 - Adatbázisséma és adatkezelés
 - `.env.example` konfigurációs minta
 - Függőségek / telepítőparancsok
-- Automatizált tesztek
+- Automatizált tesztek (az eBay-válaszokat a tesztekben rögzített mintaválaszok helyettesíthetik, de az éles alkalmazásban soha nem jelenhet meg demóadat)
 - `README.md` részletes indítási útmutatóval
-- A szükséges eBay API-regisztráció és jogosultságok pontos leírása
+- Az eBay API-regisztráció lépései (18. pont) a README-ben
 
-Valós integrációt használj, ne demóadatokat. Ha valamihez nincs kulcs vagy az API nem biztosít egy kért funkciót, ezt világosan írd le, és készíts korrekt részmegoldást; ne szimuláld kész funkcionalitásként.
+Valós integrációt használj, ne demóadatokat. Ha valamihez nincs kulcs, vagy az API nem biztosít egy kért funkciót, ezt világosan írd le, és készíts korrekt részmegoldást; ne szimuláld kész funkcionalitásként.
 
 Fázisonként dolgozz, minden fázis végén indítsd és teszteld a rendszert. Az elsődleges cél a **működő eBay-kereső**.
 
@@ -249,34 +313,39 @@ Fázisonként dolgozz, minden fázis végén indítsd és teszteld a rendszert. 
 - A lejárat legyen későbbi, mint az aktuális idő.
 - A lezárt aukciókat távolítsa el az aktív listából.
 - Ha egy aukció idő előtt lezárul, az állapotfrissítés után tűnjön el.
-- A hátralévő időt jelenítse meg. Amikor a visszaszámláló eléri a nullát, az aukció ne maradjon aktívként látható: kerüljön ellenőrzésre, vagy ideiglenesen ki az aktív listából.
+- A hátralévő időt jelenítse meg. Amikor a visszaszámláló eléri a nullát, az aukció **azonnal kerüljön ki az aktív listából**, további ellenőrzés nélkül.
 
 ### 17.2. Fix áras hirdetések
 
-- Ellenőrizze az aktuális megvásárolhatóságot és készletet, amennyiben az adatforrás jelzi.
-- A „Sold”, „Out of stock”, „Ended”, „Nicht mehr verfügbar” és az ezekkel egyenértékű státuszokat zárja ki.
+- Ellenőrizze az aktuális megvásárolhatóságot és készletet (`estimatedAvailabilities`), amennyiben az adatforrás jelzi.
+- Az `OUT_OF_STOCK` és `TEMPORARILY_UNAVAILABLE` állapotú, valamint a `getItem`/`getItems` által nem található (lezárt, törölt) tételeket zárja ki.
 - Többdarabos hirdetés csak pozitív, elérhető készlet mellett maradjon aktív, ha a piactér ezt az adatot szolgáltatja.
 
 ### 17.3. Jófogás és HardverApró
 
-- Az eladott, törölt, archivált és inaktív hirdetések ne jelenjenek meg.
-- Ha a forrásból az aktuális státusz nem ellenőrizhető, ne mutassa a hirdetést biztosan aktívként.
+Mivel ezek a források keresőlinkként jelennek meg, az app ezekről nem tárol hirdetést, így státuszt sem kell kezelnie. Ha később engedélyezett automatikus lekérdezés készül, ugyanazok a szabályok érvényesek: az eladott, törölt, archivált és inaktív hirdetés ne jelenjen meg, és ellenőrizhetetlen státusz esetén ne legyen aktívként mutatva.
 
 ### 17.4. Elérhetőségi státuszok és frissesség
 
 Tárolandó mezők:
 
 - `status`: `ACTIVE`, `ENDED`, `UNKNOWN`
-- `last_checked_at`: az utolsó állapotellenőrzés időpontja
+- `last_checked_at`: az utolsó sikeres állapotellenőrzés időpontja
 - `source`, `source_listing_id`, `listing_url`
 - `end_time`, ahol van
-- Az esetleges állapotellenőrzési hiba és annak ideje
+- `last_check_error`, `last_check_error_at`: az esetleges állapotellenőrzési hiba és annak ideje
 
 A normál aktív találati listába **csak `ACTIVE`** státusz kerülhet.
 
-Minden új keresés alkalmával frissítse az elérhetőségi állapotot ott, ahol lehetséges. API-hiba, időtúllépés, ismeretlen státusz vagy elavult ellenőrzés esetén a hirdetés ne kapjon megalapozatlan `ACTIVE` besorolást.
+**Frissességi szabályok (konfigurálható alapértékek):**
 
-Külön „Nem ellenőrizhető” vagy archív nézet készülhet, de az elemek ott egyértelműen legyenek elkülönítve az aktív ajánlatoktól.
+- Az aktuális keresés találatai eleve aktívak: `ACTIVE`, `last_checked_at = most`.
+- A tárolt, de az aktuális keresésben nem szereplő tételek státuszát a backend `getItems` hívással (20 tétel/hívás) ellenőrzi minden keresés során.
+- Ha a `last_checked_at` **2 óránál régebbi**, a tétel automatikusan `UNKNOWN`, amíg újra nem ellenőrzik.
+- Aukciónál, ha `end_time` < most: azonnal `ENDED`.
+- API-hiba, időtúllépés vagy ismeretlen válasz esetén a státusz `UNKNOWN`, soha nem marad megalapozatlanul `ACTIVE`.
+
+Külön „Nem ellenőrizhető / archív” nézet készülhet, de az elemek ott egyértelműen legyenek elkülönítve az aktív ajánlatoktól.
 
 ### 17.5. Újrahirdetés és státuszváltozás
 
@@ -288,8 +357,23 @@ Ha ugyanazt a konzolt az eladó új hirdetésazonosítóval ismét meghirdeti, m
 - Eladott fix áras hirdetés nem jelenhet meg.
 - Törölt hirdetés nem jelenhet meg.
 - Ismeretlen állapotú hirdetés nem jelenhet meg aktívként.
+- 2 óránál régebben ellenőrzött hirdetés nem jelenhet meg aktívként.
 - A korábban eltárolt, később lezárt hirdetés eltűnik az aktív listából.
 - A keresési futás friss státuszt ellenőriz, amennyiben az API lehetővé teszi.
 - A hirdetésnél látszik: **„Utoljára ellenőrizve: …”**.
 
 **Fontos megkötés:** 100%-os, másodpercre pontos elérhetőség nem garantálható, mert egy hirdetést az ellenőrzés után is megvehetnek. A rendszer törekedjen a legfrissebb állapotra, és a bizonytalanságot mindig jelezze.
+
+## 18. eBay API-hozzáférés beszerzése
+
+Az eBay Developer Program és a Browse API alapkerete **ingyenes**. Lépések:
+
+1. **Regisztráció** a [developer.ebay.com](https://developer.ebay.com) oldalon (meglévő eBay-fiókkal is lehet). A jóváhagyás általában azonnali, de akár 1 munkanapig is tarthat.
+2. **Alkalmazás létrehozása** az „Application Keys” oldalon. Két kulcskészlet jár hozzá: *Sandbox* (tesztadatok) és *Production* (éles adatok). Ehhez az apphoz a **Production** kell, mert a Sandboxban nincsenek valódi hirdetések.
+3. **Account Deletion értesítés kezelése.** Az eBay minden éles kulcskészlettől megköveteli, hogy vagy feliratkozzon a *Marketplace Account Deletion* értesítésekre (ehhez nyilvánosan elérhető HTTPS-végpont kell), vagy **mentességet kérjen**. Mivel ez az app eladói személyes adatot nem tárol, a mentesség kérhető: Production kulcskészlet → *Notifications / Alerts* → „Marketplace Account Deletion” → *opt out*, az indoklásnál a „nem tárolok eBay-felhasználói adatot” jellegű opciót választva. Amíg ez nincs kész, a Production kulcskészlet „Non Compliant” állapotban le van tiltva.
+   - Ha a mentességet nem fogadják el: tartalékmegoldásként egy ingyenes, kis méretű nyilvános végpont (pl. Cloudflare Workers ingyenes csomag) fogadhatja az értesítéseket. Ez nem része az MVP-nek.
+4. **Kulcsok bemásolása** a backend `.env` fájljába: `EBAY_CLIENT_ID` (App ID) és `EBAY_CLIENT_SECRET` (Cert ID). A Dev ID-ra nincs szükség.
+5. A backend ezekkel **application tokent** kér (`POST https://api.ebay.com/identity/v1/oauth2/token`, `grant_type=client_credentials`, scope: `https://api.ebay.com/oauth/api_scope`). Felhasználói bejelentkezés vagy eBay-jelszó nem kell.
+6. **Ellenőrzés:** a README-ben leírt teszt-szkript egy próba-keresést futtat, és kiírja, hogy a kulcsok működnek-e.
+
+A használat során be kell tartani az eBay API License Agreement feltételeit, különösen a lekért adatok tárolására és megjelenítésére vonatkozó szabályokat; ezt az 1. fázis elején át kell nézni.
