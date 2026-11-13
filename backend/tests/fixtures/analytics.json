@@ -1,0 +1,14 @@
+{
+  "rateLimits": [
+    {
+      "apiName": "Browse",
+      "resources": [
+        {"name": "buy.browse.item.bulk", "rates": [{"timeWindow": 86400, "limit": 55, "remaining": 54}]},
+        {"name": "buy.browse", "rates": [
+          {"timeWindow": 300, "limit": 66, "remaining": 65},
+          {"timeWindow": 86400, "limit": 1234, "remaining": 1230}
+        ]}
+      ]
+    }
+  ]
+}

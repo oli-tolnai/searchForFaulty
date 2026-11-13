@@ -69,17 +69,19 @@ README.md
 
 Amíg nincsenek létrehozva, az első érintett feladatban hozd létre őket, és itt frissítsd a listát.
 
-```bash
-# backend
+```powershell
+# Backend (Windows PowerShell, a repó gyökeréből)
 cd backend
-python -m venv .venv
-.venv/Scripts/activate        # Windows (Linux/macOS: source .venv/bin/activate)
-pip install -r requirements.txt
-pytest
-ruff check .
-uvicorn app.main:app --reload
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\pytest.exe
+.\.venv\Scripts\ruff.exe check .
+.\.venv\Scripts\python.exe -m scripts.check_ebay  # Kitöltött gyökérszintű .env szükséges
+.\.venv\Scripts\python.exe -m uvicorn app.main:app
+```
 
-# frontend
+```bash
+# Frontend (még nem létezik)
 cd frontend
 npm install
 npm run dev
