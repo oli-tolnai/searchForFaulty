@@ -28,18 +28,6 @@ A rendszer felépítése tegye lehetővé további modellek hozzáadását, pél
 
 Az első teljesen működő integráció az eBay legyen, a hivatalos **eBay Browse API** (`item_summary/search`, `getItem`, `getItems`) segítségével, application tokennel (OAuth client credentials). Felhasználói bejelentkezés nem szükséges. A hozzáférés beszerzését a 18. pont írja le.
 
-#### Keresési stratégia: állapot + kategória az alap, a kulcsszó csak kiegészítés
-
-A keresés elsődlegesen **ne kulcsszavakra** épüljön, hanem az eBay strukturált szűrőire:
-
-- `conditionIds:{7000}` – „For parts or not working / Defekt / Für Bastler” állapot
-- kategória: Video Game Consoles (`category_ids=139971`; az aktuális azonosítót a Taxonomy API-val ellenőrizni kell)
-- modellnév a lekérdezésben (pl. `ps5 slim`, `xbox series s`)
-
-Ez a megközelítés a hibás konzolok nagy részét kulcsszavak nélkül is megtalálja, és a kiegészítők (kontroller, burkolat, doboz, kábel) többségét eleve kizárja.
-
-**Kiegészítő kulcsszavas keresés:** mivel vannak eladók, akik „Used / Gebraucht” állapotot adnak meg, de a címben vagy leírásban jelzik a hibát („defekt”, „for parts”), futtass néhány célzott kulcsszavas lekérdezést is állapotszűrő nélkül, de kategóriaszűrővel. Ezeknél a találatoknál jelezd, hogy a hiba csak a címből/leírásból derül ki.
-
 #### Fő szempont: közvetlenül Magyarországra rendelhető ajánlatok
 
 Az app célja, hogy a hirdetett konzol **plusz költség nélkül, közvetlenül Magyarországra rendelhető** legyen. Ezért:
@@ -49,49 +37,50 @@ Az app célja, hogy a hirdetett konzol **plusz költség nélkül, közvetlenül
 - Csak EU-tagállamban található termék jelenhet meg, mert EU-n belüli vásárlásnál nincs vám és külön ÁFA.
 - Csomagtovábbítós (német vagy más külföldi címre történő) rendelés egyelőre nem része a tervnek.
 
-#### EU-s eBay-oldalak
+#### Keresési stratégia (élesben mérve, 2026. november)
 
-Az EU-ban 9 eBay-oldal van, mindegyik elérhető a Browse API-val:
+A stratégia az 1. fázis elején futtatott diagnosztikai mérések eredményén alapul (`backend/scripts/check_ebay.py`, `compare_location_filters.py`, `compare_country_strategy.py`).
 
-| Oldal | Marketplace ID | Alapból bekapcsolva |
+**Egy lekérdezés felépítése:**
+
+- Marketplace: `X-EBAY-C-MARKETPLACE-ID: EBAY_DE`
+- `q`: minden támogatott modell egyetlen lekérdezésben, az eBay VAGY-szintaxisával, pl. `(ps5, playstation 5, xbox series)`. A pontos kifejezéslista konfigurálható.
+- `category_ids=139971` (Video Game Consoles, Taxonomy API-val ellenőrizve)
+- filter: `conditionIds:{7000}` („For parts or not working / Für Bastler”), `buyingOptions:{AUCTION|FIXED_PRICE}`, `deliveryCountry:HU`, `itemLocationCountry:<ország>`
+- `limit=200`; ha a `total` nagyobb, lapozás `offset`-tel
+
+**Országonként egy lekérdezés**, alapból mind a 27 EU-tagállamra. Az országlista a beállításokban szerkeszthető.
+
+**A mérések, amelyekre a stratégia épül:**
+
+| Kérdés | Eredmény | Döntés |
 |---|---|---|
-| ebay.de | `EBAY_DE` | igen |
-| ebay.at | `EBAY_AT` | igen |
-| ebay.fr | `EBAY_FR` | igen |
-| ebay.it | `EBAY_IT` | igen |
-| ebay.es | `EBAY_ES` | nem |
-| ebay.nl | `EBAY_NL` | nem |
-| ebay.be (francia és holland változat) | `EBAY_BE` | nem |
-| ebay.pl | `EBAY_PL` | nem |
-| ebay.ie | `EBAY_IE` | nem |
+| Működik-e az `itemLocationRegion:EUROPEAN_UNION`? | Nem. `deliveryCountry:HU` mellett az eBay nem támogatja (warning 12519), a szűrőt figyelmen kívül hagyja; a 140 találat mind USA-beli volt. | Nem használjuk. |
+| Működik-e az `itemLocationCountry`? | Igen, pontosan: minden találat a megadott országban volt (DE: 60, FR: 20, IT: 13). | Erre épül a földrajzi szűrés. |
+| Számít-e a marketplace? | Nem: `EBAY_DE` + `FR` itemId-re pontosan ugyanazt adja, mint `EBAY_FR` + `FR` (az olasznál ugyanígy). | Egyetlen marketplace (`EBAY_DE`) elég. |
+| Kell-e kulcsszó? | Igen: kulcsszó nélkül a kategória 1612 találatot adott, a lekért 594-ből csak 3 volt PS5. | A modellnevek a `q`-ba kerülnek. |
+| Hol van kínálat? (q=ps5) | DE 60, FR 20, IT 13, NL 1; AT, PL, ES, BE, CZ: 0. | Mind a 27 ország marad alapból, mert egy hívás olcsó, és a ritka találat is érték. |
 
-Az ebay.co.uk és az ebay.ch nem EU-s, ezért nem szerepel.
+**Ellenőrzés a backendben:** az `itemLocationRegion` kiesése miatt is kötelező, hogy a backend minden találatnál ellenőrizze az `itemLocation.country` mezőt egy fix EU-tagállam-listával szemben. Ami nem EU-s, vagy aminek nincs ismert helye, kerüljön ki az aktív listából. Ne keverd össze az eladó országát, a piactér országát és a termék tényleges feladási helyét; a szűrés a termék helyére vonatkozik.
 
-Az oldalak a beállításokban egyenként be- és kikapcsolhatók. A sok oldal nem okoz hívásszám-problémát, mert az állapotszűrős keresés oldalanként és modellenként csak 1 hívás (lásd lent). Az oldalak nagyrészt ugyanazokat a nemzetközi szállítást vállaló hirdetéseket mutatják, ezért a deduplikáció kötelező.
+**A válasz `warnings` mezőjét** mindig naplózni és a keresési állapotban jelezni kell, mert egy figyelmen kívül hagyott szűrő csendben hibás eredményt ad.
 
-#### Földrajzi szűrés
+**Ellenőrizendő az eBay-adapter megírásakor:** hogy a VAGY-szintaxisú `q` legalább ugyanazokat a tételeket adja-e vissza, mint a modellenkénti külön lekérdezések (pl. a `q=ps5` 60 találata mind benne van-e).
 
-Minden bekapcsolt oldalon a lekérdezés az `itemLocationRegion:EUROPEAN_UNION` szűrővel fut.
-
-Megkötések és ellenőrzések:
-
-- Az `itemLocationRegion` nem használható együtt az `itemLocationCountry` szűrővel.
-- **A régiószűrőre nem szabad vakon hagyatkozni.** A backend minden találatnál ellenőrizze az `itemLocation.country` mezőt egy fix EU-tagállam-listával szemben. Ami nem EU-s (Egyesült Királyság, Svájc, USA, Kína stb.), vagy aminek nincs ismert helye, az kerüljön ki az aktív listából.
-- Ne keverd össze az eladó országát, a piactér országát és a termék tényleges feladási helyét; a szűrés a termék helyére vonatkozik.
-- Az MVP elején egy mérő szkript futtassa le ugyanazt a keresést minden EU-s oldalon, és írja ki, hány egyedi (más oldalon nem szereplő) találatot hoznak az egyes oldalak. Ennek alapján dől el, mely oldalak maradjanak alapból bekapcsolva.
+**Kiegészítő keresés (2. fázis):** vannak eladók, akik „Used / Gebraucht” állapotot adnak meg, de a címben jelzik a hibát („defekt”, „for parts”). Ehhez állapotszűrő nélküli, hibát jelző kulcsszavas lekérdezés fut, de **csak azokra az országokra, ahol a fő keresés talált tételt** (mérés alapján jellemzően 3–5 ország). Ezeknél a találatoknál jelezni kell, hogy a hiba csak a címből derül ki.
 
 #### Hívásszám-keret
 
-A Browse API alapkerete nagyságrendileg **napi 5000 hívás** (az aktuális értéket az eBay Developer Portal „Application Growth Check / API call limits” oldalán ellenőrizni kell). A keresést úgy kell tervezni, hogy egy teljes futás ennek csak kis részét használja:
+A Browse API napi kerete **5000 hívás** (élesben ellenőrizve a Developer Analytics API-val). Egy teljes futás ennek csak kis részét használja:
 
 | Lekérdezés | Darab |
 |---|---|
-| Állapotszűrős keresés: 4 alapoldal × 5 modell | 20 |
-| Kiegészítő kulcsszavas keresés (csak a DE, FR, IT oldalon, modellenként 1 kulcsszócsoport) | 15 |
-| Lapozás (találatonként max. 200/oldal, csak ha szükséges) | néhány |
-| Tárolt tételek státuszellenőrzése `getItems`-szel (20 tétel/hívás) | tárolt tételek / 20 |
+| Fő keresés: 27 ország × 1 lekérdezés | 27 |
+| Lapozás (ha egy ország `total` értéke > 200) | 0–3 |
+| Kiegészítő kulcsszavas keresés (2. fázis, csak a találatot adó országokra) | 3–5 |
+| Tárolt tételek státuszellenőrzése `getItems`-szel (20 tétel/hívás, 2. fázis) | tárolt tételek / 20 |
 
-**Cél: egy teljes keresés az alapbeállításokkal < 50 API-hívás.** Ha mind a 9 oldal be van kapcsolva, az állapotszűrős rész 45 hívás; ez is jóval a napi keret alatt marad. Az app számolja és jelenítse meg a napi felhasznált hívások számát, és a keret közelében figyelmeztessen.
+**Cél: egy teljes keresés az alapbeállításokkal < 50 API-hívás.** Az app számolja és jelenítse meg a napi felhasznált hívások számát, és a keret közelében figyelmeztessen.
 
 #### Hirdetési típusok és mezők
 
@@ -129,8 +118,8 @@ Szűrők:
 - Maximális vételár
 - Maximális teljes ár szállítással együtt
 - Pénznem: EUR / HUF
-- Termék helye: alapértelmezés „EU (összes tagállam)”, opcionálisan egyes országokra szűkítve (ez helyi szűrés a már letöltött találatokon, nem extra API-hívás)
-- EU-s eBay-oldalak be-/kikapcsolása (alapból DE, AT, FR, IT)
+- Termék helye: szűkítés egyes országokra a már letöltött találatokon belül (helyi szűrés, nem extra API-hívás)
+- Keresett országok (alapból mind a 27 EU-tagállam; a lista szerkeszthető)
 - Aukció / fix ár / mindkettő
 - Kiegészítő keresési kulcsszavak szerkesztése
 
@@ -138,7 +127,7 @@ A beállítások maradjanak meg a következő megnyitásra (SQLite-ban a backend
 
 ## 5. Keresési kulcsszavak
 
-A kulcsszavak a **kiegészítő** kereséshez és a találatok helyi utószűréséhez kellenek (lásd 3. pont), nem az elsődleges kereséshez.
+Az elsődleges keresésben a `q` a **modellneveket** tartalmazza (lásd 3. pont). Az alábbi, hibát jelző kulcsszavak a 2. fázis **kiegészítő** kereséséhez és a találatok helyi utószűréséhez kellenek.
 
 **Angol:** faulty, broken, for parts, spares or repair, not working, no display, no power, overheating.
 
@@ -278,7 +267,7 @@ Ha egy piactér lekérdezése sikertelen, az app **ne** állítsa, hogy a keres�
 
 ### 1. fázis – eBay MVP
 
-Webes felület, keresési paraméterek, valós eBay Browse API-integráció állapot- és kategóriaszűrővel, EU-régiószűrés és helyi EU-ellenőrzés, magyarországi szállítási díj, aukció/fix ár megkülönböztetés, ár- és modellfilterek, közvetlen linkek, aktív státusz ellenőrzése, API-hívásszámláló. Az első lépés egy egyszerű teszt-szkript, amely igazolja, hogy a kulcsok működnek, ellenőrzi az `EUROPEAN_UNION` régiószűrő tényleges viselkedését, és megméri, hány egyedi találatot hoznak az egyes EU-s eBay-oldalak.
+Webes felület, keresési paraméterek, valós eBay Browse API-integráció a 3. pontban leírt, élesben mért stratégiával (EBAY_DE, országonkénti `itemLocationCountry`, állapot- és kategóriaszűrő, modellnevek VAGY-lekérdezésben), helyi EU-ellenőrzés, magyarországi szállítási díj, aukció/fix ár megkülönböztetés, ár- és modellfilterek, közvetlen linkek, aktív státusz ellenőrzése, API-hívásszámláló. A diagnosztikai mérések (kulcsellenőrzés, helyszűrők és országstratégia összevetése) elkészültek.
 
 ### 2. fázis – tárolás és haladó kezelés
 

@@ -35,15 +35,18 @@ Saját használatra készülő webalkalmazás, amely EU-s eBay-oldalakon hibás 
 ## eBay Browse API – fontos részletek
 
 - Hitelesítés: OAuth **client credentials** (application token), `POST https://api.ebay.com/identity/v1/oauth2/token`, scope: `https://api.ebay.com/oauth/api_scope`. A tokent cache-eld a lejáratáig.
-- Minden kereséshez:
-  - `X-EBAY-C-MARKETPLACE-ID`: a bekapcsolt EU-s oldal (`EBAY_DE`, `EBAY_AT`, `EBAY_FR`, `EBAY_IT`, …)
+- **Keresési stratégia (élesben mérve, 2026-11):**
+  - Egyetlen marketplace: `X-EBAY-C-MARKETPLACE-ID: EBAY_DE`. Mérés szerint az `EBAY_DE` + `itemLocationCountry:FR` itemId-re pontosan ugyanazt adja, mint az `EBAY_FR` + `FR`, ezért más EU-s oldalt nem kell külön lekérdezni.
+  - **Országonként egy lekérdezés** `itemLocationCountry:<ország>` szűrővel, alapból mind a 27 EU-tagállamra (konfigurálható lista). Ha `total` > 200, lapozz (`offset`).
+  - **Egy lekérdezés minden modellre**, az eBay VAGY-szintaxisával a `q` paraméterben (pl. `(ps5, playstation 5, xbox series)`); a modellt a backend sorolja be a címből / tulajdonságokból. Kulcsszó nélkül nem működik: a kategória szinte csak más konzolokat ad vissza (mérve: 594 tételből 3 PS5).
   - `X-EBAY-C-ENDUSERCTX: contextualLocation=country=HU`
-  - filter: `conditionIds:{7000}`, `deliveryCountry:HU`, `itemLocationRegion:EUROPEAN_UNION`
-  - A `buyingOptions` szűrő minden keresésnél kötelező, mert nélküle az eBay kihagyja a kizárólag licitálható hirdetéseket. Mindkét típushoz használd a `buyingOptions:{AUCTION|FIXED_PRICE}` értéket. A fix áras, ajánlattételt is engedő hirdetések a `FIXED_PRICE` szűréssel érkeznek.
-  - kategória: Video Game Consoles (az azonosítót a Taxonomy API-val ellenőrizd, ne feltételezd)
-- Az `itemLocationRegion` és az `itemLocationCountry` nem használható együtt.
+  - filter: `conditionIds:{7000}`, `deliveryCountry:HU`, `itemLocationCountry:<ország>`, `buyingOptions:{AUCTION|FIXED_PRICE}`
+  - `category_ids=139971` (Video Game Consoles; Taxonomy API-val ellenőrizve)
+- A `buyingOptions` szűrő minden keresésnél kötelező, mert nélküle az eBay kihagyja a kizárólag licitálható hirdetéseket. A fix áras, ajánlattételt is engedő hirdetések a `FIXED_PRICE` szűréssel érkeznek.
+- **Az `itemLocationRegion` szűrőt NE használd.** `deliveryCountry:HU` mellett az eBay nem támogatja, és csak egy warningot ad (errorId 12519), a szűrőt figyelmen kívül hagyja; a találatok ilyenkor nagyrészt USA-beliek. A backend saját EU-ellenőrzése (`itemLocation.country`) ettől függetlenül kötelező.
+- A válasz `warnings` mezőjét mindig naplózd és jelezd: egy figyelmen kívül hagyott szűrő csendben hibás eredményt ad.
 - Státuszellenőrzés: `getItems` (max. 20 tétel/hívás).
-- **Hívásszám-keret:** egy teljes keresés az alapbeállításokkal maradjon 50 hívás alatt. Számold a napi hívásokat.
+- **Hívásszám-keret:** a napi keret 5000 Browse-hívás (mérve). Egy teljes keresés az alapbeállításokkal maradjon 50 hívás alatt. Számold a napi hívásokat.
 - Ha egy API-mező vagy funkció nem úgy működik, ahogy a terv feltételezi, ne kerüld meg csendben: írd le az összefoglalóban.
 - Hivatalos dokumentáció: https://developer.ebay.com/api-docs/buy/browse/overview.html
 
