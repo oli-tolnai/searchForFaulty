@@ -7,14 +7,15 @@ from fastapi.testclient import TestClient
 
 from app.adapters.ebay import BROWSE_PATH, EbayAdapter, normalize_listing
 from app.main import create_app
-from app.services.model_detection import detect_model
+from app.services.model_detection import classify_item
 
 BASE = "https://api.ebay.com"
 
 
 def test_title_classification(payload):
-    for title, expected in payload("model_titles"):
-        assert detect_model(title) == expected, title
+    for title, item_type, model, banned in payload("model_titles") + payload("diagnosed_titles"):
+        result = classify_item(title)
+        assert (result.item_type, result.console_model, result.is_banned) == (item_type, model, banned), title
 
 
 def test_listing_normalization(payload):
@@ -66,8 +67,8 @@ def test_api_partial_search_sorting_filters_and_call_counts(respx_mock, settings
 
     def respond(request):
         assert request.headers["X-EBAY-C-MARKETPLACE-ID"] == "EBAY_DE"
-        assert request.headers["X-EBAY-C-ENDUSERCTX"] == "contextualLocation=country=HU"
-        assert request.url.params["q"] == "(ps5, playstation 5, xbox series)"
+        assert request.headers["X-EBAY-C-ENDUSERCTX"] == "contextualLocation=country%3DHU"
+        assert request.url.params["q"] in {"ps5", "xbox series"}
         filters = request.url.params["filter"].split(",")
         assert filters[:3] == [
             "conditionIds:{7000}", "buyingOptions:{AUCTION|FIXED_PRICE}", "deliveryCountry:HU"
@@ -83,17 +84,18 @@ def test_api_partial_search_sorting_filters_and_call_counts(respx_mock, settings
         assert response.status_code == 200
         result = response.json()
         assert result["status"] == "partial"
-        assert result["api_calls"] == 3
-        assert result["daily_api_calls"] == 3
-        assert result["daily_browse_calls"] == 2
-        assert result["filtered_non_eu"] == 2
+        assert result["api_calls"] == 5
+        assert result["daily_api_calls"] == 5
+        assert result["daily_browse_calls"] == 4
+        assert result["filtered_non_eu"] == 4
         assert [item["source_listing_id"] for item in result["listings"]] == ["fixed", "auction"]
         assert [item["source_listing_id"] for item in result["unknown_shipping"]] == ["unknown-shipping"]
         german, french = result["countries"]
         assert german["status"] == "success"
-        assert german["warnings"] == [{"errorId": 123, "message": "Fixture warning"}]
+        assert [query["query"] for query in german["queries"]] == ["ps5", "xbox series"]
+        assert german["queries"][0]["warnings"] == [{"errorId": 123, "message": "Fixture warning"}]
         assert french["status"] == "error"
-        assert "503" in french["error"]
+        assert all("503" in query["error"] for query in french["queries"])
         assert "fixture-seller" not in response.text + caplog.text
 
         result = client.post("/api/search", json={
@@ -102,13 +104,14 @@ def test_api_partial_search_sorting_filters_and_call_counts(respx_mock, settings
         }).json()
         assert [item["source_listing_id"] for item in result["listings"]] == ["fixed"]
         assert not result["unknown_shipping"]
-        assert result["api_calls"] == 2
-        assert result["daily_api_calls"] == 5
+        assert result["api_calls"] == 4
+        assert result["daily_api_calls"] == 9
     assert token.call_count == 1
 
 
 def test_api_success_and_total_failure(respx_mock, settings, payload):
     settings.ebay_countries = ("DE",)
+    settings.ebay_search_queries = ("ps5",)
     respx_mock.post(f"{BASE}/identity/v1/oauth2/token").respond(json=payload("token"))
     respx_mock.get(BASE + BROWSE_PATH).mock(side_effect=[
         httpx.Response(200, json={"total": 0}),
@@ -119,7 +122,7 @@ def test_api_success_and_total_failure(respx_mock, settings, payload):
         failed = client.post("/api/search", json={})
         assert failed.status_code == 502
         assert failed.json()["status"] == "error"
-        assert "időkorlátot" in failed.json()["countries"][0]["error"]
+        assert "időkorlátot" in failed.json()["countries"][0]["queries"][0]["error"]
         assert client.post("/api/search", json={"max_price": -1}).status_code == 422
 
 
@@ -150,10 +153,42 @@ def test_run_budget_leaves_room_for_every_country(respx_mock, settings, payload)
         result = client.post("/api/search", json={}).json()
 
     first_pages = [
-        call.request.url.params["filter"].rsplit(":", 1)[1]
+        (call.request.url.params["filter"].rsplit(":", 1)[1], call.request.url.params["q"])
         for call in route.calls if call.request.url.params["offset"] == "0"
     ]
-    assert sorted(first_pages) == sorted(settings.ebay_countries)
+    assert sorted(first_pages) == sorted(
+        (country, query) for country in settings.ebay_countries for query in settings.ebay_search_queries
+    )
     assert result["status"] == "partial"
-    assert result["api_calls"] == 49
-    assert route.call_count == 48
+    assert result["api_calls"] == 59
+    assert route.call_count == 58
+
+
+def test_item_types_are_counted_once_and_mainboards_are_opt_in(respx_mock, settings, payload):
+    settings.ebay_countries = ("DE",)
+    respx_mock.post(f"{BASE}/identity/v1/oauth2/token").respond(json=payload("token"))
+    base_item = payload("search")["itemSummaries"][1]
+    titles = (
+        "PS5 Slim Konsole", "Posten 4 PS5", "PS5 Slim EDM-040 Mainboard",
+        "PS5 Box leer", "PS3 Konsole", "PS5 Xbox Series X",
+    )
+    items = [dict(base_item, itemId=str(index), title=title) for index, title in enumerate(titles)]
+
+    def respond(request):
+        if request.url.params["q"] == "xbox series":
+            return httpx.Response(503)
+        return httpx.Response(200, json={"total": len(items), "itemSummaries": items + items})
+
+    respx_mock.get(BASE + BROWSE_PATH).mock(side_effect=respond)
+    with TestClient(create_app(settings)) as client:
+        default = client.post("/api/search", json={}).json()
+        with_boards = client.post("/api/search", json={"include_mainboards": True}).json()
+    assert default["status"] == default["countries"][0]["status"] == "partial"
+    assert [query["status"] for query in default["countries"][0]["queries"]] == ["success", "error"]
+    assert all(count == 1 for count in default["item_type_counts"].values())
+    assert {item["item_type"] for item in default["listings"]} == {
+        "console", "console_bundle", "needs_review"
+    }
+    assert {item["item_type"] for item in with_boards["listings"]} == {
+        "console", "console_bundle", "needs_review", "mainboard"
+    }

@@ -5,6 +5,9 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, JsonValue
 
 NonNegativeMoney = Annotated[Decimal, Field(ge=0, allow_inf_nan=False)]
+ItemType = Literal[
+    "console", "console_bundle", "mainboard", "not_console", "unsupported_model", "needs_review"
+]
 
 
 class Listing(BaseModel):
@@ -14,6 +17,8 @@ class Listing(BaseModel):
     url: str
     image_url: str | None = None
     console_model: str
+    item_type: ItemType
+    is_banned: bool = False
     buying_options: list[str]
     price: Decimal | None = None
     current_bid: Decimal | None = None
@@ -41,14 +46,21 @@ class SearchFilters(BaseModel):
     max_total_price: NonNegativeMoney | None = None
     buying_options: Literal["auction", "fixed", "both"] = "both"
     console_models: list[str] = Field(default_factory=list)
+    include_mainboards: bool = False
 
 
-class CountryStatus(BaseModel):
-    country: str
+class QueryStatus(BaseModel):
+    query: str
     status: Literal["success", "error"]
     error: str | None = None
     warnings: list[JsonValue] = Field(default_factory=list)
     count: int
+
+
+class CountryStatus(BaseModel):
+    country: str
+    status: Literal["success", "partial", "error"]
+    queries: list[QueryStatus]
 
 
 class SearchResponse(BaseModel):
@@ -57,6 +69,7 @@ class SearchResponse(BaseModel):
     unknown_shipping: list[Listing]
     countries: list[CountryStatus]
     filtered_non_eu: int
+    item_type_counts: dict[ItemType, int]
     api_calls: int
     daily_api_calls: int
     daily_browse_calls: int

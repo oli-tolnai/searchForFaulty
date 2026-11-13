@@ -58,23 +58,27 @@ A `python -m scripts.compare_country_strategy` parancs ugyaninnen futtatható.
 A piacterek és a kulcsszó hatását vizsgálja. Lekérdezésenként legfeljebb három,
 egyenként 200 tételes oldalt kér, és a lekért oldalak egyedi hirdetéseit veti össze.
 
-A `python -m scripts.verify_or_query` a németországi tételeken méri a külön
-kulcsszavas keresések és a kombinált VAGY-keresés átfedését.
+A `python -m scripts.diagnose_search_quality --shipping-only` ugyanazon a
+mintán hasonlítja össze a szállítási fejléceket. A harmadik változathoz
+opcionálisan megadható a `HU_POSTAL_CODE` a gyökérszintű `.env` fájlban.
 
 ## Keresési API
 
 Az elindított backend `POST /api/search` végpontja üres JSON-objektummal
 az összes beállított országban keres. Opcionális szűrők a `max_price`,
 `max_total_price`, `buying_options` (`auction`, `fixed` vagy `both`) és
-`console_models` (modellnevek listája). Az ismeretlen szállítási díjú
+`console_models` (modellnevek listája). Az `include_mainboards` bekapcsolja
+az alaplapokat. Az `item_type_counts` az aktív, EU-s, deduplikált tételeket
+számolja a válasz szűrőinek alkalmazása előtt. Az ismeretlen szállítási díjú
 találatok az `unknown_shipping` listába kerülnek. A válaszban
 `partial` jelzi a részleges országkudarcot. Ha minden ország hibát ad,
 a végpont HTTP 502 választ küld az országonkénti hibákkal.
 
-A gyökérszintű `.env` fájlban az `EBAY_SEARCH_QUERY` az eBay kulcsszavait,
+A gyökérszintű `.env` fájlban az `EBAY_SEARCH_QUERIES` az eBay kulcsszavait JSON-listaként,
 az `EBAY_COUNTRIES` pedig az országok JSON-listáját állítja be
 (például `EBAY_COUNTRIES='["DE","FR"]'`). Az alapértelmezés
-`(ps5, playstation 5, xbox series)` és mind a 27 EU-tagállam.
+`["ps5","xbox series"]` és mind a 27 EU-tagállam. A backend a mért,
+URL-kódolt, irányítószám nélküli fejlécet használja.
 A két árkorlát a tétel pénznemében értendő. A teljes árhoz az árnak és a
 szállításnak azonos pénznemben kell szerepelnie. A napi hívásszámláló a
 backend folyamatának memóriájában, UTC szerinti napokra bontva működik.

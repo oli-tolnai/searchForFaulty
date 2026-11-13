@@ -9,10 +9,11 @@ import httpx
 from pydantic import JsonValue
 
 from app.adapters.ebay_auth import EbayAuth, EbayAuthError, redact
+from app.adapters.ebay_context import hu_context_header
 from app.config import Settings
 from app.geography import EU_COUNTRIES, item_country
 from app.models import Listing
-from app.services.model_detection import detect_model
+from app.services.model_detection import classify_item
 
 LOGGER = logging.getLogger(__name__)
 PAGE_SIZE = 200
@@ -94,10 +95,12 @@ def normalize_listing(item: dict, checked_at: datetime) -> Listing | None:
         status = "UNKNOWN"
     else:
         status = "ACTIVE"
+    classification = classify_item(title)
     return Listing(
         source_listing_id=item_id, title=title, url=url,
         image_url=nonempty(mapping(item.get("image")).get("imageUrl")),
-        console_model=detect_model(title), buying_options=options,
+        console_model=classification.console_model, item_type=classification.item_type,
+        is_banned=classification.is_banned, buying_options=options,
         price=None if auction else amount, current_bid=amount if auction else None,
         bid_count=bid_count if auction and type(bid_count) is int and bid_count >= 0 else None,
         currency=currency, shipping_cost=shipping_cost, shipping_currency=shipping_currency,
@@ -153,7 +156,9 @@ class EbayAdapter:
         result = CountryResult()
         try:
             for page in range(MAX_PAGES):
-                total = self._page(country, query or self.settings.ebay_search_query, page, result, count_call)
+                total = self._page(
+                    country, query or self.settings.ebay_search_queries[0], page, result, count_call
+                )
                 if result.total is None:
                     result.total = total
                 if (page + 1) * PAGE_SIZE >= total:
@@ -184,7 +189,7 @@ class EbayAdapter:
                     headers={
                         "Authorization": f"Bearer {token.value}",
                         "X-EBAY-C-MARKETPLACE-ID": "EBAY_DE",
-                        "X-EBAY-C-ENDUSERCTX": "contextualLocation=country=HU",
+                        "X-EBAY-C-ENDUSERCTX": hu_context_header(),
                     },
                     follow_redirects=False,
                 )
@@ -200,6 +205,7 @@ class EbayAdapter:
                 secrets = (
                     token.value, self.settings.ebay_client_id.get_secret_value().strip(),
                     self.settings.ebay_client_secret.get_secret_value().strip(),
+                    self.settings.hu_postal_code.get_secret_value() if self.settings.hu_postal_code else "",
                 )
                 warnings = sanitize_warning(payload["warnings"], secrets)
                 LOGGER.warning("eBay Browse (%s) figyelmeztetések: %s", country, warnings)

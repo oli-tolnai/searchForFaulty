@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.geography import EU_COUNTRIES
@@ -21,13 +21,27 @@ class Settings(BaseSettings):
     ebay_client_id: SecretStr = SecretStr("")
     ebay_client_secret: SecretStr = SecretStr("")
     ebay_env: Literal["production", "sandbox"] = "production"
-    ebay_search_query: str = Field("(ps5, playstation 5, xbox series)", min_length=1, max_length=100)
+    hu_postal_code: SecretStr | None = None
+    ebay_search_queries: tuple[str, ...] = ("ps5", "xbox series")
     ebay_countries: tuple[str, ...] = tuple(sorted(EU_COUNTRIES))
 
-    @field_validator("ebay_search_query", mode="before")
+    @field_validator("hu_postal_code")
     @classmethod
-    def strip_query(cls, value):
-        return value.strip() if isinstance(value, str) else value
+    def validate_postal_code(cls, value: SecretStr | None) -> SecretStr | None:
+        if value is not None:
+            code = value.get_secret_value().strip()
+            if len(code) != 4 or not code.isascii() or not code.isdigit():
+                raise ValueError("A HU_POSTAL_CODE négy számjegyből állhat.")
+            return SecretStr(code)
+        return None
+
+    @field_validator("ebay_search_queries")
+    @classmethod
+    def validate_queries(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        queries = tuple(dict.fromkeys(query.strip() for query in value))
+        if not queries or any(not query or len(query) > 100 or "," in query for query in queries):
+            raise ValueError("Adj meg különálló, legfeljebb 100 karakteres keresőkifejezéseket.")
+        return queries
 
     @field_validator("ebay_countries")
     @classmethod
