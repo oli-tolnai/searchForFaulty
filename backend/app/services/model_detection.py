@@ -44,7 +44,7 @@ EMPTY_BOX = re.compile(
 )
 PARTS = re.compile(
     r"\b(?:controller|kontroller|dualsense|manette|gehäuse|cover|box|ovp|karton|kabel|"
-    r"netzteil|lüfter|hdmi[-\s]+(?:port|buchse))(?:s|n|e|ok)?\b"
+    r"netzteil|lüfter|laufwerk|drive|lemezmeghajtó|hdmi[-\s]+(?:port|buchse))(?:s|n|e|ok)?\b"
 )
 SERVICE = re.compile(
     r"\b(?:liquid\s+metal|wärmeleitpaste|reinigung|reparaturservice|reparatur[-\s]+service|"

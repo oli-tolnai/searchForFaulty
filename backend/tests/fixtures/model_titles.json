@@ -19,5 +19,9 @@
   ["Bundle of broken Xbox Series S consoles","console_bundle","Xbox Series S",false],
   ["PlayStation 3 CECH-2004 defekt","unsupported_model","PS3",false],
   ["Sony PS5 CFI-1016A Digital Edition","needs_review","Ellenőrzendő",false],
-  ["Microsoft Xbox Konsole Erste Serie **(Schneller Versand)","unsupported_model","Xbox Classic",false]
+  ["Microsoft Xbox Konsole Erste Serie **(Schneller Versand)","unsupported_model","Xbox Classic",false],
+  ["PS4 PlayStation 5 Slim Laufwerk Teildefekt DVD kommt sehr schlecht raus !!!","not_console","Ellenőrzendő",false],
+  ["PS5 Slim Disc Drive Ersatzteil","not_console","PS5 Slim Disc",false],
+  ["PS5 Slim lemezmeghajtó","not_console","PS5 Slim",false],
+  ["PS5 Slim Konsole mit defektem Laufwerk","console","PS5 Slim",false]
 ]

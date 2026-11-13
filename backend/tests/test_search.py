@@ -90,6 +90,10 @@ def test_api_partial_search_sorting_filters_and_call_counts(respx_mock, settings
         assert result["filtered_non_eu"] == 4
         assert [item["source_listing_id"] for item in result["listings"]] == ["fixed", "auction"]
         assert [item["source_listing_id"] for item in result["unknown_shipping"]] == ["unknown-shipping"]
+        assert result["unknown_shipping_breakdown"] == {
+            "by_buying_type": {"auction": 0, "fixed_price": 1},
+            "by_country": {"DE": {"auction": 0, "fixed_price": 1}},
+        }
         german, french = result["countries"]
         assert german["status"] == "success"
         assert [query["query"] for query in german["queries"]] == ["ps5", "xbox series"]
@@ -124,6 +128,28 @@ def test_api_success_and_total_failure(respx_mock, settings, payload):
         assert failed.json()["status"] == "error"
         assert "időkorlátot" in failed.json()["countries"][0]["queries"][0]["error"]
         assert client.post("/api/search", json={"max_price": -1}).status_code == 422
+
+
+def test_unknown_shipping_breakdown_groups_auction_and_fixed_price_by_country(
+    respx_mock, settings, payload
+):
+    settings.ebay_countries = ("DE",)
+    respx_mock.post(f"{BASE}/identity/v1/oauth2/token").respond(json=payload("token"))
+    sample = payload("search")
+    auction = sample["itemSummaries"][0]
+    auction.pop("shippingOptions")
+    auction["itemLocation"]["country"] = "FR"
+    auction["buyingOptions"].append("FIXED_PRICE")
+    respx_mock.get(BASE + BROWSE_PATH).respond(json=sample)
+    with TestClient(create_app(settings)) as client:
+        result = client.post("/api/search", json={}).json()
+    assert result["unknown_shipping_breakdown"] == {
+        "by_buying_type": {"auction": 1, "fixed_price": 1},
+        "by_country": {
+            "DE": {"auction": 0, "fixed_price": 1},
+            "FR": {"auction": 1, "fixed_price": 0},
+        },
+    }
 
 
 @pytest.mark.parametrize(

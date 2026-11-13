@@ -63,10 +63,21 @@ class CountryStatus(BaseModel):
     queries: list[QueryStatus]
 
 
+class ShippingTypeCounts(BaseModel):
+    auction: int = 0
+    fixed_price: int = 0
+
+
+class UnknownShippingBreakdown(BaseModel):
+    by_buying_type: ShippingTypeCounts
+    by_country: dict[str, ShippingTypeCounts]
+
+
 class SearchResponse(BaseModel):
     status: Literal["success", "partial", "error"]
     listings: list[Listing]
     unknown_shipping: list[Listing]
+    unknown_shipping_breakdown: UnknownShippingBreakdown
     countries: list[CountryStatus]
     filtered_non_eu: int
     item_type_counts: dict[ItemType, int]

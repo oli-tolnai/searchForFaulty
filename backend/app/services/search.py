@@ -12,6 +12,8 @@ from app.models import (
     QueryStatus,
     SearchFilters,
     SearchResponse,
+    ShippingTypeCounts,
+    UnknownShippingBreakdown,
 )
 
 MAX_RUN_CALLS = 59
@@ -120,12 +122,27 @@ class SearchService:
         return SearchResponse(
             status="error" if all_failed else "partial" if has_errors else "success",
             listings=known_shipping, unknown_shipping=unknown_shipping, countries=states,
+            unknown_shipping_breakdown=shipping_breakdown(unknown_shipping),
             filtered_non_eu=filtered_non_eu, api_calls=calls, daily_api_calls=daily,
             item_type_counts=type_counts,
             daily_browse_calls=browse, searched_at=searched_at,
             quota_warning="Az eBay napi Browse-kerete közel van a kimerüléshez."
             if browse >= BROWSE_DAILY_LIMIT * 0.9 else None,
         )
+
+
+def shipping_breakdown(items: list[Listing]) -> UnknownShippingBreakdown:
+    totals = ShippingTypeCounts()
+    countries: dict[str, ShippingTypeCounts] = {}
+    for item in items:
+        country = countries.setdefault(item.item_country or "UNKNOWN", ShippingTypeCounts())
+        if "AUCTION" in item.buying_options:
+            totals.auction += 1
+            country.auction += 1
+        else:
+            totals.fixed_price += 1
+            country.fixed_price += 1
+    return UnknownShippingBreakdown(by_buying_type=totals, by_country=countries)
 
 
 def matches(item: Listing, filters: SearchFilters, now: datetime) -> bool:
@@ -135,7 +152,11 @@ def matches(item: Listing, filters: SearchFilters, now: datetime) -> bool:
         return False
     if filters.buying_options == "fixed" and "FIXED_PRICE" not in item.buying_options:
         return False
-    if filters.console_models and item.console_model not in filters.console_models:
+    model = item.console_model
+    family = model.removesuffix(" Disc").removesuffix(" Digital")
+    if model == "PS5 Digital":
+        family = "PS5 (változat nem ismert)"
+    if filters.console_models and not ({model, family} & set(filters.console_models)):
         return False
     price = item.effective_price
     if filters.max_price is not None and (price is None or price > filters.max_price):
