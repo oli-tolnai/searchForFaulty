@@ -1,0 +1,15 @@
+{
+  "total": 900,
+  "itemSummaries": [
+    {"itemId": "fixture-ps5", "title": "Defekte pS5", "itemLocation": {"country": "DE"}, "seller": {"username": "fixture-seller"}},
+    {"itemId": "fixture-playstation", "title": "PLAYSTATION 5 Slim", "itemLocation": {"country": "DE"}},
+    {"itemId": "fixture-series-x", "title": "Xbox SERIES X", "itemLocation": {"country": "DE"}},
+    {"itemId": "fixture-series-s", "title": "series s defekt", "itemLocation": {"country": "DE"}},
+    {"itemId": "fixture-other", "title": "Xbox One X und PS4", "itemLocation": {"country": "DE"}}
+  ],
+  "baseline": [
+    {"itemId": "fixture-ps5", "title": "Defekte pS5", "itemLocation": {"country": "DE"}},
+    {"itemId": "fixture-missing", "title": "PS5 nur in der Stichprobe", "itemLocation": {"country": "DE"}},
+    {"itemId": "fixture-missing-ps3", "title": "PS3 nur in der Stichprobe", "itemLocation": {"country": "DE"}}
+  ]
+}

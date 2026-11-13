@@ -54,6 +54,10 @@ környezetben. A szkript változatonként egy, legfeljebb 200 tételes oldalt
 vizsgál. Az országeloszlást és az egyedi EU-s tételek számát a visszakapott
 oldalakból számolja, az API által közölt teljes találatszámot külön mutatja.
 
+A `python -m scripts.compare_country_strategy` parancs ugyaninnen futtatható.
+A piacterek és a kulcsszó hatását vizsgálja. Lekérdezésenként legfeljebb három,
+egyenként 200 tételes oldalt kér, és a lekért oldalak egyedi hirdetéseit veti össze.
+
 ## Tesztelés és helyi indítás
 
 A `backend` mappában:

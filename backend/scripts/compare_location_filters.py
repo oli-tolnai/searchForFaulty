@@ -59,21 +59,34 @@ def count_locations(items: list[dict]) -> LocationCounts:
 
 
 class SearchError(Exception):
-    pass
+    def __init__(self, message: str, status_code: int | None = None):
+        super().__init__(message)
+        self.status_code = status_code
 
 
 def search(
-    client: httpx.Client, settings: Settings, token: str, marketplace: str, location: str
+    client: httpx.Client,
+    settings: Settings,
+    token: str,
+    marketplace: str,
+    location: str,
+    *,
+    query: str | None = "ps5",
+    offset: int | None = None,
 ) -> dict:
+    params: dict[str, str | int] = {
+        "category_ids": "139971",
+        "limit": 200,
+        "filter": f"{BASE_FILTER},{location}" if location else BASE_FILTER,
+    }
+    if query is not None:
+        params["q"] = query
+    if offset is not None:
+        params["offset"] = offset
     try:
         response = client.get(
             f"{settings.ebay_api_url}{SEARCH_PATH}",
-            params={
-                "q": "ps5",
-                "category_ids": "139971",
-                "limit": 200,
-                "filter": f"{BASE_FILTER},{location}" if location else BASE_FILTER,
-            },
+            params=params,
             headers={
                 "Authorization": f"Bearer {token}",
                 "X-EBAY-C-MARKETPLACE-ID": marketplace,
@@ -101,7 +114,7 @@ def search(
         errors = objects(payload.get("errors")) if isinstance(payload, dict) else []
         codes = [str(error["errorId"]) for error in errors if type(error.get("errorId")) is int]
         detail = f" eBay-hibakód: {', '.join(codes)}." if codes else ""
-        raise SearchError(f"HTTP {response.status_code}. {message}{detail}")
+        raise SearchError(f"HTTP {response.status_code}. {message}{detail}", response.status_code)
     if not isinstance(payload, dict):
         raise SearchError("Az eBay válasza nem értelmezhető.")
     return payload
