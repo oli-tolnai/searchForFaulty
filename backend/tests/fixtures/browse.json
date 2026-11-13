@@ -1,5 +1,6 @@
 {
   "total": 2,
+  "warnings": [{"errorId": 123456, "message": "Fixture Browse warning"}],
   "itemSummaries": [
     {
       "title": "Fixture PS5",

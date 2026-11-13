@@ -5,15 +5,18 @@ from pydantic import ValidationError
 
 from app.adapters.ebay_auth import EbayAuth, EbayAuthError, redact
 from app.config import Settings
+from scripts.ebay_diagnostics import (
+    EU_COUNTRIES,
+    UNKNOWN,
+    display,
+    item_country,
+    objects,
+    print_warnings,
+)
 
-UNKNOWN = "Nem ismert"
 MARKETPLACE = "EBAY_DE"
 TAXONOMY = "/commerce/taxonomy/v1"
 CONSOLE_NAMES = {"video game consoles", "konsolen", "videospielkonsolen", "videospiel-konsolen"}
-EU_COUNTRIES = {
-    "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE",
-    "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE",
-}
 BUYING_OPTIONS = {
     "FIXED_PRICE": "Fix ár",
     "AUCTION": "Aukció",
@@ -24,16 +27,6 @@ BUYING_OPTIONS = {
 
 class CheckError(Exception):
     pass
-
-
-def objects(value: Any) -> list[dict]:
-    return [entry for entry in value if isinstance(entry, dict)] if isinstance(value, list) else []
-
-
-def display(value: Any) -> str:
-    if isinstance(value, str) and value.strip():
-        return "".join(char if char.isprintable() else " " for char in value)
-    return str(value) if type(value) is int else UNKNOWN
 
 
 def money(amount: Any) -> str:
@@ -54,8 +47,7 @@ def shipping_cost(item: dict) -> str:
 
 
 def listing_lines(item: dict) -> list[str]:
-    location = item.get("itemLocation")
-    country = display(location.get("country") if isinstance(location, dict) else None)
+    country = item_country(item)
     if country == UNKNOWN:
         country += " — az EU-tagság nem ellenőrizhető."
     elif country not in EU_COUNTRIES:
@@ -64,16 +56,19 @@ def listing_lines(item: dict) -> list[str]:
     options = item.get("buyingOptions")
     options = options if isinstance(options, list) else []
     types = [BUYING_OPTIONS.get(option, UNKNOWN) for option in options if isinstance(option, str)]
+    price = money(item.get("price"))
+    bid = money(item.get("currentBidPrice"))
+    show_bid = bid != UNKNOWN and ("AUCTION" in options or price == UNKNOWN)
+    price_line = f"Aktuális licit: {bid}" if show_bid else f"Ár: {price}"
     lines = [
         f"Cím: {display(item.get('title'))}",
-        f"Ár: {money(item.get('price'))}",
+        price_line,
         f"Hirdetéstípus: {', '.join(types) or UNKNOWN}",
     ]
     if "AUCTION" in options or any(
         item.get(key) is not None for key in ("currentBidPrice", "bidCount", "itemEndDate")
     ):
         lines.extend([
-            f"Aktuális licit: {money(item.get('currentBidPrice'))}",
             f"Licitek száma: {display(item.get('bidCount'))}",
             f"Aukció vége: {display(item.get('itemEndDate'))}",
         ])
@@ -214,6 +209,12 @@ def main() -> int:
             print(f"4. Próbakeresés: {error}")
             return 1
 
+        secrets = (
+            settings.ebay_client_id.get_secret_value().strip(),
+            settings.ebay_client_secret.get_secret_value().strip(),
+            token.value,
+        )
+        print_warnings(results, *secrets)
         total = results.get("total")
         if type(total) is not int or total < 0:
             print("4. Próbakeresés: az eBay nem adott érvényes találatszámot.")
@@ -222,12 +223,7 @@ def main() -> int:
         for index, item in enumerate(objects(results.get("itemSummaries"))[:10], 1):
             print(f"   {index}. találat:")
             for line in listing_lines(item):
-                print("      " + redact(
-                    line,
-                    settings.ebay_client_id.get_secret_value().strip(),
-                    settings.ebay_client_secret.get_secret_value().strip(),
-                    token.value,
-                ))
+                print("      " + redact(line, *secrets))
         return 0
 
     try:

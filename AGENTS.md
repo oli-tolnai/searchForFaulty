@@ -50,7 +50,7 @@ Saját használatra készülő webalkalmazás, amely EU-s eBay-oldalakon hibás 
 ## Technológia és mappaszerkezet
 
 ```
-backend/            Python 3.12, FastAPI, HTTPX, SQLite
+backend/            Python 3.12 vagy újabb (ajánlott: 3.14), FastAPI, HTTPX, SQLite
   app/
     adapters/       forrásonkénti adapterek (ebay.py, …), közös interfész
     services/       keresés, deduplikáció, státusz, árfolyam
@@ -73,11 +73,12 @@ Amíg nincsenek létrehozva, az első érintett feladatban hozd létre őket, é
 ```powershell
 # Backend (Windows PowerShell, a repó gyökeréből)
 cd backend
-py -3.12 -m venv .venv
+pymanager exec -V:3.14 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\pytest.exe
 .\.venv\Scripts\ruff.exe check .
 .\.venv\Scripts\python.exe -m scripts.check_ebay  # Kitöltött gyökérszintű .env szükséges
+.\.venv\Scripts\python.exe -m scripts.compare_location_filters  # Éles helyszűrők összevetése
 .\.venv\Scripts\python.exe -m uvicorn app.main:app
 ```
 

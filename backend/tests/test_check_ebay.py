@@ -51,6 +51,7 @@ def test_check_uses_verified_category_and_prints_diagnostics(
         assert "alkalmazástokennel nem érhető el (HTTP 403)" in output
     assert "999991; eltér" in output
     assert "Összes találat: 2" in output
+    assert '"message": "Fixture Browse warning"' in output
     assert "Hirdetéstípus: Fix ár, Ajánlattétel\n" in output
     assert "Hirdetéstípus: Aukció\n" in output
     assert "Termék helye: DE\n" in output
@@ -58,6 +59,7 @@ def test_check_uses_verified_category_and_prints_diagnostics(
     assert "Szállítás Magyarországra: Nem ismert" in output
     assert "Szállítás Magyarországra: 0 EUR" in output
     assert "Aktuális licit: 75.00 EUR" in output
+    assert "Ár: Nem ismert" not in output
     assert "Licitek száma: 0" in output
     assert "Aukció vége: 2026-12-31T12:00:00Z" in output
     assert "https://example.test/auction" in output
@@ -65,6 +67,16 @@ def test_check_uses_verified_category_and_prints_diagnostics(
     assert "56789" not in output
     assert "fixture-application-token" not in output
     assert "indított eBay API-hívások száma: 6" in output
+
+
+def test_auction_price_prefers_current_bid_and_falls_back_to_price(payload):
+    auction = payload("browse")["itemSummaries"][1]
+    auction["price"] = payload("browse")["itemSummaries"][0]["price"]
+    assert "Aktuális licit: 75.00 EUR" in check_ebay.listing_lines(auction)
+    del auction["currentBidPrice"]
+    assert "Ár: 100.00 EUR" in check_ebay.listing_lines(auction)
+    del auction["price"]
+    assert "Ár: Nem ismert" in check_ebay.listing_lines(auction)
 
 
 def test_calculated_shipping_is_unknown():

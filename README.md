@@ -5,12 +5,13 @@ parancssori eBay-kulcsellenőrző. A backend egyetlen végpontja a `GET /api/hea
 
 ## Telepítés Windowson
 
-Telepítsd a Python 3.12-t a Windows Python-indítóval (`py`). A repó
+Windowsra a Python 3.14 ajánlott, a legkisebb támogatott verzió a 3.12.
+A Python telepítéskezelőjével (`pymanager`), a repó
 gyökeréből, PowerShellben futtasd:
 
 ```powershell
 cd backend
-py -3.12 -m venv .venv
+pymanager exec -V:3.14 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
@@ -46,6 +47,12 @@ A hiányzó vagy számított szállítási díj „Nem ismert”.
 A sikeres tokenkérés önmagában még nem igazolja a Browse-hozzáférést.
 Az eBay-adatok használatára az [API License Agreement](https://developer.ebay.com/develop/api-license-agreement)
 vonatkozik.
+
+Az eBay helyszűrőinek éles összevetéséhez a `backend` mappából futtasd a
+`python -m scripts.compare_location_filters` parancsot az aktivált virtuális
+környezetben. A szkript változatonként egy, legfeljebb 200 tételes oldalt
+vizsgál. Az országeloszlást és az egyedi EU-s tételek számát a visszakapott
+oldalakból számolja, az API által közölt teljes találatszámot külön mutatja.
 
 ## Tesztelés és helyi indítás
 

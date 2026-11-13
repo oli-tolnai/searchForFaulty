@@ -1,0 +1,14 @@
+{
+  "total": 12,
+  "itemSummaries": [
+    {"itemId": "fixture-de", "itemLocation": {"country": "DE"}, "seller": {"username": "fixture-seller"}},
+    {"itemId": "fixture-de", "itemLocation": {"country": "DE"}},
+    {"itemId": "fixture-pl", "itemLocation": {"country": "PL"}},
+    {"itemLocation": {"country": "FR"}},
+    {"itemId": "fixture-us", "itemLocation": {"country": "US"}},
+    {"itemId": "fixture-unknown"}
+  ],
+  "warnings": [
+    {"errorId": 123456, "message": "Fixture warning", "parameters": [{"name": "filter", "value": "fixture"}]}
+  ]
+}
