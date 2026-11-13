@@ -33,7 +33,7 @@ Az első teljesen működő integráció az eBay legyen, a hivatalos **eBay Brow
 Az app célja, hogy a hirdetett konzol **plusz költség nélkül, közvetlenül Magyarországra rendelhető** legyen. Ezért:
 
 - Minden eBay-lekérdezés tartalmazza a `deliveryCountry:HU` szűrőt: csak azok a tételek jelennek meg, amelyeket az eladó Magyarországra szállít.
-- A kereső a `X-EBAY-C-ENDUSERCTX: contextualLocation=country%3DHU` fejléccel kéri a Magyarországra érvényes szállítási díjat. Az opcionális `HU_POSTAL_CODE` az irányítószámos változat diagnosztikai mérésére szolgál.
+- A kereső a `X-EBAY-C-ENDUSERCTX: contextualLocation=country%3DHU` fejléccel kéri a Magyarországra érvényes szállítási díjat. Az irányítószámos változat mérve nem javított (lásd lent), ezért a `HU_POSTAL_CODE` csak a diagnosztikában használt.
 - Csak EU-tagállamban található termék jelenhet meg, mert EU-n belüli vásárlásnál nincs vám és külön ÁFA.
 - Csomagtovábbítós (német vagy más külföldi címre történő) rendelés egyelőre nem része a tervnek.
 
@@ -62,7 +62,7 @@ A stratégia az 1. fázis elején futtatott diagnosztikai mérések eredményén
 | Hol van kínálat? (q=ps5) | DE 60, FR 20, IT 13, NL 1; AT, PL, ES, BE, CZ: 0. | Mind a 27 ország marad alapból, mert egy hívás olcsó, és a ritka találat is érték. |
 | Működik-e a VAGY-szintaxis? | Nem: a `(ps5, playstation 5, xbox series)` a DE 73 egyedi tételéből 32-t, a `(ps5,"xbox series")` 23-at adott vissza; a `(ps5,xbox)` 24-et, plusz 188 Xbox One/360/Classic tételt. A `q=playstation 5` azonos a `q=ps5`-tel. | Modellcsoportonként külön lekérdezés (`ps5`, `xbox series`). |
 | Pontos-e a `q=ps5`? | Nem teljesen: PS1, PS3, PSP tételek is jönnek. | A modellfelismerés kiszűri a nem támogatott modelleket. |
-| Segít-e a fejléc URL-kódolása a szállítási díjon? | Irányítószám nélkül a kódolatlan és a kódolt fejléc egyaránt 0/10 ismert díjat adott az azonos mintán. Mindkettőnél megjelent az 11510-es figyelmeztetés. Az irányítószámos változat beállítás hiányában kimaradt. | A kereső a kódolt, irányítószám nélküli fejlécet használja. |
+| Ismert-e a szállítási díj Magyarországra? | A tételek kb. 70%-ánál nem: az eBay 11510-es figyelmeztetést ad („problem calculating the shipping cost”). A kódolatlan, a kódolt és a magyar irányítószámos fejléc, valamint a `getItem` is 0/10 ismert díjat adott ugyanazon a mintán. | Az eBay API korlátja. A kereső a kódolt, irányítószám nélküli fejlécet használja; ezek a tételek „Nem ismert” díjjal, külön blokkban jelennek meg, a díjat a hirdetésben kell megnézni. Becslés tilos. |
 
 **Ellenőrzés a backendben:** az `itemLocationRegion` kiesése miatt is kötelező, hogy a backend minden találatnál ellenőrizze az `itemLocation.country` mezőt egy fix EU-tagállam-listával szemben. Ami nem EU-s, vagy aminek nincs ismert helye, kerüljön ki az aktív listából. Ne keverd össze az eladó országát, a piactér országát és a termék tényleges feladási helyét; a szűrés a termék helyére vonatkozik.
 
