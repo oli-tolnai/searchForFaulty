@@ -44,12 +44,12 @@ A stratégia az 1. fázis elején futtatott diagnosztikai mérések eredményén
 **Egy lekérdezés felépítése:**
 
 - Marketplace: `X-EBAY-C-MARKETPLACE-ID: EBAY_DE`
-- `q`: minden támogatott modell egyetlen lekérdezésben, az eBay VAGY-szintaxisával, pl. `(ps5, playstation 5, xbox series)`. A pontos kifejezéslista konfigurálható.
+- `q`: modellcsoportonként külön lekérdezés: `ps5` és `xbox series` (konfigurálható lista)
 - `category_ids=139971` (Video Game Consoles, Taxonomy API-val ellenőrizve)
 - filter: `conditionIds:{7000}` („For parts or not working / Für Bastler”), `buyingOptions:{AUCTION|FIXED_PRICE}`, `deliveryCountry:HU`, `itemLocationCountry:<ország>`
 - `limit=200`; ha a `total` nagyobb, lapozás `offset`-tel
 
-**Országonként egy lekérdezés**, alapból mind a 27 EU-tagállamra. Az országlista a beállításokban szerkeszthető.
+**Országonként és modellcsoportonként egy lekérdezés**, alapból mind a 27 EU-tagállamra (27 × 2 = 54 hívás). Az országlista a beállításokban szerkeszthető.
 
 **A mérések, amelyekre a stratégia épül:**
 
@@ -60,12 +60,13 @@ A stratégia az 1. fázis elején futtatott diagnosztikai mérések eredményén
 | Számít-e a marketplace? | Nem: `EBAY_DE` + `FR` itemId-re pontosan ugyanazt adja, mint `EBAY_FR` + `FR` (az olasznál ugyanígy). | Egyetlen marketplace (`EBAY_DE`) elég. |
 | Kell-e kulcsszó? | Igen: kulcsszó nélkül a kategória 1612 találatot adott, a lekért 594-ből csak 3 volt PS5. | A modellnevek a `q`-ba kerülnek. |
 | Hol van kínálat? (q=ps5) | DE 60, FR 20, IT 13, NL 1; AT, PL, ES, BE, CZ: 0. | Mind a 27 ország marad alapból, mert egy hívás olcsó, és a ritka találat is érték. |
+| Működik-e a VAGY-szintaxis? | Nem: a `(ps5, playstation 5, xbox series)` a DE 73 egyedi tételéből 32-t, a `(ps5,"xbox series")` 23-at adott vissza; a `(ps5,xbox)` 24-et, plusz 188 Xbox One/360/Classic tételt. A `q=playstation 5` azonos a `q=ps5`-tel. | Modellcsoportonként külön lekérdezés (`ps5`, `xbox series`). |
+| Pontos-e a `q=ps5`? | Nem teljesen: PS1, PS3, PSP tételek is jönnek. | A modellfelismerés kiszűri a nem támogatott modelleket. |
+| Miért ismeretlen sok szállítási díj? | A tételek kb. kétharmadánál az eBay 11510-es figyelmeztetést ad („problem calculating the shipping cost”), és a `getItem` sem ad díjat. | Vizsgálandó: URL-kódolt fejléc irányítószámmal (számított szállításhoz kellhet). |
 
 **Ellenőrzés a backendben:** az `itemLocationRegion` kiesése miatt is kötelező, hogy a backend minden találatnál ellenőrizze az `itemLocation.country` mezőt egy fix EU-tagállam-listával szemben. Ami nem EU-s, vagy aminek nincs ismert helye, kerüljön ki az aktív listából. Ne keverd össze az eladó országát, a piactér országát és a termék tényleges feladási helyét; a szűrés a termék helyére vonatkozik.
 
 **A válasz `warnings` mezőjét** mindig naplózni és a keresési állapotban jelezni kell, mert egy figyelmen kívül hagyott szűrő csendben hibás eredményt ad.
-
-**Ellenőrizendő az eBay-adapter megírásakor:** hogy a VAGY-szintaxisú `q` legalább ugyanazokat a tételeket adja-e vissza, mint a modellenkénti külön lekérdezések (pl. a `q=ps5` 60 találata mind benne van-e).
 
 **Kiegészítő keresés (2. fázis):** vannak eladók, akik „Used / Gebraucht” állapotot adnak meg, de a címben jelzik a hibát („defekt”, „for parts”). Ehhez állapotszűrő nélküli, hibát jelző kulcsszavas lekérdezés fut, de **csak azokra az országokra, ahol a fő keresés talált tételt** (mérés alapján jellemzően 3–5 ország). Ezeknél a találatoknál jelezni kell, hogy a hiba csak a címből derül ki.
 
@@ -75,12 +76,12 @@ A Browse API napi kerete **5000 hívás** (élesben ellenőrizve a Developer Ana
 
 | Lekérdezés | Darab |
 |---|---|
-| Fő keresés: 27 ország × 1 lekérdezés | 27 |
+| Fő keresés: 27 ország × 2 lekérdezés (`ps5`, `xbox series`) | 54 |
 | Lapozás (ha egy ország `total` értéke > 200) | 0–3 |
 | Kiegészítő kulcsszavas keresés (2. fázis, csak a találatot adó országokra) | 3–5 |
 | Tárolt tételek státuszellenőrzése `getItems`-szel (20 tétel/hívás, 2. fázis) | tárolt tételek / 20 |
 
-**Cél: egy teljes keresés az alapbeállításokkal < 50 API-hívás.** Az app számolja és jelenítse meg a napi felhasznált hívások számát, és a keret közelében figyelmeztessen.
+**Cél: egy teljes keresés az alapbeállításokkal < 60 API-hívás.** Napi 5000-es keret mellett ez kb. 80 teljes keresést enged naponta. Az app számolja és jelenítse meg a napi felhasznált hívások számát, és a keret közelében figyelmeztessen.
 
 #### Hirdetési típusok és mezők
 
@@ -137,17 +138,34 @@ Az elsődleges keresésben a `q` a **modellneveket** tartalmazza (lásd 3. pont)
 
 A francia, olasz, spanyol és lengyel kifejezések is legyenek konfigurálhatók.
 
-Kulcsszócsoportok: egy lekérdezésbe több rokon kifejezés kerülhet az eBay `(a, b, c)` VAGY-szintaxisával, így kevesebb hívás kell. Ne egyetlen túl hosszú lekérdezésre épüljön a keresés: néhány célzott lekérdezés fusson, majd az eredmények egyesítése és deduplikálása következzen (`source` + `source_listing_id` alapján).
+Az eBay VAGY-szintaxisa (`(a, b, c)`) a mérések szerint megbízhatatlan, ezért ne használd. Néhány célzott, külön lekérdezés fusson, majd az eredmények egyesítése és deduplikálása következzen (`source` + `source_listing_id` alapján).
 
 Zárja ki az egyértelműen önálló kiegészítőket (kontroller, burkolat, doboz, kábel, töltő, alaplap önmagában – utóbbi konfigurálható), de **ne** zárja ki a „console for parts” megfogalmazású, teljes hibás konzolokat.
 
-### Modellfelismerés
+### Modellfelismerés és tételtípus
 
-A PS5 Fat / Slim / Pro és a Disc / Digital változat a címből gyakran nem dönthető el. A felismerés sorrendje:
+Minden találat két címkét kap: **tételtípust** és **modellt**.
 
-1. A hirdetés strukturált tulajdonságai (`localizedAspects`, pl. „Modell”, „Plattform”, „Model”) – ezek a `getItem` válaszában érhetők el.
-2. Címből és leírásrészletből szabályalapú felismerés (pl. CFI-modellszámok: CFI-10xx/11xx = Fat, CFI-20xx = Slim, CFI-70xx = Pro).
-3. Ha egyik sem egyértelmű: **„Ellenőrzendő”** jelölés. Bizonytalan esetben inkább ellenőrzendő legyen, mint tévesen besorolt.
+**Tételtípus:**
+
+| Típus | Példa | Alapból látható? |
+|---|---|---|
+| Konzol | „Sony PlayStation 5 Disc Edition Defekt Bastler” | igen |
+| Konzol – csomag (több darab) | „Posten 4 Sony PlayStation 5 Konsolen” | igen, jelölve |
+| Alaplap | „PS5 Slim EDM-040 Mainboard für Ersatzteile” | nem (szűrővel bekapcsolható) |
+| Nem konzol (kiegészítő, üres doboz, szolgáltatás, alkatrész) | „Ps5 Box Leer Anleitung”, „Liquid Metal PS5”, „Reinigung & HDMI” | nem |
+| Nem támogatott modell | PS1, PS3, PS4, PSP, Xbox One/360 | nem, csak a darabszám jelenik meg |
+| Ellenőrzendő | valóban kétértelmű cím | igen, jelölve |
+
+Fontos: a konzol mellé adott tartozék („Neuer Controller”, „Box und Kabel”, „Fortnite Bundle”) nem teszi a tételt kiegészítővé. Kiegészítőnek csak az számít, ahol a cím a konzol nélküli részre utal (pl. „nur Controller”, „Box leer”, „Mainboard”).
+
+**Modell:** PS5 (Fat), PS5 Slim, PS5 Pro, Xbox Series X, Xbox Series S, kiadással (Disc / Digital), ha felismerhető. A felismerés sorrendje:
+
+1. A hirdetés strukturált tulajdonságai (`localizedAspects`, pl. „Modell”, „Plattform”) – ezek a `getItem` válaszában érhetők el (2. fázis).
+2. Címből szabályalapú felismerés (pl. CFI-modellszámok: CFI-10xx/11xx/12xx = Fat, CFI-20xx = Slim, CFI-70xx = Pro; „slim”, „pro”, „digital”, „disc”).
+3. Ha a cím biztosan PS5 konzolra utal, de a generáció nem derül ki (pl. „PS5 Disc Edition Defekt”), a modell **„PS5 (változat nem ismert)”** – ez nem ellenőrzendő, csak hiányos adat.
+
+**Kiegészítő jelölés:** „Banned / Gebannt / gesperrt” szó esetén a tétel kapjon **„Tiltott (banned) konzol”** jelölést, mert ez az online használatot érinti.
 
 ## 6. Találati lista
 
@@ -267,7 +285,7 @@ Ha egy piactér lekérdezése sikertelen, az app **ne** állítsa, hogy a keres�
 
 ### 1. fázis – eBay MVP
 
-Webes felület, keresési paraméterek, valós eBay Browse API-integráció a 3. pontban leírt, élesben mért stratégiával (EBAY_DE, országonkénti `itemLocationCountry`, állapot- és kategóriaszűrő, modellnevek VAGY-lekérdezésben), helyi EU-ellenőrzés, magyarországi szállítási díj, aukció/fix ár megkülönböztetés, ár- és modellfilterek, közvetlen linkek, aktív státusz ellenőrzése, API-hívásszámláló. A diagnosztikai mérések (kulcsellenőrzés, helyszűrők és országstratégia összevetése) elkészültek.
+Webes felület, keresési paraméterek, valós eBay Browse API-integráció a 3. pontban leírt, élesben mért stratégiával (EBAY_DE, országonkénti `itemLocationCountry`, állapot- és kategóriaszűrő, modellcsoportonként külön lekérdezés), helyi EU-ellenőrzés, magyarországi szállítási díj, aukció/fix ár megkülönböztetés, ár- és modellfilterek, közvetlen linkek, aktív státusz ellenőrzése, API-hívásszámláló. A diagnosztikai mérések (kulcsellenőrzés, helyszűrők és országstratégia összevetése) elkészültek.
 
 ### 2. fázis – tárolás és haladó kezelés
 
@@ -296,7 +314,7 @@ A projekt csak akkor kész, ha:
 9. A teljes kezelőfelület magyar nyelvű.
 10. Helyben dokumentált lépésekkel elindítható.
 11. Lejárt, eladott és nem ellenőrizhetően aktív hirdetés nem szerepel az aktív keresési eredmények között.
-12. Egy teljes keresés 50 API-hívás alatt marad az alapbeállításokkal.
+12. Egy teljes keresés 60 API-hívás alatt marad az alapbeállításokkal.
 
 ## 16. Elvárások a fejlesztővel szemben
 
