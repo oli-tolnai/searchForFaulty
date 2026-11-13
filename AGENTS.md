@@ -89,12 +89,13 @@ pymanager exec -V:3.14 -m venv .venv
 ```
 
 ```bash
-# Frontend (még nem létezik)
+# Frontend (a repó gyökeréből)
 cd frontend
-npm install
+npm ci
 npm run dev
 npm run build
 npm run lint
+npm test
 ```
 
 ## Tesztek

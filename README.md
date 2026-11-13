@@ -1,7 +1,8 @@
 # Console Deal Finder
 
-Az első fejlesztési feladat eredménye egy minimális FastAPI-backend és egy
-parancssori eBay-kulcsellenőrző. A backend egyetlen végpontja a `GET /api/health`.
+A Console Deal Finder hibás és alkatrésznek árult konzolokat keres az
+eBay-en, közvetlen magyarországi szállítással. A React felület a FastAPI
+keresőjét használja.
 
 ## Telepítés Windowson
 
@@ -97,3 +98,34 @@ A tesztek HTTP-mockokat használnak, így eBay-kulcs és internetkapcsolat nélk
 futtathatók. Az elindított backend a
 [`http://127.0.0.1:8000/api/health`](http://127.0.0.1:8000/api/health) címen
 `{"status":"ok"}` választ ad. Ehhez sem kell eBay-kulcs.
+
+## A webes felület indítása Windowson
+
+Telepítsd a Node.js LTS kiadását. A kereséshez legyen kitöltve a repó
+gyökerében lévő `.env` az eBay-kulcsokkal.
+
+Az első PowerShell-ablakban a repó gyökeréből indítsd a backendet:
+
+```powershell
+cd backend
+.\.venv\Scripts\python.exe -m uvicorn app.main:app
+```
+
+A második PowerShell-ablakban, szintén a repó gyökeréből:
+
+```powershell
+cd frontend
+npm ci
+npm run dev
+```
+
+Nyisd meg a [keresőt](http://127.0.0.1:5173). A Vite az `/api` kéréseket
+a helyi backend 8000-es portjára továbbítja.
+
+A frontend ellenőrzése a `frontend` mappából:
+
+```powershell
+npm run lint
+npm run build
+npm test
+```

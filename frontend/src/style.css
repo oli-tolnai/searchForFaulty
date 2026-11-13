@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: #101319;
+  --color-panel: #191e27;
+  --color-edge: #303847;
+  --color-ink: #f2f5fa;
+  --color-dim: #aab5c8;
+  --color-accent: #b9ee7b;
+}
+
+@layer base {
+  :root { color-scheme: dark; }
+  body { @apply bg-canvas text-ink antialiased; font-family: "Inter", system-ui, sans-serif; }
+  h1, h2, h3 { @apply font-semibold; overflow-wrap: anywhere; }
+  button, select, summary, input[type="checkbox"] { cursor: pointer; }
+  input:not([type="checkbox"]), select {
+    @apply min-w-0 w-full rounded-lg border border-edge bg-canvas px-3 py-2.5 text-sm text-ink;
+  }
+  :focus-visible { @apply outline-2 outline-offset-2 outline-accent; }
+  input[type="checkbox"] { accent-color: var(--color-accent); width: 1rem; height: 1rem; flex-shrink: 0; }
+}
+
+@layer components {
+  .shell { @apply mx-auto w-full max-w-7xl px-4 sm:px-8; }
+  .topbar { @apply border-b border-edge bg-panel/50; }
+  .brand { @apply flex min-h-16 items-center gap-3 text-sm font-semibold tracking-wide; }
+  .brand-icon { @apply grid size-9 place-items-center rounded-lg bg-accent/10 text-accent; }
+  .brand-icon svg { @apply size-6; }
+  main.shell { @apply pb-16; }
+  .intro { @apply pt-8 pb-6 sm:pt-10 sm:pb-7; }
+  .intro h1 { @apply text-3xl tracking-tight sm:text-5xl; }
+  .intro p { @apply mt-2 text-sm text-dim sm:text-base; }
+  .filter-panel { @apply rounded-2xl border border-edge bg-panel p-4 sm:p-6; }
+  .panel-heading { @apply mb-5 flex flex-wrap items-center justify-between gap-2; }
+  .panel-heading h2 { @apply text-lg; }
+  .panel-heading span { @apply text-xs text-dim; }
+  fieldset { @apply min-w-0; }
+  legend { @apply mb-2 text-sm font-medium; }
+  legend small { @apply text-xs font-normal text-dim; }
+  .model-options { @apply flex flex-wrap gap-2; }
+  .model-option { @apply flex items-center gap-2 rounded-lg border border-edge bg-canvas/45 px-3 py-2 text-sm; }
+  .model-option:has(:checked) { @apply border-accent/60 bg-accent/10; }
+  .filter-grid { @apply mt-5 grid gap-3 sm:grid-cols-3; }
+  .filter-grid label { @apply grid gap-1.5 text-sm font-medium; }
+  .input-unit { @apply relative; }
+  .input-unit input { @apply pr-14; }
+  .input-unit span { @apply pointer-events-none absolute top-2.5 right-3 text-xs leading-5 text-dim; }
+  .filter-actions { @apply mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-edge pt-4; }
+  .switch { @apply flex items-center gap-2 text-sm; }
+  .primary { @apply flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 py-3 text-sm font-bold text-canvas transition-colors hover:bg-lime-200 disabled:cursor-wait disabled:opacity-55 sm:w-auto; }
+  .primary svg, .title-search svg { @apply size-4 shrink-0; }
+  .notice { @apply my-4 flex items-center gap-3 rounded-xl border px-4 py-3 text-sm; }
+  .warning { @apply border-amber-400/35 bg-amber-400/10 text-amber-100; }
+  .progress { @apply border-accent/30 bg-accent/10; }
+  .spinner { @apply size-4 animate-spin rounded-full border-2 border-accent/30 border-t-accent; }
+  .results { @apply mt-6; }
+  .summary-bar { @apply flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-edge bg-panel px-4 py-3 text-sm text-dim; }
+  .summary-bar strong { @apply text-lg text-accent; }
+  .summary-bar p { @apply w-full text-xs; }
+  .status-details { @apply mb-4 rounded-xl border border-edge bg-panel p-3 text-sm; }
+  .status-details summary { @apply font-medium; }
+  .status-details table { @apply mt-3 w-full min-w-xl text-left; }
+  .status-details th, .status-details td { @apply border-t border-edge p-2 align-top; overflow-wrap: anywhere; }
+  .results-toolbar { @apply my-5 grid items-center gap-3 sm:grid-cols-[1fr_1.1fr_1.2fr]; }
+  .results-toolbar h2 { @apply text-2xl; }
+  .title-search { @apply relative; }
+  .title-search svg { @apply pointer-events-none absolute top-3 left-3 text-dim; }
+  .title-search input { @apply pl-9; }
+  .sort-label { @apply flex items-center gap-2 text-sm text-dim; }
+  .listing-grid { @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-3; }
+  .listing { @apply flex min-w-0 flex-col overflow-hidden rounded-xl border border-edge bg-panel; }
+  .listing-image { @apply relative aspect-[16/9] overflow-hidden bg-canvas; }
+  .listing-image img { @apply h-full w-full object-contain; }
+  .image-empty { @apply grid h-full content-center justify-items-center gap-2 text-xs text-dim; }
+  .image-empty svg { @apply size-8; }
+  .image-tag { @apply absolute top-3 left-3 rounded-md bg-canvas/95 px-2 py-1 text-xs font-semibold text-ink; }
+  .auction-tag { @apply bg-accent text-canvas; }
+  .listing-body { @apply flex flex-1 flex-col gap-3 p-4; }
+  .listing-meta { @apply flex justify-between gap-2 text-xs text-dim; }
+  .listing h3 { @apply text-base leading-snug; }
+  .badges { @apply flex flex-wrap gap-1.5; }
+  .badges span { @apply rounded-md bg-canvas px-2 py-1 text-xs text-dim; }
+  .badges .danger-badge { @apply bg-rose-400/15 text-rose-200; }
+  .price-line { @apply mt-auto flex items-end justify-between gap-2 text-xs text-dim; }
+  .price-line strong { @apply text-2xl tracking-tight text-ink; }
+  .costs { @apply space-y-1 border-t border-edge pt-2 text-xs; }
+  .costs div { @apply flex justify-between gap-3; }
+  .costs dt, .muted, .checked { @apply text-dim; }
+  .costs dd { @apply text-right font-medium; }
+  .checked, .countdown { @apply text-xs; }
+  .countdown { @apply rounded-md bg-accent/10 px-2 py-1 text-accent; }
+  .listing-link { @apply flex items-center justify-between rounded-md border border-edge px-3 py-2 text-sm font-medium hover:border-accent hover:text-accent; }
+  .unknown-section { @apply mt-7 border-t border-edge pt-5; }
+  .unknown-section h2 { @apply text-xl; }
+  .unknown-section p { @apply mt-1 mb-4 text-sm text-dim; }
+  .empty { @apply rounded-xl border border-dashed border-edge p-6 text-center text-dim; }
+  .load-more { @apply mx-auto mt-6 block rounded-lg border border-edge bg-panel px-5 py-3 text-sm hover:border-accent; }
+}
