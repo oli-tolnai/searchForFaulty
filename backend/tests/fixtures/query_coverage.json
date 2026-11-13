@@ -1,0 +1,6 @@
+{
+  "ps5": ["fixture-shared", "fixture-ps5", "fixture-ps5"],
+  "xbox series": ["fixture-shared", "fixture-xbox"],
+  "(ps5,xbox)": ["fixture-shared", "fixture-ps5", "fixture-xbox-one"],
+  "(ps5, xbox)": ["fixture-ps5", "fixture-xbox", "fixture-xbox-360"]
+}
