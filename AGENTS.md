@@ -30,6 +30,7 @@ Saját használatra készülő webalkalmazás, amely EU-s eBay-oldalakon hibás 
 7. **Csak hivatalos API.** Scraping, bejelentkezés, CAPTCHA vagy hozzáférés-korlátozás megkerülése tilos. A Jófogás és a HardverApró csak előre kitöltött keresőlinkként szerepelhet.
 8. **Ne használj fizetős szolgáltatást vagy AI API-t.**
 9. **A teljes felhasználói felület magyar nyelvű.** A kód, a változónevek és a kommentek angolul legyenek.
+10. **eBay-felhasználói személyes adatot tilos tárolni.** Az eladó felhasználóneve, értékelése, visszajelzési pontszáma és bármilyen vevői/eladói adat nem kerülhet az adatbázisba, a naplóba vagy a cache-be, akkor sem, ha az API visszaadja. Csak a hirdetés adatai tárolhatók (azonosító, cím, ár, szállítás, hely, kép URL, link, státusz, időpontok). Az eBay-kulcskészlet erre a feltételre kapott mentességet a *Marketplace Account Deletion* értesítések alól; ennek megszegése a kulcs letiltásához vezethet.
 
 ## eBay Browse API – fontos részletek
 
