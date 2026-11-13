@@ -38,7 +38,8 @@ Saját használatra készülő webalkalmazás, amely EU-s eBay-oldalakon hibás 
 - Minden kereséshez:
   - `X-EBAY-C-MARKETPLACE-ID`: a bekapcsolt EU-s oldal (`EBAY_DE`, `EBAY_AT`, `EBAY_FR`, `EBAY_IT`, …)
   - `X-EBAY-C-ENDUSERCTX: contextualLocation=country=HU`
-  - filter: `conditionIds:{7000}`, `deliveryCountry:HU`, `itemLocationRegion:EUROPEAN_UNION`, `buyingOptions:{…}`
+  - filter: `conditionIds:{7000}`, `deliveryCountry:HU`, `itemLocationRegion:EUROPEAN_UNION`
+  - A `buyingOptions` szűrő minden keresésnél kötelező, mert nélküle az eBay kihagyja a kizárólag licitálható hirdetéseket. Mindkét típushoz használd a `buyingOptions:{AUCTION|FIXED_PRICE}` értéket. A fix áras, ajánlattételt is engedő hirdetések a `FIXED_PRICE` szűréssel érkeznek.
   - kategória: Video Game Consoles (az azonosítót a Taxonomy API-val ellenőrizd, ne feltételezd)
 - Az `itemLocationRegion` és az `itemLocationCountry` nem használható együtt.
 - Státuszellenőrzés: `getItems` (max. 20 tétel/hívás).

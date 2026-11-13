@@ -199,7 +199,10 @@ def main() -> int:
                 params={
                     "q": "ps5",
                     "category_ids": category_id,
-                    "filter": "conditionIds:{7000},deliveryCountry:HU,itemLocationRegion:EUROPEAN_UNION",
+                    "filter": (
+                        "conditionIds:{7000},deliveryCountry:HU,itemLocationRegion:EUROPEAN_UNION,"
+                        "buyingOptions:{AUCTION|FIXED_PRICE}"
+                    ),
                     "limit": 10,
                 },
                 headers={
@@ -216,7 +219,6 @@ def main() -> int:
             print("4. Próbakeresés: az eBay nem adott érvényes találatszámot.")
             return 1
         print(f"4. Próbakeresés: sikerült. Összes találat: {total}.")
-        print("   Az eBay alapértelmezésben csak fix áron is megvehető tételeket ad vissza.")
         for index, item in enumerate(objects(results.get("itemSummaries"))[:10], 1):
             print(f"   {index}. találat:")
             for line in listing_lines(item):

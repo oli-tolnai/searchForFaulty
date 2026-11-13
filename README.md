@@ -39,10 +39,10 @@ tíz tételt mutat, és jelzi a nem EU-s vagy ismeretlen termékhelyet. A token
 értéke és az eladói adatok nem kerülnek a kimenetbe. A szkript nem ment
 hirdetéseket vagy válaszokat fájlba, illetve adatbázisba.
 
-Az [eBay Browse dokumentációja](https://developer.ebay.com/develop/api/buy/browse_api/item/search)
-szerint a próbában használt szűrővel a kizárólag licitálható hirdetések
-kimaradnak: az eBay alapból csak olyan tételeket ad vissza, amelyek fix
-áron is megvehetők. A hiányzó vagy számított szállítási díj „Nem ismert”.
+A `buyingOptions:{AUCTION|FIXED_PRICE}` szűrővel a próbakeresés aukciókat és
+fix áras hirdetéseket is kér. Minden tételnél megjelennek az eBay által
+visszaadott hirdetéstípusok, köztük az ajánlattétel, ha elérhető.
+A hiányzó vagy számított szállítási díj „Nem ismert”.
 A sikeres tokenkérés önmagában még nem igazolja a Browse-hozzáférést.
 Az eBay-adatok használatára az [API License Agreement](https://developer.ebay.com/develop/api-license-agreement)
 vonatkozik.

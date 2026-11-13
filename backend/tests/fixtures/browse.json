@@ -4,14 +4,14 @@
     {
       "title": "Fixture PS5",
       "price": {"value": "100.00", "currency": "EUR"},
-      "buyingOptions": ["FIXED_PRICE"],
+      "buyingOptions": ["FIXED_PRICE", "BEST_OFFER"],
       "itemLocation": {"country": "DE"},
       "itemWebUrl": "https://example.test/fixed",
       "seller": {"username": "fixture-seller", "feedbackScore": 56789}
     },
     {
       "title": "Fixture PS5 auction",
-      "buyingOptions": ["FIXED_PRICE", "AUCTION"],
+      "buyingOptions": ["AUCTION"],
       "currentBidPrice": {"value": "75.00", "currency": "EUR"},
       "bidCount": 0,
       "itemEndDate": "2026-12-31T12:00:00Z",

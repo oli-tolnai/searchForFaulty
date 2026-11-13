@@ -27,14 +27,20 @@ def test_check_uses_verified_category_and_prints_diagnostics(
         params={
             "q": "ps5",
             "category_ids": "999991",
-            "filter": "conditionIds:{7000},deliveryCountry:HU,itemLocationRegion:EUROPEAN_UNION",
             "limit": "10",
         },
     ).respond(json=payload("browse"))
 
     assert check_ebay.main() == 0
     assert search.called
-    headers = search.calls.last.request.headers
+    request = search.calls.last.request
+    assert request.url.params["filter"].split(",") == [
+        "conditionIds:{7000}",
+        "deliveryCountry:HU",
+        "itemLocationRegion:EUROPEAN_UNION",
+        "buyingOptions:{AUCTION|FIXED_PRICE}",
+    ]
+    headers = request.headers
     assert headers["X-EBAY-C-MARKETPLACE-ID"] == "EBAY_DE"
     assert headers["X-EBAY-C-ENDUSERCTX"] == "contextualLocation=country=HU"
     assert headers["Authorization"] == "Bearer fixture-application-token"
@@ -45,6 +51,8 @@ def test_check_uses_verified_category_and_prints_diagnostics(
         assert "alkalmazástokennel nem érhető el (HTTP 403)" in output
     assert "999991; eltér" in output
     assert "Összes találat: 2" in output
+    assert "Hirdetéstípus: Fix ár, Ajánlattétel\n" in output
+    assert "Hirdetéstípus: Aukció\n" in output
     assert "Termék helye: DE\n" in output
     assert "Termék helye: GB — FIGYELEM: nem EU-tagállam" in output
     assert "Szállítás Magyarországra: Nem ismert" in output
