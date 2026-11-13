@@ -2,6 +2,7 @@ import logging
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
+from threading import Lock
 
 import httpx
 
@@ -40,8 +41,13 @@ class EbayAuth:
         self._settings = settings
         self._now = now
         self._token: ApplicationToken | None = None
+        self._lock = Lock()
 
-    def get_token(self) -> ApplicationToken:
+    def get_token(self, before_request: Callable[[], None] | None = None) -> ApplicationToken:
+        with self._lock:
+            return self._get_token(before_request)
+
+    def _get_token(self, before_request: Callable[[], None] | None) -> ApplicationToken:
         now = self._now()
         if self._token is not None and self._token.expires_at - now > REFRESH_MARGIN:
             return self._token
@@ -55,6 +61,8 @@ class EbayAuth:
             )
 
         try:
+            if before_request is not None:
+                before_request()
             response = self._client.post(
                 f"{self._settings.ebay_api_url}/identity/v1/oauth2/token",
                 auth=(client_id, client_secret),

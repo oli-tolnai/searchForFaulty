@@ -5,8 +5,8 @@ from pydantic import ValidationError
 
 from app.adapters.ebay_auth import EbayAuth, EbayAuthError, redact
 from app.config import Settings
+from app.geography import EU_COUNTRIES
 from scripts.ebay_diagnostics import (
-    EU_COUNTRIES,
     UNKNOWN,
     display,
     item_country,

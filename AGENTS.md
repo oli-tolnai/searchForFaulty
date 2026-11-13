@@ -82,6 +82,7 @@ pymanager exec -V:3.14 -m venv .venv
 .\.venv\Scripts\ruff.exe check .
 .\.venv\Scripts\python.exe -m scripts.check_ebay  # Kitöltött gyökérszintű .env szükséges
 .\.venv\Scripts\python.exe -m scripts.compare_location_filters  # Éles helyszűrők összevetése
+.\.venv\Scripts\python.exe -m scripts.verify_or_query  # Az eBay VAGY-keresés ellenőrzése
 .\.venv\Scripts\python.exe -m uvicorn app.main:app
 ```
 

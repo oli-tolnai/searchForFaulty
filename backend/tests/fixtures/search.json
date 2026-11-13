@@ -1,0 +1,13 @@
+{
+  "total": 8,
+  "warnings": [{"errorId": 123, "message": "Fixture warning", "seller": {"username": "fixture-seller"}}],
+  "itemSummaries": [
+    {"itemId": "auction", "title": "PS5 Slim Konsole", "itemWebUrl": "https://example.test/auction", "itemLocation": {"country": "DE"}, "buyingOptions": ["AUCTION"], "price": {"value": "130", "currency": "EUR"}, "currentBidPrice": {"value": "35", "currency": "EUR"}, "bidCount": 2, "itemEndDate": "2099-01-01T00:00:00Z", "shippingOptions": [{"shippingCost": {"value": "15", "currency": "EUR"}}]},
+    {"itemId": "fixed", "title": "PS5 Pro Konsole", "itemWebUrl": "https://example.test/fixed", "itemLocation": {"country": "DE"}, "buyingOptions": ["FIXED_PRICE", "BEST_OFFER"], "price": {"value": "30", "currency": "EUR"}, "shippingOptions": [{"shippingCost": {"value": "0", "currency": "EUR"}}], "seller": {"username": "fixture-seller"}},
+    {"itemId": "unknown-shipping", "title": "Xbox Series S", "itemWebUrl": "https://example.test/xbox", "itemLocation": {"country": "DE"}, "buyingOptions": ["FIXED_PRICE"], "price": {"value": "40", "currency": "EUR"}},
+    {"itemId": "expired", "title": "Xbox Series X", "itemWebUrl": "https://example.test/ended", "itemLocation": {"country": "DE"}, "buyingOptions": ["AUCTION"], "currentBidPrice": {"value": "1", "currency": "EUR"}, "itemEndDate": "2000-01-01T00:00:00Z"},
+    {"itemId": "non-eu", "itemLocation": {"country": "US"}},
+    {"itemId": "no-country"},
+    {"itemId": "fixed", "title": "PS5 Pro Konsole", "itemWebUrl": "https://example.test/fixed", "itemLocation": {"country": "DE"}, "buyingOptions": ["FIXED_PRICE"], "price": {"value": "30", "currency": "EUR"}}
+  ]
+}
