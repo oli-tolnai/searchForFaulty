@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { callWebapp } from '../tools/measure_webapp.mjs';
+import { apiErrorCode, callWebapp, searchErrorLines } from '../tools/measure_webapp.mjs';
 import { fixture, response, runtime } from './helpers.mjs';
 
 const unauthorized = { ok: false, error: { code: 'unauthorized' } };
@@ -129,6 +129,75 @@ test('OAuth configuration errors and transient 429 handling never surface the up
   assert.equal(output.data.api_calls, 3);
   assert.deepEqual(app.sleeps, [1000]);
   assert.doesNotMatch(JSON.stringify(output) + app.log.join(' '), /fixture-cert-id/);
+});
+
+test('OAuth permission exceptions are distinguishable from transport failures in a search', () => {
+  for (const [reason, code, message] of [
+    ['You do not have permission to call UrlFetchApp.fetch. Required permissions: fixture-cert-id',
+      'script_permission', /Google Apps Script nem kapott engedélyt/],
+    ['Address unavailable: fixture-cert-id', 'ebay_transport', /Hálózati hiba/],
+  ]) {
+    const app = runtime({ oauth: () => { throw new Error(reason); } });
+    const { data } = app.post('search', { countries: ['DE'], queries: ['ps5'] });
+    const [query] = data.countries[0].queries;
+    assert.equal(data.status, 'error');
+    assert.equal(data.daily_api_calls, 1);
+    assert.equal(data.daily_browse_calls, 0);
+    assert.equal(query.error_code, code);
+    assert.match(query.error, message);
+    assert.doesNotMatch(JSON.stringify(data), /fixture-cert-id/);
+  }
+});
+
+test('editor OAuth diagnosis makes a fresh request and logs only status and the OAuth error code', () => {
+  const app = runtime({ oauth: () => response(401, {
+    error: 'invalid_client', error_description: 'fixture-cert-id', access_token: 'fixture-application-token',
+  }) });
+  app.cache.set('ebay:application_token', { value: 'cached-secret-token', expires: Infinity });
+  app.context.diagnoseEbayToken();
+  assert.equal(app.calls.length, 1);
+  assert.equal(app.calls[0].payload.grant_type, 'client_credentials');
+  assert.deepEqual(app.log, ['HTTP 401 | error: invalid_client']);
+  assert.equal(app.cache.get('ebay:application_token').value, 'cached-secret-token');
+  const successful = runtime();
+  successful.context.diagnoseEbayToken();
+  assert.deepEqual(successful.log, ['HTTP 200']);
+  assert.equal(successful.cache.size, 0);
+});
+
+test('editor OAuth diagnosis redacts credentials in an exception and an unsafe error field', () => {
+  const basic = Buffer.from('fixture-app-id:fixture-cert-id').toString('base64');
+  const app = runtime({ oauth: () => {
+    throw new Error('You do not have permission to call UrlFetchApp.fetch. '
+      + 'fixture-app-id fixture-cert-id Basic ' + basic + ' Bearer unknown-token '
+      + 'test-client-token https://example.test/private');
+  } });
+  app.context.diagnoseEbayToken();
+  assert.match(app.log.join(' '), /You do not have permission to call UrlFetchApp\.fetch/);
+  assert.doesNotMatch(app.log.join(' '), /fixture|unknown-token|test-client-token|https|example\.test/);
+  assert.ok(!app.log.join(' ').includes(basic));
+  const unsafe = runtime({ oauth: () => response(400, { error: 'unrecognized-secret', error_description: 'private' }) });
+  unsafe.context.diagnoseEbayToken();
+  assert.deepEqual(unsafe.log, ['HTTP 400 | error: [KITAKARVA]']);
+});
+
+test('measurement groups failed queries and prints safe API error codes', () => {
+  const token = 'client.token[secret]';
+  const message = 'A kérés sikertelen';
+  const countries = [
+    { queries: [{ error: message }, { error: null }] },
+    { queries: [{ error: message }, { error: 'Hálózati hiba' }] },
+    { queries: [{ error: token + ' https://example.test/exec Bearer upstream-token' }] },
+  ];
+  for (const status of ['error', 'partial']) {
+    assert.deepEqual(searchErrorLines({ status, countries }, [token]), [
+      '2× ' + message, '1× Hálózati hiba', '1× [KITAKARVA] [KITAKARVA] [KITAKARVA]',
+    ]);
+  }
+  assert.deepEqual(searchErrorLines({ status: 'success', countries }, [token]), []);
+  assert.equal(apiErrorCode({ error: { code: 'script_permission' } }, [token]), 'script_permission');
+  assert.equal(apiErrorCode({ error: { code: 'https://example.test/exec' } }, [token]), '[KITAKARVA]');
+  assert.equal(apiErrorCode({ error: { code: 'secret_token' } }, ['secret_token']), '[KITAKARVA]');
 });
 
 test('daily Browse quota prevents a further network attempt', () => {

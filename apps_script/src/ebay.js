@@ -1,4 +1,5 @@
 const EBAY_ROOT = 'https://api.ebay.com';
+const OAUTH_URL = EBAY_ROOT + '/identity/v1/oauth2/token';
 const OAUTH_CACHE_KEY = 'ebay:application_token';
 const EBAY_DAILY_LIMIT = 5000;
 
@@ -93,9 +94,21 @@ function fetchOptions(options) {
 function fetchEbay(url, options) {
   try {
     return UrlFetchApp.fetch(url, fetchOptions(options));
-  } catch {
+  } catch (error) {
+    const message = error?.message || String(error);
+    if (/you do not have permission|authorization is required|not authorized|insufficient (?:permissions?|authentication scopes?)|required permissions?|not permitted/i.test(message)) {
+      throw new AppError('script_permission', 'A Google Apps Script nem kapott engedélyt a külső kérésekhez. Futtasd a diagnoseEbayToken függvényt a szerkesztőben, és add meg az engedélyt, ha a Google kéri.');
+    }
     throw new AppError('ebay_transport', 'Hálózati hiba vagy időtúllépés az eBay-hívásnál.');
   }
+}
+
+function oauthRequestOptions(basic) {
+  return {
+    method: 'post',
+    headers: { Authorization: 'Basic ' + basic },
+    payload: { grant_type: 'client_credentials', scope: 'https://api.ebay.com/oauth/api_scope' },
+  };
 }
 
 function applicationToken(credentials, countCall) {
@@ -103,14 +116,10 @@ function applicationToken(credentials, countCall) {
   const cached = cache.get(OAUTH_CACHE_KEY);
   if (cached) return cached;
   const basic = Utilities.base64Encode(credentials.clientId + ':' + credentials.secret);
-  const options = {
-    method: 'post',
-    headers: { Authorization: 'Basic ' + basic },
-    payload: { grant_type: 'client_credentials', scope: 'https://api.ebay.com/oauth/api_scope' },
-  };
+  const options = oauthRequestOptions(basic);
   const fetchToken = () => {
     countCall('oauth', 1);
-    return fetchEbay(EBAY_ROOT + '/identity/v1/oauth2/token', options);
+    return fetchEbay(OAUTH_URL, options);
   };
   let response = fetchToken();
   if (response.getResponseCode() === 429) {
@@ -128,6 +137,46 @@ function applicationToken(credentials, countCall) {
   }
   cache.put(OAUTH_CACHE_KEY, payload.access_token, Math.min(payload.expires_in, 21600));
   return payload.access_token;
+}
+
+function diagnoseEbayToken() {
+  let credentials;
+  try {
+    credentials = ebayCredentials();
+    dailyCounter('oauth', 1);
+  } catch (error) {
+    if (!(error instanceof AppError)) throw error;
+    Logger.log(error.message);
+    return;
+  }
+
+  const basic = Utilities.base64Encode(credentials.clientId + ':' + credentials.secret);
+  const props = PropertiesService.getScriptProperties();
+  const clientTokens = (props.getProperty('CLIENT_TOKENS') || '').split(',').map(token => token.trim());
+  const secrets = [credentials.clientId, credentials.secret, basic,
+    CacheService.getScriptCache().get(OAUTH_CACHE_KEY), ...clientTokens];
+  let response;
+  try {
+    response = UrlFetchApp.fetch(OAUTH_URL, fetchOptions(oauthRequestOptions(basic)));
+  } catch (error) {
+    const message = redactText(error?.message || String(error), secrets)
+      .replace(/\b(?:Basic|Bearer)\s+[\w+/.=~-]+/gi, '[KITAKARVA]')
+      .replace(/https?:\/\/[^\s<>"']+/gi, '[KITAKARVA]');
+    Logger.log(message);
+    return;
+  }
+
+  const payload = responseObject(response);
+  const errorCodes = [
+    'invalid_request', 'invalid_client', 'invalid_grant', 'unauthorized_client',
+    'unsupported_grant_type', 'invalid_scope', 'server_error', 'temporarily_unavailable',
+  ];
+  let line = 'HTTP ' + response.getResponseCode();
+  if (payload.error != null) {
+    const code = redactText(payload.error, [...secrets, nonempty(payload.access_token)]);
+    line += ' | error: ' + (errorCodes.includes(code) ? code : '[KITAKARVA]');
+  }
+  Logger.log(line);
 }
 
 function browseHeaders(token) {

@@ -83,6 +83,16 @@ try {
 
 A mérő kiírja az első és öt további ping idejét, a teljes keresés idejét, találatait, eBay-hívásait és a hibás token ellenőrzését. Az első ping mutathatja a hidegindítást, ha a Google éppen új futtatókörnyezetet indított. A méréshez csak az összesítő sorokat küldd vissza. A webapp-cím, kliens-token és eBay-kulcs maradjon a saját gépeden.
 
+Sikertelen vagy részleges keresésnél a mérő megmutatja a lekérdezéshibákat és az előfordulásuk számát. Ha a webapp hibaválaszt ad, a mérő kiírja a hibakódot.
+
+## eBay-token diagnosztikája
+
+1. Nyisd meg a **Console Deal Finder** projekt **Szerkesztő** nézetét. Ha a feltöltés óta nyitva van, frissítsd az oldalt.
+2. A fájllistában válaszd az **ebay.gs** fájlt, majd a felső függvénylistában a **diagnoseEbayToken** függvényt. Kattints a **Futtatás** gombra.
+3. Ha a Google engedélyt kér a külső kérésekhez, add meg az engedélyt a projekt tulajdonosaként. Ezután ellenőrizd a **Végrehajtási napló** panelt. Ha a függvény még nem futott le, indítsd el újra.
+
+A diagnosztika egy friss OAuth-kérést indít. A naplóban például `HTTP 200`, `HTTP 401 | error: invalid_client` vagy a kitakart Apps Script-kivétel jelenik meg. A függvényhez elég a forrás feltöltése. A `/exec` címen futó verziót a **Bevezetés → Bevezetések kezelése** alatt lehet frissíteni. [Google útmutató az Apps Script engedélyhibáihoz](https://developers.google.com/apps-script/guides/support/troubleshooting)
+
 ## A kliensnek szánt API
 
 A `POST` JSON-törzse `token`, `action`, `params` és opcionális `request_id` mezőből áll. A felső mérethatár 10 240 bájt. Az egyszerű, legfeljebb 128 karakteres kérésazonosítót a válasz visszaadja. A `doGet` csak az API nevét adja vissza.

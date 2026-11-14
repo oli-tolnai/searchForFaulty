@@ -60,13 +60,50 @@ async function measure(url, token, action) {
   return { response, time: Math.round(performance.now() - started) };
 }
 
+function safeErrorText(value, secrets) {
+  let message = value.replace(/[\p{Cc}\p{Cf}]/gu, ' ');
+  const values = [...new Set(secrets.filter(Boolean))].sort((a, b) => b.length - a.length);
+  if (values.length) {
+    const pattern = values.map(secret => secret.replace(/[.*+?^$(){}|[\]\\]/g, '\\$&')).join('|');
+    message = message.replace(new RegExp(pattern, 'gi'), '[KITAKARVA]');
+  }
+  return message
+    .replace(/\b(?:[a-z][a-z\d+.-]*:\/\/|www\.)[^\s<>"']+/gi, '[KITAKARVA]')
+    .replace(/(?:\b[a-z\d-]+\.)+[a-z]{2,}(?::\d+)?\/[^\s<>"']*/gi, '[KITAKARVA]')
+    .replace(/\b(?:Bearer|Basic)\s+[\w+/.=~-]+/gi, '[KITAKARVA]')
+    .replace(/(\b(?:access_token|refresh_token|client[_-]?(?:id|secret|token)|token|api[_-]?key)["']?\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s,;]+)/gi, '$1[KITAKARVA]')
+    .trim();
+}
+
+export function searchErrorLines(data, secrets) {
+  if (!['partial', 'error'].includes(data.status) || !Array.isArray(data.countries)) return [];
+  const counts = new Map();
+  for (const country of data.countries) {
+    if (!Array.isArray(country?.queries)) continue;
+    for (const query of country.queries) {
+      if (typeof query?.error !== 'string') continue;
+      const message = safeErrorText(query.error, secrets);
+      if (message) counts.set(message, (counts.get(message) || 0) + 1);
+    }
+  }
+  return Array.from(counts, ([message, count]) => count + '× ' + message);
+}
+
+export function apiErrorCode(response, secrets) {
+  const code = response.error?.code;
+  if (typeof code !== 'string' || !/^[a-z][a-z0-9_]{0,63}$/.test(code)) return '[KITAKARVA]';
+  return safeErrorText(code, secrets);
+}
+
 async function main(env) {
   const url = webappUrl(env.CDF_WEBAPP_URL);
   const token = env.CDF_TOKEN;
   if (!token) throw new Error('A CDF_TOKEN környezeti változó hiányzik.');
+  const secrets = [token, url.href, env.EBAY_CLIENT_ID, env.EBAY_CLIENT_SECRET];
   for (let index = 0; index < 6; index++) {
     const { response, time } = await measure(url, token, 'ping');
-    if (!response.ok || typeof response.data.version !== 'string'
+    if (!response.ok) throw new Error('A ping sikertelen. Hibakód: ' + apiErrorCode(response, secrets));
+    if (typeof response.data.version !== 'string'
       || typeof response.data.server_time !== 'string' || !Number.isFinite(Date.parse(response.data.server_time))) {
       throw new Error('A ping sikertelen. Ellenőrizd a kliens-tokent és a webapp verzióját.');
     }
@@ -74,8 +111,9 @@ async function main(env) {
     console.log(label + ': ' + time + ' ms');
   }
   const { response, time } = await measure(url, token, 'search');
+  if (!response.ok) throw new Error('A keresés sikertelen. Hibakód: ' + apiErrorCode(response, secrets));
   const data = response.data;
-  if (!response.ok || !['success', 'partial', 'error'].includes(data.status) || !Array.isArray(data.listings)
+  if (!['success', 'partial', 'error'].includes(data.status) || !Array.isArray(data.listings)
     || !Array.isArray(data.unknown_shipping) || !Number.isSafeInteger(data.api_calls) || data.api_calls < 0) {
     throw new Error('A keresés nem adott érvényes mérési adatot.');
   }
@@ -84,11 +122,13 @@ async function main(env) {
   console.log('Találatok: ' + (data.listings.length + data.unknown_shipping.length));
   console.log('Ismeretlen szállítás: ' + data.unknown_shipping.length);
   console.log('Felhasznált eBay API-hívások: ' + data.api_calls);
+  for (const line of searchErrorLines(data, secrets)) console.log(line);
   const invalidToken = randomBytes(32).toString('base64url');
   const invalid = await callWebapp(url, invalidToken, 'ping');
   const denied = invalid.ok === false && invalid.error.code === 'unauthorized'
     && Object.keys(invalid).length === 2 && Object.keys(invalid.error).length === 1;
   console.log('Hibás token elutasítva: ' + (denied ? 'igen' : 'nem'));
+  if (!invalid.ok) console.log('Hibakód: ' + apiErrorCode(invalid, [...secrets, invalidToken]));
   if (!denied || data.status !== 'success') process.exitCode = 1;
 }
 

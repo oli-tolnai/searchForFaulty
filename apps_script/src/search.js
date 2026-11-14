@@ -58,7 +58,10 @@ function searchEbay(countries, queries, clientSecrets, filters = {}) {
     token = applicationToken(credentials, countCall);
   } catch (error) {
     if (!(error instanceof AppError)) throw error;
-    for (const state of states) state.error = error.message;
+    for (const state of states) {
+      state.error = error.message;
+      state.errorCode = error.code;
+    }
   }
 
   const pending = token ? states.map(state => ({ state, page: 0, retry: false })) : [];
@@ -175,6 +178,7 @@ function collectSearchResults(states, searchedAt, now, filters, calls, daily) {
     byCountry.get(state.country).push({
       query: state.query, status: state.error ? 'error' : 'success',
       error: state.error, warnings: state.warnings, count: state.listings.length,
+      ...(state.errorCode ? { error_code: state.errorCode } : {}),
     });
     filteredNonEu += state.filteredNonEu;
     for (const item of state.listings) {
