@@ -268,7 +268,7 @@ A Flutter-app az utolsó sikeres keresés eredményét és a szinkronizált áll
 
 ## 13. Technikai és hibakezelési követelmények
 
-- Párhuzamos, de API-korlátokat tiszteletben tartó lekérdezés (Apps Scriptben `UrlFetchApp.fetchAll` kötegekben; mérve 4-es kötegekkel 54 hívás 10 mp, hiba nélkül)
+- Párhuzamos, de API-korlátokat tiszteletben tartó lekérdezés (Apps Scriptben `UrlFetchApp.fetchAll` kötegekben; a telepített webappon át mérve a teljes keresés 8-as kötegekkel 9,2 mp, 4-es kötegekkel 15 mp, hiba nélkül; a webapp pingje 1–2 mp)
 - Hálózati hibák, rate limit (HTTP 429) és időtúllépések kezelése, exponenciális visszalépéssel
 - Napi API-hívásszám nyilvántartása
 - Deduplikáció

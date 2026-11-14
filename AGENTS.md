@@ -74,7 +74,7 @@ docs/               vizsgálatok, jelentések
 
 **Apps Script-szabályok:**
 - A `src/` kód a Google V8 futtatókörnyezetben fut, nem Node.js-ben: Node- és böngésző-API-t (require, fs, fetch, setTimeout, Buffer) ne használj; ES-modul import/export helyett globális függvények / objektumok. A tesztek a `src/` fájlokat Node.js `vm` modullal vagy hasonló módon töltsék be.
-- eBay-hívás `UrlFetchApp.fetch` / `fetchAll` (`muteHttpExceptions: true`), párhuzamosan kötegekben (mérve: 4-es kötegek, 54 hívás 10 mp, 0 hiba).
+- eBay-hívás `UrlFetchApp.fetch` / `fetchAll` (`muteHttpExceptions: true`), párhuzamosan kötegekben. Mérve a telepített webappon át: 4-es kötegekkel a teljes keresés 15 mp, 8-as kötegekkel 9,2 mp, 0 hiba – a `FETCH_BATCH_SIZE` ajánlott értéke 8.
 - eBay-token a `CacheService`-ben, lejáratig. Hívásszámláló a Script Properties-ben, napi bontásban.
 - Sheets-írás `LockService.getScriptLock()` alatt, kötegelten (`setValues`), hálózati hívás zár alatt nem futhat. A szöveges cellák elé képletinjekció ellen védelem (pl. a `=`, `+`, `-`, `@` kezdetű értékek szövegként tárolása).
 - Webapp: `doPost(e)`, JSON be és ki, a válaszban alkalmazásszintű `ok` / `error.code` (HTTP-státusz nem állítható).
