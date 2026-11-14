@@ -1,8 +1,10 @@
 # Console Deal Finder – fejlesztési terv
 
+> **Architektúra (2026. november, mérések alapján döntve):** Flutter-alkalmazás Androidra és Windowsra, Google Apps Script háttérrendszer, Google Sheets adattár, ntfy-értesítések. Részletek: 19. pont. A korábbi Python (FastAPI) + React prototípus (`backend/`, `frontend/`) referencia, nem fejlesztjük tovább.
+
 ## 1. A projekt célja
 
-Készíts egy modern, magyar nyelvű, reszponzív webalkalmazást **Console Deal Finder** néven.
+Készíts egy modern, magyar nyelvű alkalmazást **Console Deal Finder** néven, **Androidra és Windowsra** (Flutter), közös, Google Apps Scriptben futó háttérrendszerrel (19. pont).
 
 Az alkalmazás különböző online piactereken hibás, nem működő, részben működő vagy alkatrésznek árult játékkonzolokat keres, és az eredményeket egyetlen áttekinthető felületen listázza.
 
@@ -20,7 +22,7 @@ Első körben:
 - Xbox Series X
 - Xbox Series S
 
-A rendszer felépítése tegye lehetővé további modellek hozzáadását, például Nintendo Switch, Switch OLED és Steam Deck. A modellek (név, eBay-kategória, felismerési szabályok) konfigurációs adatként legyenek tárolva, ne a kódba égetve.
+A rendszer felépítése tegye lehetővé további eszközök hozzáadását. Tervezett bővítés (6. fázis), a javíthatóság és a kereslet alapján: **Nintendo Switch** (V1, V2, Lite, OLED), majd **Steam Deck**. Apple termékek (MacBook, iPhone) csak később, kötelező „iCloud-/aktiválási zár” jelöléssel („iCloud”, „gesperrt”, „locked”, „Aktivierungssperre”), mert a zárolt készülék gyakorlatilag csak alkatrésznek jó. Minden új eszközcsoport keresésenként kb. +27 eBay-hívás. A modellek (név, eBay-kategória, felismerési szabályok) konfigurációs adatként legyenek tárolva, ne a kódba égetve.
 
 ## 3. Hirdetési források
 
@@ -124,7 +126,7 @@ Szűrők:
 - Aukció / fix ár / mindkettő
 - Kiegészítő keresési kulcsszavak szerkesztése
 
-A beállítások maradjanak meg a következő megnyitásra (SQLite-ban a backendben).
+A szűrés a már letöltött találatokon azonnal, új API-hívás nélkül működjön. A beállítások maradjanak meg, és szinkronizálódjanak a két eszköz között (Google Sheets, 19. pont).
 
 ## 5. Keresési kulcsszavak
 
@@ -182,12 +184,13 @@ Minden hirdetésnél látható:
 - Aukció vagy fix ár
 - Licitek száma, ha elérhető
 - Aukció lejárata és visszaszámláló, ha releváns
-- Rövid hibaleírás / leírásrészlet
+- **„Leírás” gomb:** kattintásra (egy `getItem` hívással) megjelenik az eladó állapotra vonatkozó megjegyzése (`conditionDescription`) és a leírás szövege, eredeti nyelven. Fordítás fizetős API nélkül: **„Fordítás a Google Fordítóval”** gomb (a böngészőben nyitja meg a szöveget, `translate.google.com/?sl=auto&tl=hu&text=…`). A DeepL API Free 2026-ban megszűnt, az Azure Translator beállítása túl bonyolult volt – ezek nem használhatók.
+- „Tiltott (banned) konzol”, „Korai licit – a végső ár várhatóan magasabb” (aukció, több mint 2 nap van hátra) és „Lehet, hogy nem hibás” jelölés (a cím új állapotra utal, hibára utaló szó nélkül; a tétel nem rejtendő el)
 - Jelzés, ha a hiba csak a címből/leírásból derül ki (nem „For parts” állapotú)
 - **„Utoljára ellenőrizve: …”** időpont
 - Közvetlen eredeti hirdetéslink
 
-A kártyáról lehessen megnyitni az eredeti hirdetést. Ne generálj hamis linkeket vagy termékazonosítókat.
+A kártyáról lehessen megnyitni az eredeti hirdetést (a rendszer böngészőjében). Ne generálj hamis linkeket vagy termékazonosítókat.
 
 ## 7. Rendezés és szűrés
 
@@ -210,7 +213,7 @@ Minden hirdetésnél:
 - **Kedvencekhez adás** – mentés saját listába
 - **Elrejtés** – ne jelenjen meg a normál eredmények között, de visszaállítható legyen
 
-Legyen külön **Kedvencek** és **Elrejtett hirdetések** oldal. A mentések alkalmazás-újraindítás után is maradjanak meg (SQLite).
+Legyen külön **Kedvencek** és **Elrejtett hirdetések** oldal. A mentések a Google Sheetsben tárolódnak, újraindítás után is megmaradnak, és a telefonon és a gépen ugyanazok (19. pont).
 
 A kedvencek oldalon is látszódjon a státusz: a lejárt/eladott kedvenc maradjon a kedvencek között, de egyértelműen „Lejárt / nem elérhető” jelöléssel.
 
@@ -228,45 +231,44 @@ A találatok elérhetőségét ellenőrizni kell, hogy az eladott, törölt vagy
 
 ## 10. Felhasználói felület
 
-Modern, letisztult, **sötét témájú**, magyar nyelvű, mobilon és asztali gépen is használható felület.
+Modern, letisztult, **sötét témájú**, magyar nyelvű **Flutter-alkalmazás** Androidra és Windowsra, telefonos és asztali elrendezéssel. Böngészőben futó változat (és PWA) nem készül; a böngészőt csak az eredeti hirdetés és a fordítás megnyitására használja.
 
-Főoldali elemek:
+Fő képernyők / elemek:
 
-1. Felső navigáció (Keresés, Kedvencek, Elrejtett, Beállítások)
+1. Navigáció: Keresés, Kedvencek, Figyelt aukciók, Elrejtett, Beállítások
 2. Szűrők és keresési beállítások
-3. Kiemelt **Keresés indítása** gomb
-4. Találatok száma
-5. Kártyás vagy táblázatos eredménylista
-6. Lapozás vagy „Továbbiak betöltése”
-7. Magyar piacterek keresőlinkjei (Jófogás, HardverApró, Facebook Marketplace) külön blokkban
-8. Napi API-hívásszám kijelzése
+3. Kiemelt **Keresés indítása** gomb, a keresés idejére állapotjelzővel
+4. Összesítő: találatok száma (szűrt / összes), típusonként kiszűrt tételek, API-hívások, a keresés időpontja
+5. Kártyás eredménylista, a végén az „Ismeretlen szállítási díj” blokk
+6. Figyelés beállítása egy aukcióra (értesítési határár, 20. pont)
+7. Beállítások: Apps Script webapp-cím és titkos token (biztonságos tárolóban), ntfy-csatorna neve
+8. Később: magyar piacterek keresőlinkjei (Jófogás, HardverApró, Facebook Marketplace)
 
-A keresés közben jelenjen meg a folyamat állapota és a forrásonkénti siker/hiba, hogy egy részlegesen sikeres futás ne tűnjön teljesnek.
+A keresés közben jelenjen meg a folyamat állapota, utána a forrásonkénti siker/hiba, hogy egy részlegesen sikeres futás ne tűnjön teljesnek.
 
 ## 11. Technológia
 
-Javasolt stack:
-
-- **Frontend:** React + TypeScript + Tailwind CSS + Vite
-- **Backend:** Python + FastAPI + HTTPX
-- **Adatbázis:** SQLite
-- **Adatforrás:** eBay Browse API, moduláris további adapterek (közös adapter-interfész: `search()`, `check_status()`)
+- **Kliens:** Flutter (Dart), Android és Windows, egy kódbázisból
+- **Háttérrendszer:** Google Apps Script (V8 JavaScript), a felhasználó privát Google-projektjében, webapp-végponttal és időzített triggerekkel
+- **Adattár:** Google Sheets (a felhasználó saját táblázata)
+- **Értesítés:** ntfy (ingyenes Android-app, HTTP-ből küldhető)
+- **Adatforrás:** eBay Browse API
 - **Árfolyam:** Európai Központi Bank napi referencia-árfolyama (ingyenes), kézi felülírási lehetőséggel
-- **Futtatás:** helyben a saját számítógépen; opcionálisan Docker
+- **Fejlesztés:** az Apps Script-kód a repóban (`apps_script/`), Node.js alatti tesztekkel, feltöltés `clasp`-pal; a Flutter-kód a `flutter_app/` mappában
 
-Az API-kulcsokat és titkokat kizárólag backend-környezetben (`.env`) tárold. A frontendbe nem kerülhetnek bele. Az eBay OAuth tokent a backend kéri le és cache-eli a lejáratáig (kb. 2 óra).
+Az eBay-kulcsok kizárólag az Apps Script **Script Properties** tárában vannak; a kliensbe, a táblázatba, a repóba és a naplóba nem kerülhetnek. A kliens csak a webapp címét és egy saját titkos tokent ismeri, ezeket a rendszer biztonságos tárolójában őrzi (`flutter_secure_storage`).
 
-Ne használj fizetős AI API-t. A rendszer személyes használatra 0 Ft/hó költségű: az eBay Developer Program és a Browse API alapkeretben ingyenes, az ECB-árfolyam ingyenes, és minden helyben fut.
+Ne használj fizetős AI API-t vagy fizetős szolgáltatást. A rendszer 0 Ft/hó: az eBay Browse API alapkeretben, az Apps Script és a Sheets fogyasztói Google-fiókkal, az ntfy publikus szolgáltatása és az ECB-árfolyam ingyenes. Saját szervert nem üzemeltetünk.
 
 ## 12. Működés internet nélkül
 
-Mivel a backend és az SQLite helyben fut, a korábban tárolt találatok internet nélkül is megjeleníthetők; ehhez nincs szükség PWA-ra vagy service workerre. A megjelenítés **kizárólag egyértelmű „Korábban mentett / offline” jelzéssel** történhet.
+A Flutter-app az utolsó sikeres keresés eredményét és a szinkronizált állapotot helyben gyorsítótárazza, így internet nélkül is megjeleníthetők, de **kizárólag egyértelmű „Korábban mentett / offline” jelzéssel**. Offline módosítás (kedvenc, elrejtés) helyben sorba kerül, és a következő kapcsolódáskor szinkronizálódik.
 
 Új kereséshez és az elérhetőség aktuális ellenőrzéséhez internet szükséges. Offline állapotban a régi találatokat nem szabad frissen ellenőrzött, aktív ajánlatként feltüntetni.
 
 ## 13. Technikai és hibakezelési követelmények
 
-- Párhuzamos, de API-korlátokat tiszteletben tartó lekérdezés (korlátozott párhuzamosság, pl. max. 4 egyidejű kérés)
+- Párhuzamos, de API-korlátokat tiszteletben tartó lekérdezés (Apps Scriptben `UrlFetchApp.fetchAll` kötegekben; mérve 4-es kötegekkel 54 hívás 10 mp, hiba nélkül)
 - Hálózati hibák, rate limit (HTTP 429) és időtúllépések kezelése, exponenciális visszalépéssel
 - Napi API-hívásszám nyilvántartása
 - Deduplikáció
@@ -276,28 +278,40 @@ Mivel a backend és az SQLite helyben fut, a korábban tárolt találatok intern
 - Naplózás, de a titkos kulcsok és tokenek kitakarásával
 - Kizárólag valós, ellenőrizhető találatok
 - Biztonságos hitelesítési és konfigurációkezelés
-- Eladói személyes adatot (felhasználónév, értékelés) az adatbázis ne tároljon (lásd 18. pont, adattárolási mentesség)
+- Eladói személyes adatot (felhasználónév, értékelés) se a Sheets, se az Apps Script naplója vagy gyorsítótára, se a kliens, se az értesítés ne tartalmazzon (lásd 18. pont, adattárolási mentesség)
 - Tesztek a szűréshez, EU-helyszűréshez, deduplikációhoz, modellfelismeréshez, árkalkulációhoz és státuszkezeléshez
 
 Ha egy piactér lekérdezése sikertelen, az app **ne** állítsa, hogy a keresés sikeres volt az adott oldalon.
 
 ## 14. Fejlesztési sorrend
 
-### 1. fázis – eBay MVP
+### 0. fázis – mérések és prototípus (kész)
 
-Webes felület, keresési paraméterek, valós eBay Browse API-integráció a 3. pontban leírt, élesben mért stratégiával (EBAY_DE, országonkénti `itemLocationCountry`, állapot- és kategóriaszűrő, modellcsoportonként külön lekérdezés), helyi EU-ellenőrzés, magyarországi szállítási díj, aukció/fix ár megkülönböztetés, ár- és modellfilterek, közvetlen linkek, aktív státusz ellenőrzése, API-hívásszámláló. A diagnosztikai mérések (kulcsellenőrzés, helyszűrők és országstratégia összevetése) elkészültek.
+Élesben kimért eBay-keresési stratégia (3. pont), Python (FastAPI) backend és React webes felület prototípusként, Apps Script-mérés (54 hívás párhuzamosan 10 mp alatt, hiba nélkül), architektúra-vizsgálat (`docs/architektura_vizsgalat.md`). A prototípus a portolás referenciája, nem fejlesztjük tovább.
 
-### 2. fázis – tárolás és haladó kezelés
+### 1. fázis – Apps Script háttérrendszer
 
-SQLite, kedvencek, elrejtés, deduplikáció, „ÚJ” jelölés, árfrissítés, `getItems`-alapú kötegelt státuszellenőrzés, hirdetések életciklus-kezelése, modellfelismerés `localizedAspects` alapján.
+A prototípus keresési logikájának átírása Apps Scriptre: eBay-hitelesítés, országonkénti és modellcsoportonkénti keresés, normalizálás, modellfelismerés és tételtípus, EU-ellenőrzés, deduplikáció, hívásszámláló. Webapp-végpont titkos tokenes hitelesítéssel. Node.js-tesztek, feltöltés `clasp`-pal. A webapp válaszidejének mérése.
 
-### 3. fázis – magyar piacterek
+### 2. fázis – Flutter-kliens (Android és Windows)
 
-Jófogás, HardverApró és Facebook Marketplace előre kitöltött keresőlinkjei. Automatikus lekérdezés csak akkor, ha az oldal feltételei ezt kifejezetten engedik.
+A prototípus felületének megfelelő keresőképernyő: szűrők a letöltött találatokon, rendezés, kártyák, ismeretlen szállítású blokk, visszaszámláló, jelölések, „Leírás” gomb fordítási linkkel, eredeti hirdetés megnyitása a böngészőben. Webapp-cím és token biztonságos tárolása, offline gyorsítótár. Telepítés: Androidra `.apk`, Windowsra futtatható build.
 
-### 4. fázis – opcionális funkciók
+### 3. fázis – közös állapot és életciklus
 
-Időzített keresés, értesítések, telepíthető webapp (PWA), új konzolmodellek és további források.
+Google Sheets: kedvencek, elrejtés, már látott tételek („ÚJ” jelölés), beállítások, revíziós szinkron a két eszköz között. Mentett tételek státuszellenőrzése (`getItems`/`getItem`), frissességi szabályok (17.4).
+
+### 4. fázis – értesítések
+
+Aukciófigyelés határárral és ntfy-értesítés (20. pont). Utána időzített keresés és értesítés új, feltételeknek megfelelő találatról.
+
+### 5. fázis – kiegészítések
+
+Kiegészítő kulcsszavas keresés (állapotszűrő nélkül, csak a találatot adó országokra), EUR/HUF átváltás, magyar piacterek keresőlinkjei, `localizedAspects`-alapú modellfelismerés.
+
+### 6. fázis – új eszközök
+
+Nintendo Switch, Steam Deck; később esetleg Apple (2. pont).
 
 ## 15. Átadási és elfogadási feltételek
 
@@ -308,13 +322,14 @@ A projekt csak akkor kész, ha:
 3. A termék tényleges helye EU-tagállam, ellenőrzött adattal (`itemLocation.country`).
 4. A maximális ár szerinti szűrés helyes.
 5. Minden megjelenített hirdetéshez valódi, működő eredeti URL tartozik.
-6. A kedvencek és elrejtések újraindítás után is megmaradnak.
+6. A kedvencek és elrejtések újraindítás után is megmaradnak, és a két eszközön ugyanazok.
 7. Nincsenek kitalált vagy bemutató találatok az éles keresési listában.
 8. API-hiba esetén érthető hibaüzenetet ad.
 9. A teljes kezelőfelület magyar nyelvű.
-10. Helyben dokumentált lépésekkel elindítható.
+10. Dokumentált lépésekkel telepíthető: az Apps Script-projekt `clasp`-pal, az app Androidra (`.apk`) és Windowsra.
 11. Lejárt, eladott és nem ellenőrizhetően aktív hirdetés nem szerepel az aktív keresési eredmények között.
 12. Egy teljes keresés 60 API-hívás alatt marad az alapbeállításokkal.
+13. A figyelt aukcióról értesítés érkezik a telefonra, akkor is, ha az app nincs megnyitva.
 
 ## 16. Elvárások a fejlesztővel szemben
 
@@ -322,9 +337,9 @@ A projekt csak akkor kész, ha:
 
 Hozd létre:
 
-- Teljes frontend és backend forráskód
-- Adatbázisséma és adatkezelés
-- `.env.example` konfigurációs minta
+- Teljes Apps Script- és Flutter-forráskód
+- Táblázatséma (munkalapok és oszlopok) és adatkezelés
+- A Script Properties és a kliensbeállítások leírása (titkos értékek nélkül)
 - Függőségek / telepítőparancsok
 - Automatizált tesztek (az eBay-válaszokat a tesztekben rögzített mintaválaszok helyettesíthetik, de az éles alkalmazásban soha nem jelenhet meg demóadat)
 - `README.md` részletes indítási útmutatóval
@@ -371,8 +386,8 @@ A normál aktív találati listába **csak `ACTIVE`** státusz kerülhet.
 **Frissességi szabályok (konfigurálható alapértékek):**
 
 - Az aktuális keresés találatai eleve aktívak: `ACTIVE`, `last_checked_at = most`.
-- A tárolt, de az aktuális keresésben nem szereplő tételek státuszát a backend `getItems` hívással (20 tétel/hívás) ellenőrzi minden keresés során.
-- Ha a `last_checked_at` **2 óránál régebbi**, a tétel automatikusan `UNKNOWN`, amíg újra nem ellenőrzik.
+- A tárolt, de az aktuális keresésben nem szereplő tételek státuszát az Apps Script `getItems` hívással (20 tétel/hívás) ellenőrzi minden keresés során.
+- Ha a `last_checked_at` **2 óránál régebbi**, a tétel automatikusan `UNKNOWN`, amíg újra nem ellenőrzik. (Az eBay API License Agreement 8.1 pontja szerint a megjelenített hirdetési adat legfeljebb 6 órával maradhat el az eBay-en láthatótól; a 2 órás határ ennél szigorúbb.)
 - Aukciónál, ha `end_time` < most: azonnal `ENDED`.
 - API-hiba, időtúllépés vagy ismeretlen válasz esetén a státusz `UNKNOWN`, soha nem marad megalapozatlanul `ACTIVE`.
 
@@ -408,3 +423,38 @@ Az eBay Developer Program és a Browse API alapkerete **ingyenes**. Lépések:
 6. **Ellenőrzés:** a README-ben leírt teszt-szkript egy próba-keresést futtat, és kiírja, hogy a kulcsok működnek-e.
 
 A használat során be kell tartani az eBay API License Agreement feltételeit, különösen a lekért adatok tárolására és megjelenítésére vonatkozó szabályokat; ezt az 1. fázis elején át kell nézni.
+
+## 19. Architektúra: Apps Script + Google Sheets + Flutter
+
+**Döntés indoklása (mérések és `docs/architektura_vizsgalat.md` alapján):** ingyenes, mindig futó tárhely nincs kényelmes formában; a felhasználó Xiaomi telefonja agresszíven korlátozza a háttérfeladatokat, ezért az aukciófigyelést a telefontól függetlenül, a Google szerverén kell futtatni. Az Apps Script ingyenes, nem kell szervert üzemeltetni, és a mérés szerint egy teljes keresés 10 mp (54 hívás, `fetchAll`, 4-es kötegek, 0 hiba).
+
+```
+ Telefon (Flutter) ─┐                         ┌─ eBay Browse API
+                    ├─► Apps Script webapp ───┤
+ Gép (Flutter)     ─┘   + időzített triggerek └─ ntfy → telefon
+                              │
+                       Google Sheets (állapot)
+```
+
+**Apps Script (háttérrendszer):**
+- Webapp (`doPost`, JSON): keresés, hirdetés részletei, állapot olvasása/írása. Tulajdonosként fut, „Anyone” hozzáféréssel; **minden kérést először egy legalább 256 bites titkos tokennel kell hitelesíteni** (a POST törzsében), mielőtt Sheets vagy eBay elérés történne. Ismeretlen művelet, túl nagy kérés vagy hibás token → azonnali elutasítás.
+- Időzített triggerek: aukciófigyelő (5–15 percenként, csak a figyelt aukciókra, üres listánál azonnal kilép), később ritkább (pl. 2 óránkénti) időzített keresés.
+- Titkok: `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET`, a kliens-token(ek) és az ntfy-csatorna neve a Script Properties-ben. Az eBay-token a CacheService-ben, lejáratig.
+- Hívásszámláló a Script Properties-ben (napi bontás), közös a két eszköz és a triggerek között.
+
+**Ismert keretek (fogyasztói Google-fiók):** UrlFetch 20 000/nap, egy futás max. 6 perc, időzített futások összesen 90 perc/nap, trigger legkisebb gyakorisága 1 perc. Az eBay napi 5000-es Browse-kerete a szűkebb: óránkénti teljes keresés kb. 1300 hívás/nap, ezért az időzített keresés legfeljebb óránként fusson.
+
+**Google Sheets (adattár):** munkalapok pl. `favorites`, `hidden`, `seen`, `watches`, `settings`, `listings_cache`. Kulcs: `source` + `source_listing_id`. Írás `LockService.getScriptLock()` alatt, kötegelten (`setValues`), revízióval és törlésjelöléssel a két eszköz ütközéseihez, kliens által generált műveletazonosítóval az ismételt írások ellen. A szöveges mezők (pl. cím) képletként való értelmezését meg kell akadályozni. Nyers eBay-választ nem tárolunk; eladói adatot soha.
+
+**Flutter-kliens:** a webapp `/exec` POST-ja átirányítással (302/303 a `script.googleusercontent.com`-ra) válaszol; a klienst úgy kell megírni, hogy az első POST-on ne kövesse automatikusan az átirányítást, hanem a megadott hostra GET-tel kérje le a választ, az eredeti törzs és token továbbküldése nélkül. A választ (JSON) validálni kell; HTML vagy Google-bejelentkezési oldal hibának számít.
+
+**Licenc:** az eBay API License Agreement nem tiltja, hogy a hívások felhőszolgáltatásból menjenek; a kulcs a felhasználó privát projektjében van, harmadik félnek nem adjuk át. A frissességi (8.1) és az eladói adatokra vonatkozó szabályok (18. pont) Sheetsben, Apps Scriptben, kliensben és értesítésben egyaránt érvényesek.
+
+## 20. Értesítések és aukciófigyelés
+
+- **Figyelés beállítása:** egy aukciós kártyán „Figyelés” → határár megadása (pl. 150 €). A figyelés a `watches` munkalapra kerül.
+- **Ellenőrzés:** az Apps Script trigger 5–15 percenként `getItems` (vagy kevés tételnél `getItem`) hívással lekéri a figyelt aukciók aktuális licitjét és záró időpontját.
+- **Értesítési szabály (alapértelmezés):** ha az aukció aznap (budapesti idő szerint) zárul, a zárásig legfeljebb 2 óra van hátra, és az aktuális licit (ismert, EUR) a határár alatt van → egy értesítés aukciónként. Lezárt aukciónál a figyelés automatikusan lezárul.
+- **Csatorna: ntfy.** A felhasználó telepíti az ntfy Android-appot, és feliratkozik egy hosszú, véletlenszerű csatornanévre (pl. `cdf-` + 20 véletlen karakter). Az Apps Script HTTPS POST-tal küld, `Cache: no` fejléccel (az ntfy ne tárolja az üzenetet). Az ntfy-appnak akkumulátor-kivételt kell adni a Xiaomi beállításaiban.
+- **Tartalom:** rövid cím, aktuális licit, határár, zárási idő és az eBay-hirdetés linkje (pl. „Ma 19:30-kor zárul: PS5 Slim Digital – 120 € (határ: 150 €)”). Eladói adat nem kerülhet bele.
+- **Később:** értesítés új, megadott feltételeknek (modell, max. teljes ár) megfelelő találatról, az időzített keresés alapján.
