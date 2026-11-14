@@ -12,6 +12,7 @@ export interface Listing {
   console_model: string
   item_type: ItemType
   is_banned: boolean
+  possibly_not_faulty: boolean
   buying_options: string[]
   price: string | null
   current_bid: string | null
@@ -22,6 +23,7 @@ export interface Listing {
   total_price: string | null
   item_country: string | null
   end_time: string | null
+  listed_at: string | null
   condition: string | null
   status: 'ACTIVE' | 'ENDED' | 'UNKNOWN'
   last_checked_at: string
@@ -58,11 +60,11 @@ export interface SearchResponse {
   searched_at: string
 }
 
-export async function searchListings(filters: SearchFilters): Promise<SearchResponse> {
+export async function searchListings(): Promise<SearchResponse> {
   const response = await fetch('/api/search', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(filters),
+    body: JSON.stringify({ include_mainboards: true }),
   })
   const result = await response.json() as Partial<SearchResponse> | null
   if (

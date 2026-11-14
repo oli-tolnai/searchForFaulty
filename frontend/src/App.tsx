@@ -1,28 +1,33 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { FormEvent } from 'react'
 import { searchListings } from './api'
 import type { Listing, SearchFilters, SearchResponse } from './api'
 import { ListingCard } from './ListingCard'
-import { countryName, dateLabel, end, isActive, selectListings } from './listings'
-import type { Sort } from './listings'
+import { countryName, dateLabel, end, isActive, listedAt, selectListings } from './listings'
+import type { LocalFilters, Sort } from './listings'
 
 const models = ['PS5 (Fat)', 'PS5 Slim', 'PS5 Pro', 'PS5 (változat nem ismert)', 'Xbox Series X', 'Xbox Series S']
 const PAGE_SIZE = 12
 
-function SearchForm({ busy, onSearch }: { busy: boolean; onSearch: (filters: SearchFilters) => void }) {
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const data = new FormData(event.currentTarget)
-    onSearch({
-      console_models: data.getAll('models').map(String),
-      max_price: String(data.get('max_price') ?? '') || undefined,
-      max_total_price: String(data.get('max_total_price') ?? '') || undefined,
-      buying_options: data.get('buying_options') as SearchFilters['buying_options'],
-      include_mainboards: data.has('mainboards'),
-    })
+function readFilters(form: HTMLFormElement): LocalFilters {
+  const data = new FormData(form)
+  return {
+    console_models: data.getAll('models').map(String),
+    max_price: String(data.get('max_price') ?? ''),
+    max_total_price: String(data.get('max_total_price') ?? ''),
+    buying_options: data.get('buying_options') as SearchFilters['buying_options'],
+    include_mainboards: data.has('mainboards'),
+    endingSoon: data.get('auction_end') === 'day',
   }
+}
 
-  return <form className="filter-panel" onSubmit={submit} aria-label="Keresési szűrők">
+function SearchForm({ busy, onSearch, onFilters }: {
+  busy: boolean
+  onSearch: () => void
+  onFilters: (filters: LocalFilters) => void
+}) {
+  return <form className="filter-panel" aria-label="Keresési szűrők"
+    onChange={(event) => onFilters(readFilters(event.currentTarget))}
+    onSubmit={(event) => { event.preventDefault(); onSearch() }}>
     <div className="panel-heading"><h2>Keresési szűrők</h2><span>eBay · Szállítás Magyarországra</span></div>
     <fieldset disabled={busy}>
       <legend>Konzolmodellek <small>· üresen hagyva mind</small></legend>
@@ -35,6 +40,7 @@ function SearchForm({ busy, onSearch }: { busy: boolean; onSearch: (filters: Sea
         <label>Max. vételár <div className="input-unit"><input name="max_price" type="number" min="0" step="0.01" placeholder="Nincs megadva" /><span>EUR</span></div></label>
         <label>Max. teljes ár <div className="input-unit"><input name="max_total_price" type="number" min="0" step="0.01" placeholder="Nincs megadva" /><span>EUR</span></div></label>
         <label>Hirdetéstípus <select name="buying_options"><option value="both">Mind</option><option value="auction">Aukció</option><option value="fixed">Fix ár</option></select></label>
+        <label>Aukciók <select name="auction_end"><option value="all">Mind</option><option value="day">24 órán belül záródók</option></select></label>
       </div>
       <div className="filter-actions">
         <label className="switch"><input type="checkbox" name="mainboards" role="switch" /> Alaplapok mutatása</label>
@@ -100,21 +106,23 @@ function useAuctionClock(items: Listing[]) {
   return Math.max(tick, Date.now())
 }
 
-function Results({ result, includesBoards }: { result: SearchResponse; includesBoards: boolean }) {
+function Results({ result, filters }: { result: SearchResponse; filters: LocalFilters }) {
   const [title, setTitle] = useState('')
   const [sort, setSort] = useState<Sort>('total')
   const [page, setPage] = useState(1)
   const allItems = useMemo(() => result.listings.concat(result.unknown_shipping), [result])
   const now = useAuctionClock(allItems)
-  const known = selectListings(result.listings, title, sort, now)
-  const unknown = selectListings(result.unknown_shipping, title, sort, now)
+  const known = selectListings(result.listings, title, sort, now, filters)
+  const unknown = selectListings(result.unknown_shipping, title, sort, now, filters)
   const total = known.length + unknown.length
-  const allActive = allItems.filter((item) => isActive(item, now)).length
+  const active = allItems.filter((item) => isActive(item, now))
+  const hiddenBoards = active.filter((item) => item.item_type === 'mainboard').length
+  const hasListingDates = allItems.some((item) => Number.isFinite(listedAt(item)))
   const counts = result.item_type_counts
   const exclusions = [
     counts.unsupported_model > 0 && `${counts.unsupported_model} nem támogatott modell (pl. PS3, PS4)`,
     counts.not_console > 0 && `${counts.not_console} nem konzol`,
-    !includesBoards && counts.mainboard > 0 && `${counts.mainboard} alaplap`,
+    !filters.include_mainboards && hiddenBoards > 0 && `${hiddenBoards} alaplap`,
     result.filtered_non_eu > 0 && `${result.filtered_non_eu} EU-n kívüli vagy ismeretlen helyű tétel`,
   ].filter(Boolean)
   const visibleKnown = known.slice(0, page * PAGE_SIZE)
@@ -126,7 +134,7 @@ function Results({ result, includesBoards }: { result: SearchResponse; includesB
   return <section className="results" aria-label="Keresési eredmények">
     <SearchStatus result={result} />
     <div className="summary-bar">
-      {result.status !== 'error' && <strong>{allActive} találat</strong>}
+      {result.status !== 'error' && <strong>{total} / {active.length} találat</strong>}
       <span>API-hívások: {result.api_calls} ebben a futásban · {result.daily_api_calls} ma</span>
       <span>{dateLabel(result.searched_at)}</span>
       {exclusions.length > 0 && <p>Kiszűrve: {exclusions.join(' · ')}</p>}
@@ -140,6 +148,7 @@ function Results({ result, includesBoards }: { result: SearchResponse; includesB
           <option value="ascending">Legolcsóbb</option>
           <option value="descending">Legdrágább</option>
           <option value="ending">Leghamarabb záródó aukció</option>
+          {hasListingDates && <option value="newest">Legújabb hirdetések</option>}
         </select></label>
       </div>
       {total === 0 && <div className="empty">{title.trim() ? 'Nincs a címkeresésnek megfelelő találat.' : 'Nincs aktív találat a megadott szűrőkkel.'}</div>}
@@ -156,17 +165,19 @@ function Results({ result, includesBoards }: { result: SearchResponse; includesB
 
 export default function App() {
   const [busy, setBusy] = useState(false)
-  const [result, setResult] = useState<{ data: SearchResponse; includesBoards: boolean } | null>(null)
+  const [result, setResult] = useState<SearchResponse | null>(null)
+  const [filters, setFilters] = useState<LocalFilters>({
+    buying_options: 'both', console_models: [], include_mainboards: false, endingSoon: false,
+  })
   const [error, setError] = useState(false)
 
-  async function search(filters: SearchFilters) {
+  async function search() {
     if (busy) return
     setBusy(true)
     setError(false)
     setResult(null)
     try {
-      const data = await searchListings(filters)
-      setResult({ data, includesBoards: filters.include_mainboards })
+      setResult(await searchListings())
     } catch {
       setError(true)
     } finally {
@@ -181,10 +192,10 @@ export default function App() {
     </div></header>
     <main className="shell">
       <div className="intro"><h1>Console Deal Finder</h1><p>Hibás konzolok az eBay-ről, közvetlen szállítással Magyarországra.</p></div>
-      <SearchForm busy={busy} onSearch={search} />
+      <SearchForm busy={busy} onSearch={search} onFilters={setFilters} />
       {busy && <div className="notice progress" role="status"><span className="spinner" aria-hidden="true" />Keresés folyamatban… ez akár fél percig is tarthat</div>}
       {error && <div className="notice warning" role="alert">A keresés nem sikerült. Ellenőrizd, hogy fut-e a backend, majd próbáld újra.</div>}
-      {result && <Results result={result.data} includesBoards={result.includesBoards} />}
+      {result && <Results result={result} filters={filters} />}
     </main>
   </>
 }

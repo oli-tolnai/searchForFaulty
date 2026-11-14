@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Listing } from './api'
-import { countdown, countryName, dateLabel, end, isAuction, money, price } from './listings'
+import { countdown, countryName, dateLabel, DAY, end, isAuction, money, price } from './listings'
 
 const typeLabels: Partial<Record<Listing['item_type'], string>> = {
   console_bundle: 'Csomag', needs_review: 'Ellenőrzendő', mainboard: 'Alaplap',
@@ -26,7 +26,7 @@ export function ListingCard({ item, now }: { item: Listing; now: number }) {
   return <article className="listing">
     <div className="listing-image">
       <ListingImage key={item.image_url} src={item.image_url} />
-      <span className={auction ? 'image-tag auction-tag' : 'image-tag'}>{auction ? 'Aukció' : 'Fix ár'}</span>
+      <span className={auction ? 'image-tag auction-tag' : 'image-tag fixed-tag'}>{auction ? 'Aukció' : 'Fix ár'}</span>
     </div>
     <div className="listing-body">
       <div className="listing-meta"><span>{countryName(item.item_country)}</span><span>eBay</span></div>
@@ -35,6 +35,9 @@ export function ListingCard({ item, now }: { item: Listing; now: number }) {
         <span>{item.console_model}</span>
         {typeLabel && item.console_model !== typeLabel && <span>{typeLabel}</span>}
         {item.is_banned && <span className="danger-badge">Tiltott (banned)</span>}
+        {item.possibly_not_faulty && <span>Lehet, hogy nem hibás</span>}
+        {Number.isFinite(deadline) && deadline - now > 2 * DAY &&
+          <span>Korai licit – a végső ár várhatóan magasabb</span>}
       </div>
       <div className="price-line">
         <div><div className="muted">{auction ? 'Aktuális licit' : 'Vételár'}</div><strong>{money(price(item), item.currency)}</strong></div>
