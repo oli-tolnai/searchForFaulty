@@ -1,7 +1,7 @@
 const PAGE_SIZE = 200;
 const PAGE_LIMIT = 5;
 const RUN_LIMIT = 59;
-const SEARCH_TIME_LIMIT_MS = 300_000;
+const SEARCH_TIME_LIMIT_MS = 300000;
 const BUDGET_MESSAGE = 'A keresés elérte a futásonkénti híváskeretet.';
 const ITEM_TYPES = [
   'console', 'console_bundle', 'mainboard', 'not_console', 'unsupported_model', 'needs_review',
@@ -154,7 +154,7 @@ function shippingBreakdown(items) {
   const countries = {};
   for (const item of items) {
     const type = item.buying_options.includes('AUCTION') ? 'auction' : 'fixed_price';
-    countries[item.item_country] ??= { auction: 0, fixed_price: 0 };
+    if (!countries[item.item_country]) countries[item.item_country] = { auction: 0, fixed_price: 0 };
     countries[item.item_country][type]++;
     totals[type]++;
   }

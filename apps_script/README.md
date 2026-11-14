@@ -33,7 +33,7 @@ A `clasp push` lecseréli a kiválasztott Google-projekt aktuális forrását. M
 
 ```powershell
 Copy-Item -LiteralPath appsscript.json -Destination src/appsscript.json -Force
-npx clasp push
+npx clasp push --force
 ```
 
 ## 3. Script Properties

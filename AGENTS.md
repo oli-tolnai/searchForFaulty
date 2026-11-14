@@ -99,7 +99,7 @@ npm run lint
 npx clasp login        # egyszer, a felhasználó Google-fiókjával
 npx clasp create --type standalone --title "Console Deal Finder" --rootDir src  # ha még nincs projekt
 Copy-Item -LiteralPath appsscript.json -Destination src/appsscript.json -Force
-npx clasp push         # a src/ feltöltése
+npx clasp push --force # a src/ és a manifest feltöltése a kiválasztott projektbe
 node tools/measure_webapp.mjs  # CDF_WEBAPP_URL és CDF_TOKEN szükséges
 ```
 
