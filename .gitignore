@@ -1,4 +1,7 @@
 .env
+.clasp.json
+.clasprc.json
+apps_script/src/appsscript.json
 *.db
 .venv/
 __pycache__/

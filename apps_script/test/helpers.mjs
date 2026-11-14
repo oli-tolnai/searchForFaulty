@@ -1,0 +1,124 @@
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { readdirSync, readFileSync } from 'node:fs';
+import vm from 'node:vm';
+
+const dir = new URL('../src/', import.meta.url);
+const source = readdirSync(dir).filter(name => name.endsWith('.js'))
+  .map(name => readFileSync(new URL(name, dir), 'utf8')).join('\n');
+const script = new vm.Script(source, { filename: 'apps-script-v8.js' });
+
+export const fixture = name => JSON.parse(readFileSync(new URL('fixtures/' + name + '.json', import.meta.url)));
+export const response = (status, body = {}) => ({
+  getResponseCode: () => status, getContentText: () => JSON.stringify(body),
+});
+const missingRoute = request => {
+  throw new Error('Unexpected request: ' + new URL(request.url).pathname);
+};
+
+export function runtime({
+  browse = () => response(200, { total: 0 }),
+  oauth = () => response(200, fixture('token')), details = missingRoute, properties = {},
+  batchFailure = () => false,
+} = {}) {
+  let now = Date.parse('2026-11-14T12:00:00Z');
+  let locked = false;
+  const props = new Map(Object.entries({
+    CLIENT_TOKENS: 'test-client-token', EBAY_CLIENT_ID: 'fixture-app-id',
+    EBAY_CLIENT_SECRET: 'fixture-cert-id', ...properties,
+  }));
+  const cache = new Map();
+  const calls = [];
+  const batches = [];
+  const sleeps = [];
+  const log = [];
+  const digests = [];
+  const context = vm.createContext({
+    Date: class extends Date {
+      constructor(...args) { super(...(args.length ? args : [now])); }
+      static now() { return now; }
+    },
+    UrlFetchApp: {
+      fetch(url, options) {
+        assert.equal(locked, false);
+        const request = { url, ...options };
+        calls.push(request);
+        return url.endsWith('/oauth2/token') ? oauth(request) : details(request);
+      },
+      fetchAll(requests) {
+        assert.equal(locked, false);
+        batches.push(Array.from(requests));
+        calls.push(...requests);
+        if (batchFailure(requests)) throw new Error('fixture timeout fixture-cert-id');
+        return requests.map(browse);
+      },
+    },
+    PropertiesService: {
+      getScriptProperties: () => ({
+        getProperty: key => props.get(key) ?? null,
+        setProperty(key, value) {
+          assert.ok(locked, 'Counter writes must be locked');
+          props.set(key, value);
+        },
+      }),
+    },
+    CacheService: {
+      getScriptCache: () => ({
+        get: key => cache.get(key)?.expires > now ? cache.get(key).value : null,
+        put: (key, value, ttl) => cache.set(key, { value, ttl, expires: now + ttl * 1000 }),
+      }),
+    },
+    LockService: {
+      getScriptLock: () => ({
+        tryLock() { assert.equal(locked, false); locked = true; return true; },
+        releaseLock() { assert.ok(locked); locked = false; },
+      }),
+    },
+    Utilities: {
+      Charset: { UTF_8: 'utf8' },
+      DigestAlgorithm: { SHA_256: 'sha256' },
+      computeDigest(algorithm, value, encoding) {
+        digests.push(value);
+        return createHash(algorithm).update(value, encoding).digest();
+      },
+      newBlob: raw => ({ getBytes: () => Buffer.from(raw, 'utf8') }),
+      base64Encode: raw => Buffer.from(raw).toString('base64'),
+      sleep: ms => sleeps.push(ms),
+      formatDate(date, zone, format) {
+        assert.equal(format, 'yyyy-MM-dd');
+        const parts = new Intl.DateTimeFormat('en-GB', {
+          timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit',
+        }).formatToParts(date);
+        const fields = Object.fromEntries(parts.map(part => [part.type, part.value]));
+        return [fields.year, fields.month, fields.day].join('-');
+      },
+    },
+    ContentService: {
+      MimeType: { JSON: 'application/json', TEXT: 'text/plain' },
+      createTextOutput: content => ({
+        content, setMimeType(type) { this.type = type; return this; },
+      }),
+    },
+    Logger: { log: entry => log.push(entry) },
+  });
+  script.runInContext(context);
+  function run(name, ...args) {
+    context.args = args;
+    return JSON.parse(JSON.stringify(vm.runInContext(name + '(...args)', context)));
+  }
+  function postRaw(contents, length = Buffer.byteLength(contents)) {
+    const output = context.doPost({ postData: { contents, length } });
+    assert.equal(output.type, 'application/json');
+    return JSON.parse(output.content);
+  }
+  return {
+    calls, batches, sleeps, log, cache, props, digests, run, postRaw, context,
+    post: (action, params, rest) => postRaw(JSON.stringify({
+      action, params, token: 'test-client-token', request_id: 'request-1', ...rest,
+    })),
+    setTime: time => { now = Date.parse(time); },
+    search: (countries, queries, filters = {}) => run('searchEbay', countries, queries, [], filters),
+  };
+}
+
+export const ids = items => items.map(item => item.source_listing_id);

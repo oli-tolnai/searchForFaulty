@@ -95,9 +95,15 @@ Amíg nincsenek létrehozva, az első érintett feladatban hozd létre őket, é
 cd apps_script
 npm ci
 npm test
+npm run lint
 npx clasp login        # egyszer, a felhasználó Google-fiókjával
+npx clasp create --type standalone --title "Console Deal Finder" --rootDir src  # ha még nincs projekt
+Copy-Item -LiteralPath appsscript.json -Destination src/appsscript.json -Force
 npx clasp push         # a src/ feltöltése
+node tools/measure_webapp.mjs  # CDF_WEBAPP_URL és CDF_TOKEN szükséges
 ```
+
+A Google-fiók, a meglévő projekt csatlakoztatása, a Script Properties és a telepítés lépései az [Apps Script útmutatójában](apps_script/README.md) szerepelnek.
 
 ```powershell
 # Flutter (a repó gyökeréből) – még nem létezik

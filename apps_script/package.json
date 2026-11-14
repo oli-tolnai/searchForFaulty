@@ -1,0 +1,12 @@
+{
+  "name": "console-deal-finder-apps-script",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "lint": "node tools/check_syntax.mjs"
+  },
+  "devDependencies": {
+    "@google/clasp": "3.2.0"
+  }
+}
