@@ -42,6 +42,31 @@ def test_listing_normalization(payload):
     assert normalize_listing(auction, now).status == "UNKNOWN"
 
 
+def test_listing_date_prefers_creation_with_origin_fallback(payload):
+    item = payload("search")["itemSummaries"][1]
+    now = datetime.now(UTC)
+    assert normalize_listing(item, now).listed_at is None
+    item["itemOriginDate"] = "2026-01-01T00:00:00Z"
+    item["itemCreationDate"] = "2026-02-01T00:00:00Z"
+    assert normalize_listing(item, now).listed_at == datetime(2026, 2, 1, tzinfo=UTC)
+    item["itemCreationDate"] = "invalid"
+    assert normalize_listing(item, now).listed_at == datetime(2026, 1, 1, tzinfo=UTC)
+
+
+@pytest.mark.parametrize(
+    ("title", "expected"),
+    [
+        ("Sony PlayStation 5 PS5 Slim Digital Edition 1TB NEU 19% MwSt - Händler", True),
+        ("PS5 Slim NEU Lüfter defekt", False),
+        ("Xbox Series X sealed for parts", False),
+        ("PS5 Slim Konsole", False),
+    ],
+)
+def test_normalization_flags_new_titles_without_fault_signals(payload, title, expected):
+    item = payload("search")["itemSummaries"][1]
+    assert normalize_listing(dict(item, title=title), datetime.now(UTC)).possibly_not_faulty is expected
+
+
 def test_adapter_retries_429_and_paginates_to_five_pages(respx_mock, settings, payload, caplog):
     respx_mock.post(f"{BASE}/identity/v1/oauth2/token").respond(json=payload("token"))
     pages = respx_mock.get(BASE + BROWSE_PATH).mock(side_effect=[

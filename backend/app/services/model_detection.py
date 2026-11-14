@@ -34,6 +34,17 @@ CONSOLE_FEATURE = re.compile(
     r"bundle\s+(?:inkl\.?|including|mit|with))\b"
 )
 BOARD = re.compile(r"\b(?:mainboards?|motherboards?|alaplap|edm[-\s]?0\d{2})\b")
+DONOR_BOARD = re.compile(r"\b(?:donor\s+boards?|boards?\s+only|platine)\b")
+NEW_CONDITION = re.compile(r"\b(?:neu|new|versiegelt|sealed|nagelneu|neuf|nuovo|nuevo)\b")
+FAULT = re.compile(
+    r"\b(?:[a-zäöü]*defekt\w*|kaputt|bastler\w*|ersatzteil\w*|for\s+parts|faulty|broken|"
+    r"not\s+working|reparatur\w*|banned|gebannt|guasto|rotto|averiado|en\s+panne|pour\s+pièces)\b"
+)
+
+
+def possibly_not_faulty(title: str) -> bool:
+    title = title.casefold()
+    return bool(NEW_CONDITION.search(title) and not FAULT.search(title))
 EXPLICIT_CONSOLE = re.compile(
     r"\b(?:nur\s+konsole|console\s+only|komplette?\s+(?:ps5\s+)?konsole|"
     r"complete\s+(?:ps5\s+)?console|(?:konsole|console)\s+(?:mit|with))\b"
@@ -123,6 +134,8 @@ def classify_item(title: str) -> Classification:
     if EMPTY_BOX.search(title) or ONLY_PART.search(title):
         return result("not_console", "A cím üres dobozt vagy önálló kiegészítőt jelöl.")
     if BOARD.search(title) and not explicit_console:
+        return result("mainboard", "A cím alaplapot jelöl.")
+    if DONOR_BOARD.search(title) and not (console_word or console_feature or codes):
         return result("mainboard", "A cím alaplapot jelöl.")
     if service and not explicit_console:
         return result("not_console", f"A cím szolgáltatásra vagy anyagra utal: „{service.group()}”.")

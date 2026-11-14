@@ -19,6 +19,7 @@ class Listing(BaseModel):
     console_model: str
     item_type: ItemType
     is_banned: bool = False
+    possibly_not_faulty: bool = False
     buying_options: list[str]
     price: Decimal | None = None
     current_bid: Decimal | None = None
@@ -29,6 +30,7 @@ class Listing(BaseModel):
     total_price: Decimal | None = None
     item_country: str | None = None
     end_time: datetime | None = None
+    listed_at: datetime | None = None
     condition: str | None = None
     status: Literal["ACTIVE", "ENDED", "UNKNOWN"] = "ACTIVE"
     last_checked_at: datetime

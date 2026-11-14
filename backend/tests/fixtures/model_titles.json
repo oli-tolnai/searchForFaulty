@@ -23,5 +23,10 @@
   ["PS4 PlayStation 5 Slim Laufwerk Teildefekt DVD kommt sehr schlecht raus !!!","not_console","Ellenőrzendő",false],
   ["PS5 Slim Disc Drive Ersatzteil","not_console","PS5 Slim Disc",false],
   ["PS5 Slim lemezmeghajtó","not_console","PS5 Slim",false],
-  ["PS5 Slim Konsole mit defektem Laufwerk","console","PS5 Slim",false]
+  ["PS5 Slim Konsole mit defektem Laufwerk","console","PS5 Slim",false],
+  ["xbox series x Donor Boards Only!","mainboard","Xbox Series X",false],
+  ["Xbox Series X Board Only","mainboard","Xbox Series X",false],
+  ["PS5 Slim nur Platine","mainboard","PS5 Slim",false],
+  ["PS5 Slim Platine defekt","mainboard","PS5 Slim",false],
+  ["Xbox Series X Konsole mit defekter Platine","console","Xbox Series X",false]
 ]

@@ -13,7 +13,7 @@ from app.adapters.ebay_context import hu_context_header
 from app.config import Settings
 from app.geography import EU_COUNTRIES, item_country
 from app.models import Listing
-from app.services.model_detection import classify_item
+from app.services.model_detection import classify_item, possibly_not_faulty
 
 LOGGER = logging.getLogger(__name__)
 PAGE_SIZE = 200
@@ -58,7 +58,7 @@ def shipping(item: dict) -> tuple[Decimal | None, str | None]:
     return None, None
 
 
-def parse_end_time(value: object) -> datetime | None:
+def parse_timestamp(value: object) -> datetime | None:
     if not isinstance(value, str):
         return None
     try:
@@ -86,7 +86,7 @@ def normalize_listing(item: dict, checked_at: datetime) -> Listing | None:
     if amount is not None and shipping_cost is not None and currency == shipping_currency:
         total = amount + shipping_cost
     bid_count = item.get("bidCount")
-    end = parse_end_time(item.get("itemEndDate"))
+    end = parse_timestamp(item.get("itemEndDate"))
     if end is not None and end <= checked_at:
         status = "ENDED"
     elif (end is None and (auction or item.get("itemEndDate") is not None)) or not (
@@ -100,11 +100,13 @@ def normalize_listing(item: dict, checked_at: datetime) -> Listing | None:
         source_listing_id=item_id, title=title, url=url,
         image_url=nonempty(mapping(item.get("image")).get("imageUrl")),
         console_model=classification.console_model, item_type=classification.item_type,
-        is_banned=classification.is_banned, buying_options=options,
+        is_banned=classification.is_banned, possibly_not_faulty=possibly_not_faulty(title),
+        buying_options=options,
         price=None if auction else amount, current_bid=amount if auction else None,
         bid_count=bid_count if auction and type(bid_count) is int and bid_count >= 0 else None,
         currency=currency, shipping_cost=shipping_cost, shipping_currency=shipping_currency,
         total_price=total, item_country=item_country(item), end_time=end,
+        listed_at=parse_timestamp(item.get("itemCreationDate")) or parse_timestamp(item.get("itemOriginDate")),
         condition=nonempty(item.get("condition")), status=status, last_checked_at=checked_at,
     )
 
