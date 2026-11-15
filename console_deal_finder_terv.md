@@ -65,6 +65,7 @@ A stratégia az 1. fázis elején futtatott diagnosztikai mérések eredményén
 | Működik-e a VAGY-szintaxis? | Nem: a `(ps5, playstation 5, xbox series)` a DE 73 egyedi tételéből 32-t, a `(ps5,"xbox series")` 23-at adott vissza; a `(ps5,xbox)` 24-et, plusz 188 Xbox One/360/Classic tételt. A `q=playstation 5` azonos a `q=ps5`-tel. | Modellcsoportonként külön lekérdezés (`ps5`, `xbox series`). |
 | Pontos-e a `q=ps5`? | Nem teljesen: PS1, PS3, PSP tételek is jönnek. | A modellfelismerés kiszűri a nem támogatott modelleket. |
 | Ismert-e a szállítási díj Magyarországra? | A tételek kb. 70%-ánál nem: az eBay 11510-es figyelmeztetést ad („problem calculating the shipping cost”). A kódolatlan, a kódolt és a magyar irányítószámos fejléc, valamint a `getItem` is 0/10 ismert díjat adott ugyanazon a mintán. | Az eBay API korlátja. A kereső a kódolt, irányítószám nélküli fejlécet használja; ezek a tételek „Nem ismert” díjjal, külön blokkban jelennek meg, a díjat a hirdetésben kell megnézni. Becslés tilos. |
+| Valóban szállít-e Magyarországra az ismeretlen díjú tétel? | A `deliveryCountry:HU` ellenére többnyire nem: 10 tételből 9-nél a `getItem` `shipToLocations.regionIncluded` csak az eladó országa (belföldi szállítás), 1-nél a HU kifejezetten ki van zárva. A `getItems` (kötegelt) ezzel a kulccsal nem érhető el (`invalid_scope`). | Az ismeretlen díjú tételeket tételenként `getItem`-mel ellenőrizzük (gyorsítótárazva); a „nem szállít Magyarországra” csoport alapból rejtett, de megtekinthető. |
 
 **Ellenőrzés a backendben:** az `itemLocationRegion` kiesése miatt is kötelező, hogy a backend minden találatnál ellenőrizze az `itemLocation.country` mezőt egy fix EU-tagállam-listával szemben. Ami nem EU-s, vagy aminek nincs ismert helye, kerüljön ki az aktív listából. Ne keverd össze az eladó országát, a piactér országát és a termék tényleges feladási helyét; a szűrés a termék helyére vonatkozik.
 
@@ -81,7 +82,8 @@ A Browse API napi kerete **5000 hívás** (élesben ellenőrizve a Developer Ana
 | Fő keresés: 27 ország × 2 lekérdezés (`ps5`, `xbox series`) | 54 |
 | Lapozás (ha egy ország `total` értéke > 200) | 0–3 |
 | Kiegészítő kulcsszavas keresés (2. fázis, csak a találatot adó országokra) | 3–5 |
-| Tárolt tételek státuszellenőrzése `getItems`-szel (20 tétel/hívás, 2. fázis) | tárolt tételek / 20 |
+| Ismeretlen díjú tételek szállítási ellenőrzése `getItem`-mel (csak az új, még nem ellenőrzött tételek) | kb. 0–30 |
+| Mentett tételek státuszellenőrzése `getItem`-mel (a `getItems` nem érhető el) | mentett tételek száma |
 
 **Cél: egy teljes keresés az alapbeállításokkal < 60 API-hívás.** Napi 5000-es keret mellett ez kb. 80 teljes keresést enged naponta. Az app számolja és jelenítse meg a napi felhasznált hívások számát, és a keret közelében figyelmeztessen.
 
@@ -389,7 +391,7 @@ A normál aktív találati listába **csak `ACTIVE`** státusz kerülhet.
 **Frissességi szabályok (konfigurálható alapértékek):**
 
 - Az aktuális keresés találatai eleve aktívak: `ACTIVE`, `last_checked_at = most`.
-- A tárolt, de az aktuális keresésben nem szereplő tételek státuszát az Apps Script `getItems` hívással (20 tétel/hívás) ellenőrzi minden keresés során.
+- A tárolt, de az aktuális keresésben nem szereplő tételek státuszát az Apps Script tételenként `getItem` hívással ellenőrzi (a `getItems` ezzel a kulccsal nem érhető el).
 - Ha a `last_checked_at` **2 óránál régebbi**, a tétel automatikusan `UNKNOWN`, amíg újra nem ellenőrzik. (Az eBay API License Agreement 8.1 pontja szerint a megjelenített hirdetési adat legfeljebb 6 órával maradhat el az eBay-en láthatótól; a 2 órás határ ennél szigorúbb.)
 - Aukciónál, ha `end_time` < most: azonnal `ENDED`.
 - API-hiba, időtúllépés vagy ismeretlen válasz esetén a státusz `UNKNOWN`, soha nem marad megalapozatlanul `ACTIVE`.

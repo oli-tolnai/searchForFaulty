@@ -51,7 +51,11 @@ A `backend/` (Python/FastAPI) és a `frontend/` (React) mappa **referencia-proto
 - A `buyingOptions` szűrő minden keresésnél kötelező, mert nélküle az eBay kihagyja a kizárólag licitálható hirdetéseket. A fix áras, ajánlattételt is engedő hirdetések a `FIXED_PRICE` szűréssel érkeznek.
 - **Az `itemLocationRegion` szűrőt NE használd.** `deliveryCountry:HU` mellett az eBay nem támogatja, és csak egy warningot ad (errorId 12519), a szűrőt figyelmen kívül hagyja; a találatok ilyenkor nagyrészt USA-beliek. A háttérrendszer saját EU-ellenőrzése (`itemLocation.country`) ettől függetlenül kötelező.
 - A válasz `warnings` mezőjét mindig naplózd és jelezd: egy figyelmen kívül hagyott szűrő csendben hibás eredményt ad.
-- Státuszellenőrzés: `getItems` (max. 20 tétel/hívás).
+- **A `getItems` (kötegelt lekérés) ezzel a kulccsal NEM érhető el** (mérve: HTTP 400 `invalid_scope`, korlátozott hozzáférésű végpont). Státusz- és szállítási ellenőrzéshez tételenként `getItem` kell; az eredményt gyorsítótárazd, hogy ugyanazt a tételt ne kérd le újra feleslegesen.
+- **Magyarországra szállítás ellenőrzése (mérve, 2026-11):** a `deliveryCountry:HU` szűrő ellenére az ismeretlen szállítási díjú tételek nagy része NEM szállít Magyarországra. A `getItem` válasz `shipToLocations` mezője ezt megmutatja: a 10 tételes mintából 9-nél `regionIncluded = [az eladó országa]` (csak belföldre szállít), 1-nél a `regionExcluded` kifejezetten tartalmazta a HU-t. Szabály:
+  - **szállít HU-ra**, ha a `regionIncluded` tartalmazza a `HU`-t vagy egy HU-t magában foglaló régiót (pl. `WORLDWIDE`, `EUROPE`, `EUROPEAN_UNION`), és a `regionExcluded` nem zárja ki (sem `HU`, sem HU-t tartalmazó régió);
+  - **nem szállít HU-ra**, ha a `regionExcluded` kizárja, vagy a `regionIncluded` nem üres, de sem a `HU`-t, sem HU-t tartalmazó régiót nem tartalmaz (pl. csak `["DE"]`);
+  - **nem eldönthető**, ha a mező hiányzik vagy üres, vagy a lekérés sikertelen.
 - **Hívásszám-keret:** a napi keret 5000 Browse-hívás (mérve). Egy teljes keresés az alapbeállításokkal maradjon 60 hívás alatt (27 ország × 2 lekérdezés + lapozás). Számold a napi hívásokat.
 - Ha egy API-mező vagy funkció nem úgy működik, ahogy a terv feltételezi, ne kerüld meg csendben: írd le az összefoglalóban.
 - Hivatalos dokumentáció: https://developer.ebay.com/api-docs/buy/browse/overview.html
