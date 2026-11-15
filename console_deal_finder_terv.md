@@ -304,7 +304,7 @@ A prototípus felületének megfelelő keresőképernyő: szűrők a letöltött
 
 ### 3. fázis – közös állapot és életciklus
 
-Google Sheets: kedvencek, elrejtés, már látott tételek („ÚJ” jelölés), beállítások, revíziós szinkron a két eszköz között. Mentett tételek státuszellenőrzése (`getItems`/`getItem`), frissességi szabályok (17.4).
+Google Sheets: kedvencek, elrejtés, már látott tételek („ÚJ” jelölés), beállítások, revíziós szinkron a két eszköz között. Mentett tételek státuszellenőrzése (tételenként `getItem`), frissességi szabályok (17.4).
 
 ### 4. fázis – értesítések
 
@@ -458,7 +458,7 @@ A használat során be kell tartani az eBay API License Agreement feltételeit, 
 ## 20. Értesítések és aukciófigyelés
 
 - **Figyelés beállítása:** egy aukciós kártyán „Figyelés” → határár megadása (pl. 150 €). A figyelés a `watches` munkalapra kerül.
-- **Ellenőrzés:** az Apps Script trigger 5–15 percenként `getItems` (vagy kevés tételnél `getItem`) hívással lekéri a figyelt aukciók aktuális licitjét és záró időpontját.
+- **Ellenőrzés:** az Apps Script trigger 5–15 percenként tételenkénti `getItem` hívással (a `getItems` nem érhető el) lekéri a figyelt aukciók aktuális licitjét és záró időpontját.
 - **Értesítési szabály (alapértelmezés):** ha az aukció aznap (budapesti idő szerint) zárul, a zárásig legfeljebb 2 óra van hátra, és az aktuális licit (ismert, EUR) a határár alatt van → egy értesítés aukciónként. Lezárt aukciónál a figyelés automatikusan lezárul.
 - **Csatorna: ntfy.** A felhasználó telepíti az ntfy Android-appot, és feliratkozik egy hosszú, véletlenszerű csatornanévre (pl. `cdf-` + 20 véletlen karakter). Az Apps Script HTTPS POST-tal küld, `Cache: no` fejléccel (az ntfy ne tárolja az üzenetet). Az ntfy-appnak akkumulátor-kivételt kell adni a Xiaomi beállításaiban.
 - **Tartalom:** rövid cím, aktuális licit, határár, zárási idő és az eBay-hirdetés linkje (pl. „Ma 19:30-kor zárul: PS5 Slim Digital – 120 € (határ: 150 €)”). Eladói adat nem kerülhet bele.
