@@ -157,7 +157,10 @@ Minden találat két címkét kap: **tételtípust** és **modellt**.
 | Alaplap | „PS5 Slim EDM-040 Mainboard für Ersatzteile” | nem (szűrővel bekapcsolható) |
 | Nem konzol (kiegészítő, üres doboz, szolgáltatás, alkatrész) | „Ps5 Box Leer Anleitung”, „Liquid Metal PS5”, „Reinigung & HDMI” | nem |
 | Nem támogatott modell | PS1, PS3, PS4, PSP, Xbox One/360 | nem, csak a darabszám jelenik meg |
+| Nem szállít Magyarországra (a `shipToLocations` szerint kizárja HU-t) | – | nem, csak a darabszám jelenik meg |
 | Ellenőrzendő | valóban kétértelmű cím | igen, jelölve |
+
+**Minden alapból rejtett csoport megtekinthető:** az összesítőben a darabszámok kattinthatók (pl. „58 nem támogatott modell”), és megnyitják az adott csoport tételeit ugyanolyan kártyákkal, a csoport nevével jól láthatóan jelölve. A rejtett tételek soha nem keveredhetnek az alap találati listába. Ehhez a háttérrendszer minden tételt visszaad a tételtípusával együtt, és a szűrés a kliensben történik (eladói adat így sem kerülhet a válaszba).
 
 Fontos: a konzol mellé adott tartozék („Neuer Controller”, „Box und Kabel”, „Fortnite Bundle”) nem teszi a tételt kiegészítővé. Kiegészítőnek csak az számít, ahol a cím a konzol nélküli részre utal (pl. „nur Controller”, „Box leer”, „Mainboard”).
 
