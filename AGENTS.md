@@ -106,12 +106,13 @@ node tools/measure_webapp.mjs  # CDF_WEBAPP_URL és CDF_TOKEN szükséges
 A Google-fiók, a meglévő projekt csatlakoztatása, a Script Properties és a telepítés lépései az [Apps Script útmutatójában](apps_script/README.md) szerepelnek.
 
 ```powershell
-# Flutter (a repó gyökeréből) – még nem létezik
+# Flutter (a repó gyökeréből)
 cd flutter_app
 flutter pub get
 flutter test
 flutter analyze
 flutter run -d windows
+flutter build windows
 flutter build apk --release
 ```
 

@@ -1,0 +1,197 @@
+import 'package:flutter_app/api/models.dart';
+import 'package:flutter_app/api/webapp.dart';
+import 'package:flutter_app/listing_card.dart';
+import 'package:flutter_app/search_screen.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
+
+import 'fixtures/responses.dart';
+
+void main() {
+  Future<void> screen(WidgetTester tester, SearchScreen page) async {
+    await tester.binding.setSurfaceSize(const Size(1280, 1350));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(MaterialApp(home: page));
+  }
+
+  testWidgets(
+    'cards show shipping and totals only when known and load an expandable description',
+    (tester) async {
+      var requests = 0;
+      await tester.binding.setSurfaceSize(const Size(850, 1100));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ListView(
+              children: [
+                ListingCard(
+                  item: Listing.fromJson(listing(shipping: '12', total: '87')),
+                  now: testTime,
+                  loadDetails: (_) async {
+                    requests++;
+                    return ListingDetails.fromJson(details);
+                  },
+                  onUnavailable: () {},
+                ),
+                ListingCard(
+                  item: Listing.fromJson(listing(id: 'v1|456|0')),
+                  now: testTime,
+                  loadDetails: (_) async => ListingDetails.fromJson(details),
+                  onUnavailable: () {},
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      expect(find.text('Teljes ár'), findsOneWidget);
+      expect(find.text('Nem ismert'), findsOneWidget);
+      expect(requests, 0);
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Leírás').first);
+      await tester.pumpAndSettle();
+      expect(requests, 1);
+      expect(find.text('Az eladó megjegyzése az állapotról'), findsOneWidget);
+      expect(find.text('Defektes Laufwerk'), findsOneWidget);
+      expect(find.text('Originalverpackt mit Zubehör'), findsOneWidget);
+      expect(find.text('Fordítás a Google Fordítóval'), findsOneWidget);
+      expect(
+        translationLink('é & ${'🎮' * 4500}')
+            .queryParameters['text']!
+            .runes
+            .length,
+        4500,
+      );
+    },
+  );
+
+  testWidgets('listing_not_found adds a closed listing marker', (tester) async {
+    var unavailable = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: ListingCard(
+              item: Listing.fromJson(listing()),
+              now: testTime,
+              loadDetails: (_) async => throw const AppFailure(
+                'A hirdetés már nem elérhető',
+                code: 'listing_not_found',
+              ),
+              onUnavailable: () => unavailable = true,
+            ),
+          ),
+        ),
+      ),
+    );
+    final button = find.widgetWithText(OutlinedButton, 'Leírás');
+    await tester.ensureVisible(button);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    expect(unavailable, isTrue);
+    expect(find.text('A hirdetés már nem elérhető'), findsOneWidget);
+  });
+
+  testWidgets('partial run is labeled and country errors expand', (
+    tester,
+  ) async {
+    final result = SearchResult.fromJson(
+      search(
+        status: 'partial',
+        countries: [
+          {
+            'country': 'DE',
+            'status': 'partial',
+            'queries': [
+              {
+                'query': 'ps5',
+                'status': 'error',
+                'error': 'Időtúllépés',
+                'warnings': [],
+                'count': 0,
+              },
+            ],
+          },
+        ],
+      ),
+    );
+    await screen(
+      tester,
+      SearchScreen(
+        clock: () => testTime,
+        search: () async => result,
+        loadDetails: (_) async => ListingDetails.fromJson(details),
+      ),
+    );
+    await tester.tap(find.text('Keresés indítása'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Részleges keresés'), findsOneWidget);
+    await tester.tap(find.text('Országonkénti állapot és figyelmeztetések'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Németország'), findsOneWidget);
+    expect(find.text('Hiba: Időtúllépés'), findsOneWidget);
+  });
+
+  testWidgets('auction disappears exactly at expiration', (tester) async {
+    final start = tester.binding.clock.now();
+    DateTime now() =>
+        testTime.add(tester.binding.clock.now().difference(start));
+    final result = SearchResult.fromJson(
+      search(
+        unknown: [
+          listing(
+            title: 'Lejáró tesztaukció',
+            end: testTime.add(const Duration(milliseconds: 350)),
+          ),
+        ],
+      ),
+    );
+    await screen(
+      tester,
+      SearchScreen(
+        initial: result,
+        clock: now,
+        search: () async => result,
+        loadDetails: (_) async => ListingDetails.fromJson(details),
+      ),
+    );
+    expect(find.text('Lejáró tesztaukció'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 349));
+    expect(find.text('Lejáró tesztaukció'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 1));
+    expect(find.text('Lejáró tesztaukció'), findsNothing);
+  });
+
+  testWidgets(
+    'offline results are marked and listings beyond the freshness limit are hidden',
+    (tester) async {
+      final result = SearchResult.fromJson(
+        search(
+          unknown: [
+            listing(
+              title: 'Régebben ellenőrzött',
+              checkedAt: testTime.subtract(const Duration(hours: 2)),
+            ),
+            listing(
+              id: 'v1|2|0',
+              title: 'Túl régi',
+              checkedAt: testTime.subtract(const Duration(hours: 6)),
+            ),
+          ],
+        ),
+      );
+      await screen(
+        tester,
+        SearchScreen(
+          initial: result,
+          clock: () => testTime,
+          search: () async => result,
+          loadDetails: (_) async => ListingDetails.fromJson(details),
+        ),
+      );
+      expect(find.textContaining('Korábban mentett eredmény'), findsOneWidget);
+      expect(find.text('Nem ellenőrzött'), findsOneWidget);
+      expect(find.text('Túl régi'), findsNothing);
+    },
+  );
+}

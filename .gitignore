@@ -3,6 +3,7 @@
 .clasprc.json
 apps_script/src/appsscript.json
 *.db
+*.apk
 .venv/
 __pycache__/
 node_modules/
