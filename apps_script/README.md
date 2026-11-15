@@ -93,6 +93,14 @@ Sikertelen vagy részleges keresésnél a mérő megmutatja a lekérdezéshibák
 
 A diagnosztika egy friss OAuth-kérést indít. A naplóban például `HTTP 200`, `HTTP 401 | error: invalid_client` vagy a kitakart Apps Script-kivétel jelenik meg. A függvényhez elég a forrás feltöltése. A `/exec` címen futó verziót a **Bevezetés → Bevezetések kezelése** alatt lehet frissíteni. [Google útmutató az Apps Script engedélyhibáihoz](https://developers.google.com/apps-script/guides/support/troubleshooting)
 
+## Magyarországi szállítás diagnosztikája
+
+1. Nyisd meg a **Console Deal Finder** Apps Script-projektet, és a **Szerkesztő** nézetben frissítsd az oldalt a feltöltés után.
+2. Válaszd a **ship_to_diagnostic.gs** fájlt, majd a felső függvénylistában a **diagnoseShipToLocations** függvényt. Kattints a **Futtatás** gombra.
+3. Az eredmény a **Végrehajtási naplóban** jelenik meg. A teljes keresés, a tokenkérések és a részletlekérések beleszámítanak a projekt napi eBay-hívásszámlálójába.
+
+A diagnosztika külön bulk tokent kér a `getItems` végponthoz. Ha az eBay megtagadja a hozzáférést, vagy a kötegelt válaszokban nincs használható `shipToLocations`, a keresés első tíz ismeretlen díjú tételét egyenként is lekéri. A mintán kívüli, sikertelenül lekért vagy egyértelmű régióadat nélküli tételek a „nem eldönthető” csoportba kerülnek. A szállítási opciókból csak a díj, a szolgáltatás, a kézbesítési idő és a becslési célország adatai jelennek meg. [eBay Browse API OpenAPI-leírás](https://developer.ebay.com/api-docs/master/buy/browse/openapi/3/buy_browse_v1_oas3.json)
+
 ## A kliensnek szánt API
 
 A `POST` JSON-törzse `token`, `action`, `params` és opcionális `request_id` mezőből áll. A felső mérethatár 10 240 bájt. Az egyszerű, legfeljebb 128 karakteres kérésazonosítót a válasz visszaadja. A `doGet` csak az API nevét adja vissza.
