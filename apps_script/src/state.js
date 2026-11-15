@@ -1,0 +1,258 @@
+const STATE_COLUMNS = {
+  favorites: ['source', 'source_listing_id', 'saved_at', 'title', 'url', 'image_url', 'console_model',
+    'item_type', 'buying_options', 'price', 'current_bid', 'currency', 'shipping_cost', 'item_country',
+    'end_time', 'status', 'last_checked_at', 'last_check_error', 'revision', 'deleted', 'last_check_error_at',
+    'shipping_currency', 'ships_to_hu', 'bid_count', 'is_banned', 'possibly_not_faulty', 'listed_at'],
+  hidden: ['source', 'source_listing_id', 'hidden_at', 'title', 'revision', 'deleted'],
+  seen: ['source', 'source_listing_id', 'first_seen_at'],
+  settings: ['key', 'value', 'revision'],
+  meta: ['key', 'value'],
+};
+const STATE_TABLES = ['favorites', 'hidden', 'settings'];
+const FILTER_MODELS = ['PS5 (Fat)', 'PS5 Slim', 'PS5 Pro', 'PS5 (változat nem ismert)', 'Xbox Series X', 'Xbox Series S'];
+const FILTER_FIELDS = ['models', 'max_price', 'max_total', 'buying', 'ending', 'boards', 'order'];
+
+function withStateLock(action) {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) throw new AppError('state_busy', 'A szinkron foglalt, próbáld újra.');
+  try {
+    return action(openStateSheet());
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function openStateSheet() {
+  const props = PropertiesService.getScriptProperties();
+  let id = props.getProperty('SHEET_ID');
+  let book;
+  if (id) book = SpreadsheetApp.openById(id);
+  else {
+    book = SpreadsheetApp.create('Console Deal Finder – adatok');
+    id = book.getId();
+    props.setProperty('SHEET_ID', id);
+    book.getSheets()[0].setName('favorites');
+  }
+  for (const [name, columns] of Object.entries(STATE_COLUMNS)) {
+    const sheet = book.getSheetByName(name) || book.insertSheet(name);
+    const available = sheet.getMaxColumns();
+    if (columns.length > available) sheet.insertColumnsAfter(available, columns.length - available);
+    if (!sheet.getLastRow()) sheet.getRange(1, 1, 1, columns.length).setValues([columns]);
+  }
+  return book;
+}
+
+function initializeState() {
+  withStateLock(book => {
+    readState(book);
+    SpreadsheetApp.flush();
+  });
+  Logger.log('A szinkrontáblázat készen áll.');
+}
+
+function sheetCell(value) {
+  if (value == null) return '';
+  if (typeof value === 'object') return JSON.stringify(value);
+  // Force text, including numeric strings, and escape any leading apostrophe.
+  return typeof value === 'string' ? "'" + value : value;
+}
+
+function readRows(book, table) {
+  const sheet = book.getSheetByName(table);
+  const columns = STATE_COLUMNS[table];
+  const count = sheet.getLastRow() - 1;
+  if (count < 1) return [];
+  return sheet.getRange(2, 1, count, columns.length).getValues().map(cells => {
+    return Object.fromEntries(columns.map((key, index) => {
+      let value = cells[index];
+      if (value === '') value = null;
+      if (value != null && ['buying_options', 'value'].includes(key)) value = JSON.parse(value);
+      return [key, value];
+    }));
+  });
+}
+
+function writeRows(book, table, rows) {
+  const sheet = book.getSheetByName(table);
+  const columns = STATE_COLUMNS[table];
+  const oldLength = sheet.getLastRow() - 1;
+  if (rows.length + 1 > sheet.getMaxRows()) {
+    sheet.insertRowsAfter(sheet.getMaxRows(), rows.length + 1 - sheet.getMaxRows());
+  }
+  if (rows.length) sheet.getRange(2, 1, rows.length, columns.length)
+    .setValues(rows.map(row => columns.map(key => sheetCell(row[key]))));
+  if (oldLength > rows.length) sheet.getRange(rows.length + 2, 1, oldLength - rows.length, columns.length).clearContent();
+}
+
+function rowKey(row) {
+  return row.key || row.source + ':' + row.source_listing_id;
+}
+
+function readState(book) {
+  const meta = Object.fromEntries(readRows(book, 'meta').map(row => [row.key, row.value]));
+  if (meta.pending_meta && meta.pending_updates) {
+    // Complete a reserved batch before serving any state reads or writes.
+    finishStateWrite(book, { meta: meta.pending_meta, updates: meta.pending_updates });
+    return meta.pending_meta;
+  }
+  return { revision: meta.revision || 0, op_ids: meta.op_ids || [] };
+}
+
+function finishStateWrite(book, batch) {
+  for (const [table, updates] of Object.entries(batch.updates)) {
+    const rows = new Map(readRows(book, table).map(row => [rowKey(row), row]));
+    for (const row of updates) rows.set(rowKey(row), row);
+    writeRows(book, table, Array.from(rows.values()));
+  }
+  SpreadsheetApp.flush();
+  writeRows(book, 'meta', Object.entries(batch.meta).map(([key, value]) => ({ key, value })));
+  SpreadsheetApp.flush();
+}
+
+function commitStateWrite(book, meta, updates) {
+  const batch = { meta, updates };
+  writeRows(book, 'meta', [{ key: 'pending_meta', value: meta }, { key: 'pending_updates', value: updates }]);
+  SpreadsheetApp.flush();
+  finishStateWrite(book, batch);
+}
+
+function stateGet(params) {
+  requireKeys(params, ['since_revision']);
+  const since = params.since_revision;
+  if (!Number.isSafeInteger(since) || since < 0) invalidState();
+  return withStateLock(book => {
+    const meta = readState(book);
+    if (since > meta.revision) invalidState();
+    return { revision: meta.revision, ...Object.fromEntries(STATE_TABLES.map(table =>
+      [table, readRows(book, table).filter(row => row.revision > since)])) };
+  });
+}
+
+function invalidState() {
+  throw new AppError('invalid_params', 'Érvénytelen szinkronművelet vagy állapot.');
+}
+
+function filterSettings(value) {
+  if (!record(value)) invalidState();
+  requireKeys(value, FILTER_FIELDS);
+  if (!Array.isArray(value.models) || value.models.length > FILTER_MODELS.length ||
+      value.models.some(model => !FILTER_MODELS.includes(model)) ||
+      !['both', 'auction', 'fixed'].includes(value.buying) || typeof value.ending !== 'boolean' ||
+      typeof value.boards !== 'boolean' || !['total', 'cheap', 'expensive', 'newest', 'ending'].includes(value.order) ||
+      [value.max_price, value.max_total].some(price => price !== null &&
+        (typeof price !== 'number' || !Number.isFinite(price) || price < 0))) invalidState();
+  return value;
+}
+
+function stateIdentity(value) {
+  if (!record(value) || value.source !== 'ebay' ||
+      typeof value.source_listing_id !== 'string' || !/^v1\|\d{1,40}\|\d{1,40}$/.test(value.source_listing_id)) {
+    invalidState();
+  }
+  return { source: value.source, source_listing_id: value.source_listing_id };
+}
+
+function favoriteListing(listing, secrets) {
+  const identity = stateIdentity(listing);
+  const fields = STATE_COLUMNS.favorites.filter(key => !['revision', 'deleted', 'saved_at', 'last_check_error',
+    'last_check_error_at', 'source', 'source_listing_id'].includes(key));
+  const safe = Object.fromEntries(fields.map(key => [key, listing[key] ?? null]));
+  const link = value => typeof value === 'string' && value.length <= 2048 &&
+    /^https:\/\/(?:[a-z0-9-]+\.)*(?:ebay\.(?:de|com|fr|it|es|nl|at|ie|be|co\.uk)|ebayimg\.com)\//i.test(value);
+  if (!link(safe.url) || (safe.image_url !== null && !link(safe.image_url)) ||
+      !nonempty(safe.title) || safe.title.length > 500 || !nonempty(safe.console_model) || safe.console_model.length > 100 ||
+      !ITEM_TYPES.includes(safe.item_type) || !EU_COUNTRIES.includes(safe.item_country) ||
+      !['ACTIVE', 'ENDED', 'UNKNOWN'].includes(safe.status) ||
+      !['yes', 'no', 'unknown'].includes(safe.ships_to_hu) ||
+      !Array.isArray(safe.buying_options) || !safe.buying_options.length ||
+      safe.buying_options.some(option => !['AUCTION', 'FIXED_PRICE', 'BEST_OFFER', 'CLASSIFIED_AD'].includes(option)) ||
+      !timestamp(safe.last_checked_at) ||
+      (safe.end_time !== null && !timestamp(safe.end_time)) ||
+      (safe.listed_at !== null && !timestamp(safe.listed_at)) ||
+      [safe.price, safe.current_bid, safe.shipping_cost].some(value =>
+        value !== null && (typeof value !== 'string' || value.length > 30 || !/^\d+(?:\.\d+)?$/.test(value))) ||
+      [safe.currency, safe.shipping_currency].some(value => value !== null && !/^[A-Z]{3}$/.test(value)) ||
+      (safe.bid_count !== null && (!Number.isSafeInteger(safe.bid_count) || safe.bid_count < 0)) ||
+      typeof safe.is_banned !== 'boolean' || typeof safe.possibly_not_faulty !== 'boolean') invalidState();
+  const protectedValues = [...secrets, ...sellerIdentities(listing.seller)];
+  for (const key of ['title', 'url', 'image_url', 'console_model']) safe[key] = redactContact(safe[key], protectedValues);
+  return { ...identity, ...safe };
+}
+
+function stateApply(params, secrets) {
+  requireKeys(params, ['ops']);
+  if (!Array.isArray(params.ops) || params.ops.length > 20) invalidState();
+  const ops = params.ops.map(op => {
+    if (!record(op) || typeof op.op_id !== 'string' || !/^[a-z0-9_-]{12,80}$/i.test(op.op_id) ||
+        redactText(op.op_id, secrets) !== op.op_id) invalidState();
+    const now = new Date().toISOString();
+    let table;
+    let row;
+    switch (op.type) {
+      case 'favorite_add':
+        table = 'favorites';
+        row = { ...favoriteListing(op.listing, secrets), saved_at: now, deleted: false };
+        break;
+      case 'favorite_remove':
+        table = 'favorites';
+        row = { ...stateIdentity(op), deleted: true };
+        break;
+      case 'hide':
+      case 'unhide':
+        table = 'hidden';
+        if (op.type === 'hide' && (!nonempty(op.title) || op.title.length > 500)) invalidState();
+        row = { ...stateIdentity(op), hidden_at: now,
+          title: op.type === 'hide' ? redactContact(op.title, secrets) : null, deleted: op.type === 'unhide' };
+        break;
+      case 'setting_set':
+        if (op.key !== 'filters') invalidState();
+        table = 'settings';
+        row = { key: op.key, value: filterSettings(op.value) };
+        break;
+      default: invalidState();
+    }
+    return { id: op.op_id, table, row };
+  });
+  return withStateLock(book => {
+    const meta = readState(book);
+    const applied = new Set(meta.op_ids);
+    const updates = {};
+    for (const { id, table, row } of ops) {
+      if (applied.has(id)) continue;
+      applied.add(id);
+      if (!updates[table]) updates[table] = [];
+      updates[table].push({ ...row, revision: ++meta.revision });
+    }
+    if (Object.keys(updates).length) {
+      meta.op_ids = Array.from(applied).slice(-500);
+      commitStateWrite(book, meta, updates);
+    }
+    return { revision: meta.revision, applied_op_ids: ops.map(op => op.id) };
+  });
+}
+
+function markSearchSeen(result) {
+  return withStateLock(book => {
+    const all = readRows(book, 'seen');
+    const now = new Date();
+    const rows = all.filter(row => now.getTime() - Date.parse(row.first_seen_at) < 30 * 86400000);
+    const known = new Set(rows.map(rowKey));
+    const firstSync = rows.length === 0 && result.status !== 'error';
+    let changed = all.length !== rows.length;
+    for (const item of [...result.listings, ...result.unknown_shipping]) {
+      const key = rowKey(item);
+      const fresh = !known.has(key);
+      item.is_new = fresh && !firstSync;
+      if (fresh) {
+        known.add(key);
+        rows.push({ source: item.source, source_listing_id: item.source_listing_id, first_seen_at: now.toISOString() });
+        changed = true;
+      }
+    }
+    if (changed) {
+      writeRows(book, 'seen', rows);
+      SpreadsheetApp.flush();
+    }
+    return { ...result, first_sync: firstSync };
+  });
+}

@@ -34,7 +34,7 @@ function requireKeys(params, allowed) {
 }
 
 function runAction(action, params, secrets) {
-  if (!['ping', 'search', 'listing_details'].includes(action)) {
+  if (!['ping', 'search', 'listing_details', 'state_get', 'state_apply', 'favorites_refresh'].includes(action)) {
     throw new AppError('unknown_action', 'Ismeretlen művelet.');
   }
   if (!record(params)) throw new AppError('invalid_params', 'A params mezőnek objektumnak kell lennie.');
@@ -44,8 +44,14 @@ function runAction(action, params, secrets) {
       return { version: API_VERSION, server_time: new Date().toISOString() };
     case 'search':
       requireKeys(params, ['queries', 'countries']);
-      return searchEbay(searchValues(params.countries, EU_COUNTRIES), searchValues(params.queries, QUERIES),
-        secrets);
+      return markSearchSeen(searchEbay(searchValues(params.countries, EU_COUNTRIES),
+        searchValues(params.queries, QUERIES), secrets));
+    case 'state_get':
+      return stateGet(params);
+    case 'state_apply':
+      return stateApply(params, secrets);
+    case 'favorites_refresh':
+      return refreshFavorites(params, secrets);
     case 'listing_details': {
       requireKeys(params, ['source_listing_id']);
       const id = params.source_listing_id;
@@ -82,7 +88,7 @@ function doPost(event) {
       requestId = request.request_id;
     }
     const params = request.params === undefined ? {} : request.params;
-    const data = runAction(request.action, params, tokens);
+    const data = runAction(request.action, params, protectedValues.filter(Boolean));
     return jsonOutput({ ok: true, data, request_id: requestId });
   } catch (error) {
     return jsonOutput({

@@ -14,6 +14,7 @@ Json listing({
   String type = 'console',
   String model = 'PS5 Slim',
   String shipsToHu = 'yes',
+  bool isNew = false,
 }) => {
   'source': 'ebay',
   'source_listing_id': id,
@@ -31,6 +32,7 @@ Json listing({
   'currency': 'EUR',
   'shipping_cost': shipping,
   'ships_to_hu': shipsToHu,
+  'is_new': isNew,
   'shipping_currency': shipping == null ? null : 'EUR',
   'total_price': total,
   'item_country': 'DE',

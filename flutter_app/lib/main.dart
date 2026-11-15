@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:material_ui/material_ui.dart';
 
 import 'api/models.dart';
@@ -5,6 +8,7 @@ import 'api/webapp.dart';
 import 'search_screen.dart';
 import 'settings_screen.dart';
 import 'storage.dart';
+import 'sync.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,7 +68,9 @@ class _Home extends StatefulWidget {
 
 class _HomeState extends State<_Home> {
   final settingsStore = const SettingsStore();
-  final cache = const SearchCache();
+  SearchCache cache = const SearchCache();
+  SharedState? shared;
+  WebappClient? client;
   WebappSettings? settings;
   SearchResult? cached;
   String? settingsError;
@@ -77,7 +83,6 @@ class _HomeState extends State<_Home> {
   }
 
   Future<void> restore() async {
-    final pendingCache = cache.read();
     WebappSettings? restored;
     String? error;
     try {
@@ -86,11 +91,9 @@ class _HomeState extends State<_Home> {
       error =
           'A mentett kapcsolat nem olvasható. Add meg újra a beállításokat.';
     }
-    final result = await pendingCache;
+    if (restored != null) await connect(restored);
     if (mounted) {
       setState(() {
-        settings = restored;
-        cached = result;
         settingsError = error;
         loading = false;
       });
@@ -98,14 +101,66 @@ class _HomeState extends State<_Home> {
   }
 
   Future<void> save(WebappSettings value) async {
-    await settingsStore.write(value);
-    if (mounted) setState(() => settings = value);
+    final sameProject = settings?.endpoint == value.endpoint;
+    final random = Random.secure();
+    final id = sameProject
+        ? settings!.stateId
+        : List.generate(24, (_) => random.nextInt(16).toRadixString(16)).join();
+    final next = WebappSettings(
+      value.endpoint.toString(),
+      value.token,
+      stateId: id,
+    );
+    await settingsStore.write(next);
+    await connect(next, sameProject: sameProject);
+    if (mounted) setState(() {});
+  }
+
+  Future<void> connect(WebappSettings value, {bool sameProject = false}) async {
+    final nextClient = WebappClient(value);
+    final store = SharedStateStore(value.stateId);
+    SharedState create(Json? restored) => SharedState(
+      readRemote: nextClient.getState,
+      writeRemote: nextClient.applyState,
+      refreshRemote: nextClient.refreshFavorites,
+      save: store.write,
+      restored: restored,
+    );
+    if (sameProject && shared != null) {
+      await shared!.sync();
+    }
+    SharedState next;
+    try {
+      next = create(await store.read());
+    } on Exception {
+      next = create(null);
+    }
+    final nextCache = SearchCache(value.stateId);
+    final nextResult = sameProject ? cached : await nextCache.read();
+    if (!mounted) {
+      next.dispose();
+      return;
+    }
+    shared?.dispose();
+    shared = next;
+    settings = value;
+    client = nextClient;
+    cache = nextCache;
+    cached = nextResult;
+    unawaited(next.sync());
+  }
+
+  @override
+  void dispose() {
+    shared?.dispose();
+    super.dispose();
   }
 
   void openSettings() => Navigator.of(context).push<void>(
     MaterialPageRoute(
       builder: (page) => SettingsScreen(
         initial: settings,
+        shared: shared,
         save: (value) async {
           await save(value);
           if (page.mounted) Navigator.of(page).pop();
@@ -122,14 +177,15 @@ class _HomeState extends State<_Home> {
     if (settings == null) {
       return SettingsScreen(initialError: settingsError, save: save);
     }
-    final client = WebappClient(settings!);
     return SearchScreen(
+      key: ValueKey(settings!.stateId),
       initial: cached,
-      search: client.search,
-      loadDetails: client.details,
+      search: client!.search,
+      loadDetails: client!.details,
       sanitize: settings!.safeText,
       saveResult: cache.write,
       openSettings: openSettings,
+      shared: shared,
     );
   }
 }

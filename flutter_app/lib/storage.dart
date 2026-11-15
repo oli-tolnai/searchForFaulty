@@ -19,6 +19,7 @@ class SettingsStore {
     return WebappSettings(
       fields.required<String>('url'),
       fields.required<String>('token'),
+      stateId: fields.json['state_id'] as String? ?? 'default',
     );
   }
 
@@ -27,17 +28,51 @@ class SettingsStore {
     value: jsonEncode({
       'url': settings.endpoint.toString(),
       'token': settings.token,
+      'state_id': settings.stateId,
     }),
   );
 }
 
-class SearchCache {
-  const SearchCache();
+class SharedStateStore {
+  const SharedStateStore(this.stateId);
+  final String stateId;
 
   Future<File> _file() async {
     final directory = await getApplicationSupportDirectory();
     await directory.create(recursive: true);
-    return File('${directory.path}${Platform.pathSeparator}last-search.json');
+    if (!RegExp(r'^[a-z0-9]{1,40}$').hasMatch(stateId)) invalidResponse();
+    return File(
+      '${directory.path}${Platform.pathSeparator}shared-$stateId.json',
+    );
+  }
+
+  Future<Json?> read() async {
+    final file = await _file();
+    return await file.exists()
+        ? object(jsonDecode(await file.readAsString()))
+        : null;
+  }
+
+  Future<void> write(Json snapshot) async {
+    final file = await _file();
+    final pending = File('${file.path}.tmp');
+    await pending.writeAsString(jsonEncode(snapshot), flush: true);
+    await pending.rename(file.path);
+  }
+}
+
+class SearchCache {
+  const SearchCache([this.stateId = 'default']);
+  final String stateId;
+
+  Future<File> _file() async {
+    final directory = await getApplicationSupportDirectory();
+    await directory.create(recursive: true);
+    if (!RegExp(r'^[a-z0-9]{1,40}$').hasMatch(stateId)) invalidResponse();
+    final filename = stateId == 'default'
+        ? 'last-search.json'
+        : 'last-search-$stateId.json';
+    return File('${directory.path}${Platform.pathSeparator}$filename');
   }
 
   Future<SearchResult?> read() async {

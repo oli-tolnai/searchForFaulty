@@ -91,6 +91,11 @@ function fetchOptions(options) {
   return { muteHttpExceptions: true, followRedirects: false, escaping: false, timeoutSeconds: 15, ...options };
 }
 
+function ebayFetchBatchSize() {
+  const configured = Number(PropertiesService.getScriptProperties().getProperty('FETCH_BATCH_SIZE'));
+  return Number.isSafeInteger(configured) && configured > 0 ? Math.min(configured, 59) : 4;
+}
+
 function fetchEbay(url, options) {
   try {
     return UrlFetchApp.fetch(url, fetchOptions(options));

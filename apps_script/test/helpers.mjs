@@ -33,6 +33,45 @@ export function runtime({
   const sleeps = [];
   const log = [];
   const digests = [];
+  const sheets = new Map();
+  function insertSheet(initial) {
+    let name = initial;
+    const rows = [];
+    const sheet = {
+      rows,
+      setName(next) { sheets.delete(name); name = next; sheets.set(name, sheet); return sheet; },
+      getLastRow: () => rows.length,
+      getMaxRows: () => 1000,
+      getMaxColumns: () => 26,
+      insertRowsAfter() {},
+      insertColumnsAfter() {},
+      getRange(row, column, count, width) {
+        assert.ok(locked);
+        assert.equal(column, 1);
+        return {
+          getValues: () => rows.slice(row - 1, row - 1 + count),
+          setValues(values) {
+            assert.equal(values.length, count);
+            values.forEach((cells, index) => {
+              assert.equal(cells.length, width);
+              assert.ok(!cells.some(value => typeof value === 'string' && value.startsWith('=')));
+              rows[row - 1 + index] = cells.map(value =>
+                typeof value === 'string' && value.startsWith("'") ? value.slice(1) : value);
+            });
+          },
+          clearContent() { rows.splice(row - 1, count); },
+        };
+      },
+    };
+    sheets.set(name, sheet);
+    return sheet;
+  }
+  const spreadsheet = {
+    getId: () => 'fixture-sheet',
+    getSheets: () => Array.from(sheets.values()),
+    getSheetByName: name => sheets.get(name) ?? null,
+    insertSheet,
+  };
   const context = vm.createContext({
     Date: class extends Date {
       constructor(...args) { super(...(args.length ? args : [now])); }
@@ -61,6 +100,16 @@ export function runtime({
           props.set(key, value);
         },
       }),
+    },
+    SpreadsheetApp: {
+      create(name) {
+        assert.ok(locked);
+        assert.equal(name, 'Console Deal Finder – adatok');
+        insertSheet('Sheet1');
+        return spreadsheet;
+      },
+      openById(id) { assert.ok(locked); assert.equal(id, 'fixture-sheet'); return spreadsheet; },
+      flush() { assert.ok(locked); },
     },
     CacheService: {
       getScriptCache: () => ({
@@ -119,7 +168,7 @@ export function runtime({
     return JSON.parse(output.content);
   }
   return {
-    calls, batches, sleeps, log, cache, props, digests, run, postRaw, context,
+    calls, batches, sleeps, log, cache, props, digests, run, postRaw, context, sheets,
     post: (action, params, rest) => postRaw(JSON.stringify({
       action, params, token: 'test-client-token', request_id: 'request-1', ...rest,
     })),

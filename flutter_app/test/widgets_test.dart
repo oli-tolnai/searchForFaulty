@@ -2,6 +2,7 @@ import 'package:flutter_app/api/models.dart';
 import 'package:flutter_app/api/webapp.dart';
 import 'package:flutter_app/listing_card.dart';
 import 'package:flutter_app/search_screen.dart';
+import 'package:flutter_app/sync.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -13,6 +14,50 @@ void main() {
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(MaterialApp(home: page));
   }
+
+  testWidgets('hidden entries stay out of both normal and grouped results', (
+    tester,
+  ) async {
+    final result = SearchResult.fromJson(
+      search(
+        unknown: [
+          listing(title: 'Látható konzol'),
+          listing(
+            id: 'v1|456|0',
+            shipsToHu: 'no',
+            title: 'Elrejtett belföldi konzol',
+          ),
+        ],
+      ),
+    );
+    final controller = SharedState(
+      readRemote: (_) async => throw const AppFailure('offline'),
+      writeRemote: (_) async => throw const AppFailure('offline'),
+      refreshRemote: () async => {},
+      save: (_) async {},
+    );
+    await controller.hide(result.unknownShipping.last);
+    await screen(
+      tester,
+      SearchScreen(
+        initial: result,
+        clock: () => testTime,
+        shared: controller,
+        search: () async => result,
+        loadDetails: (_) async => ListingDetails.fromJson(details),
+      ),
+    );
+    expect(find.text('Látható konzol'), findsOneWidget);
+    expect(find.text('Elrejtett belföldi konzol'), findsNothing);
+    await tester.tap(find.text('0 · Nem szállít Magyarországra'));
+    await tester.pumpAndSettle();
+    expect(find.text('Elrejtett belföldi konzol'), findsNothing);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Elrejtett'));
+    await tester.pumpAndSettle();
+    expect(find.text('Elrejtett belföldi konzol'), findsOneWidget);
+  });
 
   testWidgets('ships-no and other hidden types open in separate groups', (
     tester,

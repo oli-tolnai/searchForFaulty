@@ -33,6 +33,12 @@ class ListingCard extends StatefulWidget {
     required this.loadDetails,
     required this.onUnavailable,
     this.unavailable = false,
+    this.favorite = false,
+    this.onFavorite,
+    this.onHide,
+    this.onOpened,
+    this.newLabel = false,
+    this.savedStatus,
   });
 
   final Listing item;
@@ -40,6 +46,9 @@ class ListingCard extends StatefulWidget {
   final Future<ListingDetails> Function(String id) loadDetails;
   final VoidCallback onUnavailable;
   final bool unavailable;
+  final bool favorite, newLabel;
+  final VoidCallback? onFavorite, onHide, onOpened;
+  final String? savedStatus;
 
   @override
   State<ListingCard> createState() => _ListingCardState();
@@ -89,6 +98,9 @@ class _ListingCardState extends State<ListingCard> {
     final text = Theme.of(context).textTheme;
     final remaining = item.end?.difference(widget.now);
     final stale = isUnchecked(item, widget.now);
+    final archive =
+        widget.savedStatus != null &&
+        widget.now.difference(item.checkedAt) >= maxListingAge;
     final detailsText = details?.description ?? details?.summary;
     final translation = [details?.condition, detailsText]
         .whereType<String>()
@@ -112,7 +124,7 @@ class _ListingCardState extends State<ListingCard> {
         children: [
           AspectRatio(
             aspectRatio: 2.15,
-            child: item.image == null
+            child: item.image == null || archive
                 ? placeholder
                 : Image.network(
                     item.image.toString(),
@@ -133,6 +145,11 @@ class _ListingCardState extends State<ListingCard> {
                   spacing: 6,
                   runSpacing: 6,
                   children: [
+                    if (widget.newLabel) tag('ÚJ', colors.primary),
+                    if (widget.savedStatus == 'ENDED')
+                      tag('Lejárt / nem elérhető', colors.error),
+                    if (widget.savedStatus == 'UNKNOWN' && !stale)
+                      tag('Nem ellenőrzött', colors.tertiary),
                     tag(
                       item.auction ? 'Aukció' : 'Fix ár',
                       item.auction
@@ -161,6 +178,8 @@ class _ListingCardState extends State<ListingCard> {
                       tag('Lehet, hogy nem hibás', colors.secondary),
                     if (item.auction &&
                         !stale &&
+                        (widget.savedStatus == null ||
+                            widget.savedStatus == 'ACTIVE') &&
                         !widget.unavailable &&
                         remaining != null &&
                         remaining > day * 2)
@@ -168,7 +187,8 @@ class _ListingCardState extends State<ListingCard> {
                         'Korai licit – a végső ár várhatóan magasabb',
                         const Color(0xfff7c875),
                       ),
-                    if (stale) tag('Nem ellenőrzött', colors.tertiary),
+                    if (stale && widget.savedStatus != 'ENDED')
+                      tag('Nem ellenőrzött', colors.tertiary),
                     if (widget.unavailable)
                       tag('Valószínűleg lezárult', colors.error),
                   ],
@@ -190,25 +210,29 @@ class _ListingCardState extends State<ListingCard> {
                 if (item.faultSource == 'text')
                   const Text('A hiba a címből vagy a leírásból derül ki.'),
                 const Divider(height: 24),
-                _CardValue(
-                  item.auction ? 'Aktuális licit' : 'Vételár',
-                  money(item.effectivePrice, item.currency),
-                ),
-                if (item.auction && item.bidCount != null)
+                if (!archive)
+                  _CardValue(
+                    item.auction ? 'Aktuális licit' : 'Vételár',
+                    money(item.effectivePrice, item.currency),
+                  ),
+                if (!archive && item.auction && item.bidCount != null)
                   _CardValue('Licitek száma', '${item.bidCount}'),
-                _CardValue(
-                  'Szállítás Magyarországra',
-                  money(item.shipping, item.shippingCurrency),
-                ),
-                if (item.total != null)
+                if (!archive)
+                  _CardValue(
+                    'Szállítás Magyarországra',
+                    money(item.shipping, item.shippingCurrency),
+                  ),
+                if (!archive && item.total != null)
                   _CardValue(
                     'Teljes ár',
                     money(item.total, item.currency),
                     emphasize: true,
                   ),
-                if (item.auction && remaining != null) ...[
+                if (!archive && item.auction && remaining != null) ...[
                   _CardValue('Aukció vége', dateLabel(item.end!)),
                   if (!stale &&
+                      (widget.savedStatus == null ||
+                          widget.savedStatus == 'ACTIVE') &&
                       !widget.unavailable &&
                       remaining > Duration.zero)
                     _CardValue(
@@ -228,7 +252,10 @@ class _ListingCardState extends State<ListingCard> {
                   runSpacing: 8,
                   children: [
                     FilledButton.tonalIcon(
-                      onPressed: () => openExternal(context, item.url),
+                      onPressed: () {
+                        widget.onOpened?.call();
+                        openExternal(context, item.url);
+                      },
                       icon: const Icon(Icons.open_in_new, size: 17),
                       label: const Text('Megnyitás az eBay-en'),
                     ),
@@ -239,6 +266,23 @@ class _ListingCardState extends State<ListingCard> {
                       ),
                       label: const Text('Leírás'),
                     ),
+                    if (widget.onFavorite != null)
+                      IconButton(
+                        tooltip: widget.favorite
+                            ? 'Eltávolítás a kedvencekből'
+                            : 'Kedvencekhez adás',
+                        onPressed: widget.onFavorite,
+                        icon: Icon(
+                          widget.favorite
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                        ),
+                      ),
+                    if (widget.onHide != null)
+                      TextButton(
+                        onPressed: widget.onHide,
+                        child: const Text('Elrejtés'),
+                      ),
                   ],
                 ),
                 if (expanded) ...[

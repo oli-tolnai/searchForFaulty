@@ -103,6 +103,9 @@ class Listing {
       shipping = fields.amount('shipping_cost'),
       shippingCurrency = fields.nullable<String>('shipping_currency'),
       shipsToHu = fields.choice('ships_to_hu', ['yes', 'no', 'unknown']),
+      isNew = fields.json.containsKey('is_new')
+          ? fields.required<bool>('is_new')
+          : false,
       total = fields.amount('total_price'),
       country = fields.nullable<String>('item_country'),
       end = fields.optionalDate('end_time'),
@@ -126,7 +129,7 @@ class Listing {
   final String source, id, title, model, type, status, faultSource, shipsToHu;
   final Uri url;
   final Uri? image;
-  final bool banned, possiblyNotFaulty;
+  final bool banned, possiblyNotFaulty, isNew;
   final List<String> options;
   final String? price,
       currentBid,
@@ -160,6 +163,7 @@ class Listing {
     'shipping_cost': shipping,
     'shipping_currency': shippingCurrency,
     'ships_to_hu': shipsToHu,
+    'is_new': isNew,
     'total_price': total,
     'item_country': country,
     'end_time': end?.toIso8601String(),
@@ -257,6 +261,9 @@ class SearchResult {
       filteredNonEu = fields.count('filtered_non_eu'),
       apiCalls = fields.count('api_calls'),
       getItemCalls = fields.count('get_item_calls'),
+      firstSync = fields.json.containsKey('first_sync')
+          ? fields.required<bool>('first_sync')
+          : false,
       shippingCheck = ShippingCheck.fromJson(
         fields.required<Json>('shipping_check'),
       ),
@@ -276,6 +283,7 @@ class SearchResult {
       dailyApiCalls,
       dailyBrowseCalls;
   final ShippingCheck shippingCheck;
+  final bool firstSync;
   final String? quotaWarning;
   final DateTime searchedAt;
   Iterable<Listing> get allListings => listings.followedBy(unknownShipping);
@@ -290,6 +298,7 @@ class SearchResult {
     'filtered_non_eu': filteredNonEu,
     'api_calls': apiCalls,
     'get_item_calls': getItemCalls,
+    'first_sync': firstSync,
     'shipping_check': shippingCheck.toJson(),
     'daily_api_calls': dailyApiCalls,
     'daily_browse_calls': dailyBrowseCalls,

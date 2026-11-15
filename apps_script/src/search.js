@@ -47,10 +47,7 @@ function searchEbay(countries, queries, clientSecrets) {
     dailyCounter(kind, count);
     calls += count;
   };
-  const rawBatch = PropertiesService.getScriptProperties().getProperty('FETCH_BATCH_SIZE');
-  const configuredBatch = Number(rawBatch);
-  const batchSize = Number.isSafeInteger(configuredBatch) && configuredBatch > 0
-    ? Math.min(configuredBatch, RUN_LIMIT) : 4;
+  const batchSize = ebayFetchBatchSize();
   let credentials;
   let token;
   try {

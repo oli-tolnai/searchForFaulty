@@ -33,7 +33,8 @@ function shippingFromDetail(item) {
 function checkHungarianShipping(items, token, batchSize, countCall, deadline, secrets) {
   const cache = CacheService.getScriptCache();
   const unknown = items.filter(item => item.shipping_cost === null);
-  const keys = unknown.map(item => 'ebay:ship-hu:' + item.source_listing_id);
+  const eligible = unknown.filter(item => ['console', 'console_bundle', 'needs_review', 'mainboard'].includes(item.item_type));
+  const keys = eligible.map(item => 'ebay:ship-hu:' + item.source_listing_id);
   const cached = keys.length ? cache.getAll(keys) : {};
   const pending = [];
   const apply = (item, shipping) => {
@@ -43,7 +44,7 @@ function checkHungarianShipping(items, token, batchSize, countCall, deadline, se
       item.total_price = addMoney(price, item.shipping_cost);
     }
   };
-  for (const [index, item] of unknown.entries()) {
+  for (const [index, item] of eligible.entries()) {
     const key = keys[index];
     if (cached[key]) apply(item, JSON.parse(cached[key]));
     else pending.push({ item, key });

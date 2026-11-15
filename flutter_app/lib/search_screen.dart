@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:material_ui/material_ui.dart';
 
@@ -6,6 +7,7 @@ import 'api/models.dart';
 import 'api/webapp.dart';
 import 'listing_card.dart';
 import 'listings.dart';
+import 'sync.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({
@@ -15,6 +17,7 @@ class SearchScreen extends StatefulWidget {
     required this.loadDetails,
     this.saveResult,
     this.openSettings,
+    this.shared,
     this.sanitize,
     this.clock = DateTime.now,
   });
@@ -23,6 +26,7 @@ class SearchScreen extends StatefulWidget {
   final Future<ListingDetails> Function(String) loadDetails;
   final Future<void> Function(SearchResult)? saveResult;
   final VoidCallback? openSettings;
+  final SharedState? shared;
   final String Function(String)? sanitize;
   final DateTime Function() clock;
 
@@ -42,6 +46,8 @@ class _SearchScreenState extends State<SearchScreen>
   BuyingFilter buying = BuyingFilter.both;
   ListingOrder order = ListingOrder.total;
   HiddenGroup? selectedGroup;
+  int section = 0;
+  String? appliedFilters;
   String? country;
   bool ending = false, boards = false, busy = false;
   String? error, cacheError;
@@ -52,12 +58,15 @@ class _SearchScreenState extends State<SearchScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    widget.shared?.addListener(sharedChanged);
+    restoreFilters();
     scheduleRefresh();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    widget.shared?.removeListener(sharedChanged);
     timer?.cancel();
     title.dispose();
     price.dispose();
@@ -67,7 +76,57 @@ class _SearchScreenState extends State<SearchScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) refresh();
+    if (state == AppLifecycleState.resumed) {
+      refresh();
+      unawaited(widget.shared?.sync());
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant SearchScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.shared != widget.shared) {
+      oldWidget.shared?.removeListener(sharedChanged);
+      widget.shared?.addListener(sharedChanged);
+      restoreFilters();
+    }
+  }
+
+  void sharedChanged() {
+    if (mounted) {
+      setState(restoreFilters);
+      scheduleRefresh();
+    }
+  }
+
+  void restoreFilters() {
+    final filters = widget.shared?.filters;
+    if (filters == null || jsonEncode(filters) == appliedFilters) return;
+    appliedFilters = jsonEncode(filters);
+    models
+      ..clear()
+      ..addAll((filters['models'] as List).cast<String>());
+    price.text = filters['max_price']?.toString() ?? '';
+    total.text = filters['max_total']?.toString() ?? '';
+    buying = BuyingFilter.values.byName(filters['buying'] as String);
+    ending = filters['ending'] as bool;
+    boards = filters['boards'] as bool;
+    order = ListingOrder.values.byName(filters['order'] as String);
+  }
+
+  void changeFilters(VoidCallback change) {
+    setState(change);
+    final filters = <String, Object?>{
+      'models': models.toList(),
+      'max_price': limit(price),
+      'max_total': limit(total),
+      'buying': buying.name,
+      'ending': ending,
+      'boards': boards,
+      'order': order.name,
+    };
+    appliedFilters = jsonEncode(filters);
+    unawaited(widget.shared?.setFilters(filters));
   }
 
   void refresh() {
@@ -100,6 +159,17 @@ class _SearchScreenState extends State<SearchScreen>
         }
       }
     }
+    if (section == 1) {
+      for (final favorite in widget.shared!.favorites) {
+        final item = favorite.item;
+        scheduleAt(item.checkedAt.add(uncheckedAfter));
+        scheduleAt(item.checkedAt.add(maxListingAge));
+        if (item.end case final end?) scheduleAt(end);
+        if (item.auction && favoriteStatus(item, now) == 'ACTIVE') {
+          scheduleAt(now.add(const Duration(seconds: 1)));
+        }
+      }
+    }
     if (next != null) timer = Timer(next!, refresh);
   }
 
@@ -110,6 +180,8 @@ class _SearchScreenState extends State<SearchScreen>
       cacheError = null;
     });
     try {
+      await widget.shared?.sync();
+      widget.shared?.searchedAgain(result?.allListings ?? []);
       final searched = await widget.search();
       if (!mounted) return;
       if (searched.status == 'success') {
@@ -127,11 +199,18 @@ class _SearchScreenState extends State<SearchScreen>
         cached = false;
       });
       scheduleRefresh();
+      unawaited(syncAfterSearch());
     } on AppFailure catch (failure) {
       if (mounted) setState(() => error = failure.message);
     } finally {
       if (mounted) setState(() => busy = false);
     }
+  }
+
+  Future<void> syncAfterSearch() async {
+    final shared = widget.shared;
+    await shared?.sync();
+    await shared?.refresh();
   }
 
   double? limit(TextEditingController controller) {
@@ -147,9 +226,16 @@ class _SearchScreenState extends State<SearchScreen>
   @override
   Widget build(BuildContext context) {
     final now = widget.clock();
+    if (section != 0 && widget.shared != null) return savedScreen(now);
     final data = result;
     final active =
-        data?.allListings.where((item) => visibleListing(item, now)).toList() ??
+        data?.allListings
+            .where(
+              (item) =>
+                  visibleListing(item, now) &&
+                  widget.shared?.isHidden(item) != true,
+            )
+            .toList() ??
         <Listing>[];
     if (selectedGroup case final group?) {
       return hiddenResults(group, active.where(group.contains).toList(), now);
@@ -174,6 +260,7 @@ class _SearchScreenState extends State<SearchScreen>
         .toList();
     final unknown = visible.where(inUnknownShippingBlock).toList();
     return Scaffold(
+      bottomNavigationBar: navigation(),
       appBar: AppBar(
         leading: Icon(
           Icons.sports_esports_outlined,
@@ -234,6 +321,10 @@ class _SearchScreenState extends State<SearchScreen>
                         if (cacheError != null)
                           notice(cacheError!, warning: true),
                         if (data != null) ...[
+                          if (data.firstSync)
+                            notice(
+                              'Első szinkronizálás – a következő kereséstől jelöljük az új hirdetéseket.',
+                            ),
                           if (cached)
                             notice(
                               'Korábban mentett eredmény – utoljára frissítve: ${dateLabel(data.searchedAt)}',
@@ -296,7 +387,7 @@ class _SearchScreenState extends State<SearchScreen>
                 FilterChip(
                   label: Text(model),
                   selected: models.contains(model),
-                  onSelected: (selected) => setState(
+                  onSelected: (selected) => changeFilters(
                     () => selected ? models.add(model) : models.remove(model),
                   ),
                 ),
@@ -327,14 +418,14 @@ class _SearchScreenState extends State<SearchScreen>
                     child: dropdown('Hirdetéstípus', buying, {
                       for (final option in BuyingFilter.values)
                         option: option.label,
-                    }, (value) => setState(() => buying = value)),
+                    }, (value) => changeFilters(() => buying = value)),
                   ),
                   SizedBox(
                     width: width,
                     child: dropdown('Aukciók', ending, {
                       false: 'Mind',
                       true: '24 órán belül záródók',
-                    }, (value) => setState(() => ending = value)),
+                    }, (value) => changeFilters(() => ending = value)),
                   ),
                 ],
               );
@@ -353,7 +444,7 @@ class _SearchScreenState extends State<SearchScreen>
                     label: 'Alaplapok mutatása',
                     child: Switch(
                       value: boards,
-                      onChanged: (value) => setState(() => boards = value),
+                      onChanged: (value) => changeFilters(() => boards = value),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -403,7 +494,7 @@ class _SearchScreenState extends State<SearchScreen>
                       child: dropdown('Rendezés', order, {
                         for (final option in ListingOrder.values)
                           option: option.label,
-                      }, (value) => setState(() => order = value)),
+                      }, (value) => changeFilters(() => order = value)),
                     ),
                     SizedBox(
                       width: width,
@@ -439,7 +530,7 @@ class _SearchScreenState extends State<SearchScreen>
           suffixText: 'EUR',
           errorText: amountError(controller),
         ),
-        onChanged: (_) => setState(() {}),
+        onChanged: (_) => changeFilters(() {}),
       );
 
   Widget dropdown<T>(
@@ -448,6 +539,7 @@ class _SearchScreenState extends State<SearchScreen>
     Map<T, String> options,
     ValueChanged<T> change,
   ) => DropdownButtonFormField<T>(
+    key: ValueKey((label, current)),
     initialValue: current,
     isExpanded: true,
     decoration: InputDecoration(labelText: label),
@@ -675,5 +767,128 @@ class _SearchScreenState extends State<SearchScreen>
     loadDetails: widget.loadDetails,
     unavailable: unavailable.contains(item.id),
     onUnavailable: () => setState(() => unavailable.add(item.id)),
+    favorite: widget.shared?.isFavorite(item) ?? false,
+    newLabel: widget.shared?.isNew(item) ?? item.isNew,
+    onOpened: widget.shared == null
+        ? null
+        : () => widget.shared!.dismissNew(item),
+    onFavorite: widget.shared == null
+        ? null
+        : () => unawaited(widget.shared!.toggleFavorite(item)),
+    onHide: widget.shared == null ? null : () => hide(item),
   );
+
+  void hide(Listing item) {
+    final shared = widget.shared!;
+    unawaited(shared.hide(item));
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: const Text('Hirdetés elrejtve.'),
+          duration: const Duration(seconds: 5),
+          action: SnackBarAction(
+            label: 'Visszavonás',
+            onPressed: () => unawaited(shared.unhide(item.toJson())),
+          ),
+        ),
+      );
+  }
+
+  Widget? navigation() {
+    if (widget.shared == null) return null;
+    return NavigationBar(
+      selectedIndex: section,
+      onDestinationSelected: (value) {
+        if (value == 3) {
+          widget.openSettings?.call();
+          return;
+        }
+        setState(() => section = value);
+        scheduleRefresh();
+        if (value == 1) unawaited(widget.shared!.refresh());
+        if (value == 2) unawaited(widget.shared!.sync());
+      },
+      destinations: const [
+        NavigationDestination(icon: Icon(Icons.search), label: 'Keresés'),
+        NavigationDestination(
+          icon: Icon(Icons.favorite_border),
+          label: 'Kedvencek',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.visibility_off_outlined),
+          label: 'Elrejtett',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.settings_outlined),
+          label: 'Beállítások',
+        ),
+      ],
+    );
+  }
+
+  Widget savedScreen(DateTime now) {
+    final shared = widget.shared!;
+    final favorites = shared.favorites.toList()
+      ..sort((a, b) {
+        final endedA = favoriteStatus(a.item, now) == 'ENDED';
+        final endedB = favoriteStatus(b.item, now) == 'ENDED';
+        return endedA == endedB
+            ? b.savedAt.compareTo(a.savedAt)
+            : (endedA ? 1 : -1);
+      });
+    final hidden = shared.hidden.toList();
+    return Scaffold(
+      appBar: AppBar(title: Text(section == 1 ? 'Kedvencek' : 'Elrejtett')),
+      bottomNavigationBar: navigation(),
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 740),
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: section == 1
+                  ? [
+                      if (favorites.isEmpty)
+                        const Text('Még nincsenek kedvencek.'),
+                      for (final favorite in favorites)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: ListingCard(
+                            key: ValueKey(listingKey(favorite.item)),
+                            item: favorite.item,
+                            now: now,
+                            favorite: true,
+                            savedStatus: favoriteStatus(favorite.item, now),
+                            onFavorite: () =>
+                                unawaited(shared.toggleFavorite(favorite.item)),
+                            onHide: shared.isHidden(favorite.item)
+                                ? null
+                                : () => hide(favorite.item),
+                            loadDetails: widget.loadDetails,
+                            unavailable: unavailable.contains(favorite.item.id),
+                            onUnavailable: () => setState(
+                              () => unavailable.add(favorite.item.id),
+                            ),
+                          ),
+                        ),
+                    ]
+                  : [
+                      if (hidden.isEmpty)
+                        const Text('Még nincsenek elrejtett hirdetések.'),
+                      for (final row in hidden)
+                        ListTile(
+                          title: Text(row['title'] as String),
+                          trailing: TextButton(
+                            onPressed: () => unawaited(shared.unhide(row)),
+                            child: const Text('Visszaállítás'),
+                          ),
+                        ),
+                    ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

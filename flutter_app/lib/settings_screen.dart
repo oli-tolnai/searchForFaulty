@@ -1,16 +1,20 @@
 import 'package:material_ui/material_ui.dart';
 
 import 'api/webapp.dart';
+import 'listings.dart';
+import 'sync.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({
     super.key,
     this.initial,
     this.initialError,
+    this.shared,
     required this.save,
   });
   final WebappSettings? initial;
   final String? initialError;
+  final SharedState? shared;
   final Future<void> Function(WebappSettings settings) save;
 
   @override
@@ -85,6 +89,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
+                if (widget.shared case final shared?) ...[
+                  ListenableBuilder(
+                    listenable: shared,
+                    builder: (context, _) => Text(
+                      shared.localSaveFailed
+                          ? 'A helyi mentés sikertelen.'
+                          : shared.pending
+                          ? 'Nem szinkronizált változások'
+                          : shared.syncFailed
+                          ? 'A szinkron nem érhető el.'
+                          : shared.lastSync == null
+                          ? 'Szinkronizálásra vár'
+                          : 'Szinkronizálva: ${dateLabel(shared.lastSync!)}',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(20),

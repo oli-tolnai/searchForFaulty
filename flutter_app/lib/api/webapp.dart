@@ -13,7 +13,7 @@ class AppFailure implements Exception {
 }
 
 class WebappSettings {
-  WebappSettings(String address, String token)
+  WebappSettings(String address, String token, {this.stateId = 'default'})
     : endpoint = _endpoint(address.trim()),
       token = token.trim() {
     if (this.token.isEmpty) {
@@ -23,6 +23,7 @@ class WebappSettings {
 
   final Uri endpoint;
   final String token;
+  final String stateId;
 
   static Uri _endpoint(String address) {
     final uri = Uri.tryParse(address);
@@ -82,6 +83,15 @@ class WebappClient {
     pingTimeout,
     ListingDetails.fromJson,
   );
+
+  Future<Json> getState(int revision) =>
+      _call('state_get', {'since_revision': revision}, pingTimeout, object);
+
+  Future<Json> applyState(List<Json> ops) =>
+      _call('state_apply', {'ops': ops}, pingTimeout, object);
+
+  Future<Json> refreshFavorites() =>
+      _call('favorites_refresh', {}, searchTimeout, object);
 
   Future<T> _call<T>(
     String action,

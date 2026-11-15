@@ -39,3 +39,9 @@ Az Android-build legalább API 23-at igényel. A release APK a gép helyi debug 
 3. A modell-, ár- és egyéb szűrők a letöltött eredményeket rendezik és szűrik. A kártyán a **Leírás** gomb külön lekéri a hirdetés szövegét.
 
 A cím és a token az eszköz biztonságos tárolójában marad. Az utolsó teljesen sikeres keresés helyi másolata internet nélkül is megjelenik, az eredeti frissítési idővel. Két órától a kártya „Nem ellenőrzött” jelölést kap, hat órától a régi tétel nem jelenik meg.
+
+## Kedvencek, elrejtés és szinkron
+
+A két eszközön ugyanazt a webapp-címet használd. A szív ikon menti a kedvencet, az **Elrejtés** eltávolítja a tételt a találatokból. Öt másodpercig visszavonhatod az elrejtést, később az **Elrejtett** oldalon állíthatod vissza. A szűrők, a rendezés, a kedvencek és az elrejtések szinkronizálódnak. A helyben sorba tett módosítások és az utolsó szinkron állapota a **Beállítások** oldalon látszik.
+
+A kedvencek frissítése a lap megnyitásakor és a keresés után indulhat, legfeljebb 15 percenként. A lejárt kedvencek a lista végén maradnak. Az **ÚJ** címkét a hirdetés megnyitása vagy a következő keresés törli az aktuális eszközön.

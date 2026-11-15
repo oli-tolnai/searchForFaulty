@@ -66,6 +66,14 @@ Set-Clipboard -Value $cdfToken
 
 A forrás feltöltése és a webapp-verzió telepítése külön művelet. [Google webapp-útmutató](https://developers.google.com/apps-script/guides/web) · [Verziózott telepítések](https://developers.google.com/apps-script/concepts/deployments)
 
+### A Sheets-szinkron engedélyezése
+
+1. A friss forrás feltöltése után nyisd meg a szerkesztőben a **state.gs** fájlt, válaszd az **initializeState** függvényt, majd kattints a **Futtatás** gombra.
+2. Engedélyezd a Google Táblázatok elérését a projekt tulajdonosaként. Ha szükséges, futtasd újra a függvényt. A naplóban **A szinkrontáblázat készen áll.** jelenik meg. A projekt első használatkor létrehozza a **Console Deal Finder – adatok** táblázatot, ha még nincs `SHEET_ID` beállítva.
+3. A meglévő webappnál válaszd a **Bevezetés → Bevezetések kezelése → Szerkesztés → Új verzió → Bevezetés** útvonalat. Az eddigi `/exec` cím és kliens-token használható tovább.
+
+A Google Táblázatok engedélye az alkalmazás által létrehozott vagy a `SHEET_ID`-ben megadott fájl megnyitásához szükséges. [SpreadsheetApp dokumentáció](https://developers.google.com/apps-script/reference/spreadsheet/spreadsheet-app)
+
 ## 5. Éles mérés
 
 Az `apps_script/` mappában állítsd be a két környezeti változót a futtatás idejére. Ha a `$cdfToken` már nincs az aktuális PowerShell-munkamenetben, a második sor helyett használd a `$env:CDF_TOKEN = Read-Host 'Kliens-token' -MaskInput` parancsot PowerShell 7-ben. Windows PowerShell 5.1-ben használhatod a `$env:CDF_TOKEN = Get-Clipboard` parancsot közvetlenül a token biztonságos kimásolása után.
