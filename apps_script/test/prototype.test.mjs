@@ -70,7 +70,7 @@ test('prototype retries 429 and paginates to five pages', () => {
   assert.doesNotMatch(app.log.join(' '), /fixture-application-token/);
 });
 
-test('prototype partial search, sorting, deduplication, filters and call counts', () => {
+test('partial search preserves sorting, deduplication and call counts, including shipping checks', () => {
   const sample = fixture('search');
   const app = runtime({ browse: request => {
     assert.equal(request.headers['X-EBAY-C-MARKETPLACE-ID'], 'EBAY_DE');
@@ -85,11 +85,11 @@ test('prototype partial search, sorting, deduplication, filters and call counts'
   } });
   const countries = ['DE', 'FR'];
   const queries = ['ps5', 'xbox series'];
-  const result = app.search(countries, queries, { max_price: 40, max_total_price: 50 });
+  const result = app.search(countries, queries);
   assert.equal(result.status, 'partial');
-  assert.equal(result.api_calls, 5);
-  assert.equal(result.daily_api_calls, 5);
-  assert.equal(result.daily_browse_calls, 4);
+  assert.equal(result.api_calls, 6);
+  assert.equal(result.daily_api_calls, 6);
+  assert.equal(result.daily_browse_calls, 5);
   assert.equal(result.filtered_non_eu, 4);
   assert.deepEqual(ids(result.listings), ['fixed', 'auction']);
   assert.deepEqual(ids(result.unknown_shipping), ['unknown-shipping']);
@@ -104,13 +104,11 @@ test('prototype partial search, sorting, deduplication, filters and call counts'
   assert.ok(fr.queries.every(query => query.error.includes('503')));
   assert.doesNotMatch(JSON.stringify(result) + app.log.join(' '), /fixture-seller/);
 
-  const fixed = app.search(countries, queries, {
-    max_price: 35, max_total_price: 35, buying_options: 'fixed', console_models: ['PS5 Pro'],
-  });
-  assert.deepEqual(ids(fixed.listings), ['fixed']);
-  assert.deepEqual(fixed.unknown_shipping, []);
-  assert.equal(fixed.api_calls, 4);
-  assert.equal(fixed.daily_api_calls, 9);
+  const repeated = app.search(countries, queries);
+  assert.deepEqual(ids(repeated.listings), ['fixed', 'auction']);
+  assert.deepEqual(ids(repeated.unknown_shipping), ['unknown-shipping']);
+  assert.equal(repeated.api_calls, 5);
+  assert.equal(repeated.daily_api_calls, 11);
   assert.equal(app.calls.filter(call => call.url.endsWith('/oauth2/token')).length, 1);
 });
 
@@ -139,20 +137,6 @@ test('prototype unknown shipping breakdown groups auctions and fixed prices by c
   });
 });
 
-for (const [filters, known, unknown] of [
-  [{ max_price: 34 }, ['fixed'], []],
-  [{ max_total_price: 49 }, ['fixed'], ['unknown-shipping']],
-  [{ buying_options: 'auction' }, ['auction'], []],
-  [{ console_models: ['Xbox Series S'] }, [], ['unknown-shipping']],
-]) {
-  test('prototype independent filter: ' + Object.keys(filters)[0], () => {
-    const app = runtime({ browse: () => response(200, fixture('search')) });
-    const result = app.search(['DE'], ['ps5', 'xbox series'], filters);
-    assert.deepEqual(ids(result.listings), known);
-    assert.deepEqual(ids(result.unknown_shipping), unknown);
-  });
-}
-
 test('prototype budget leaves room for every country', () => {
   const app = runtime({ browse: () => response(200, { total: 1100 }) });
   const result = app.post('search').data;
@@ -165,7 +149,7 @@ test('prototype budget leaves room for every country', () => {
   assert.equal(app.calls.length - 1, 58);
 });
 
-test('prototype item types are counted once and board filter is opt-in internally', () => {
+test('the API returns all six item types and counts each deduplicated listing once', () => {
   const base = fixture('search').itemSummaries[1];
   const items = [
     'PS5 Slim Konsole', 'Posten 4 PS5', 'PS5 Slim EDM-040 Mainboard',
@@ -173,13 +157,11 @@ test('prototype item types are counted once and board filter is opt-in internall
   ].map((title, index) => ({ ...base, itemId: String(index), title }));
   const app = runtime({ browse: request => new URL(request.url).searchParams.get('q') === 'xbox series'
     ? response(503) : response(200, { total: items.length, itemSummaries: [...items, ...items] }) });
-  const result = app.search(['DE'], ['ps5', 'xbox series']);
-  const withBoards = app.post('search', { countries: ['DE'] }).data;
+  const result = app.post('search', { countries: ['DE'] }).data;
   assert.equal(result.status, 'partial');
   assert.equal(result.countries[0].status, 'partial');
   assert.deepEqual(result.countries[0].queries.map(query => query.status), ['success', 'error']);
   assert.ok(Object.values(result.item_type_counts).every(count => count === 1));
-  assert.deepEqual(new Set(result.listings.map(item => item.item_type)), new Set(['console', 'console_bundle', 'needs_review']));
-  assert.deepEqual(new Set(withBoards.listings.map(item => item.item_type)),
-    new Set(['console', 'console_bundle', 'needs_review', 'mainboard']));
+  assert.deepEqual(new Set(result.listings.map(item => item.item_type)),
+    new Set(['console', 'console_bundle', 'needs_review', 'mainboard', 'not_console', 'unsupported_model']));
 });

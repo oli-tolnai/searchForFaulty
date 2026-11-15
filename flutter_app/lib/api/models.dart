@@ -102,6 +102,7 @@ class Listing {
       currency = fields.nullable<String>('currency'),
       shipping = fields.amount('shipping_cost'),
       shippingCurrency = fields.nullable<String>('shipping_currency'),
+      shipsToHu = fields.choice('ships_to_hu', ['yes', 'no', 'unknown']),
       total = fields.amount('total_price'),
       country = fields.nullable<String>('item_country'),
       end = fields.optionalDate('end_time'),
@@ -122,7 +123,7 @@ class Listing {
     }
   }
 
-  final String source, id, title, model, type, status, faultSource;
+  final String source, id, title, model, type, status, faultSource, shipsToHu;
   final Uri url;
   final Uri? image;
   final bool banned, possiblyNotFaulty;
@@ -158,6 +159,7 @@ class Listing {
     'currency': currency,
     'shipping_cost': shipping,
     'shipping_currency': shippingCurrency,
+    'ships_to_hu': shipsToHu,
     'total_price': total,
     'item_country': country,
     'end_time': end?.toIso8601String(),
@@ -219,6 +221,25 @@ class ShippingBreakdown {
   };
 }
 
+class ShippingCheck {
+  ShippingCheck.fromJson(Object? value) : this._(Fields(value));
+  ShippingCheck._(Fields fields)
+    : initialUnknown = fields.count('initial_unknown'),
+      yes = fields.count('yes'),
+      no = fields.count('no'),
+      unknown = fields.count('unknown'),
+      failed = fields.count('failed');
+
+  final int initialUnknown, yes, no, unknown, failed;
+  Json toJson() => {
+    'initial_unknown': initialUnknown,
+    'yes': yes,
+    'no': no,
+    'unknown': unknown,
+    'failed': failed,
+  };
+}
+
 class SearchResult {
   SearchResult.fromJson(Object? value) : this._(Fields(value));
   SearchResult._(Fields fields)
@@ -235,6 +256,10 @@ class SearchResult {
       }),
       filteredNonEu = fields.count('filtered_non_eu'),
       apiCalls = fields.count('api_calls'),
+      getItemCalls = fields.count('get_item_calls'),
+      shippingCheck = ShippingCheck.fromJson(
+        fields.required<Json>('shipping_check'),
+      ),
       dailyApiCalls = fields.count('daily_api_calls'),
       dailyBrowseCalls = fields.count('daily_browse_calls'),
       quotaWarning = fields.nullable<String>('quota_warning'),
@@ -245,7 +270,12 @@ class SearchResult {
   final ShippingBreakdown shippingBreakdown;
   final List<CountryStatus> countries;
   final Map<String, int> typeCounts;
-  final int filteredNonEu, apiCalls, dailyApiCalls, dailyBrowseCalls;
+  final int filteredNonEu,
+      apiCalls,
+      getItemCalls,
+      dailyApiCalls,
+      dailyBrowseCalls;
+  final ShippingCheck shippingCheck;
   final String? quotaWarning;
   final DateTime searchedAt;
   Iterable<Listing> get allListings => listings.followedBy(unknownShipping);
@@ -259,6 +289,8 @@ class SearchResult {
     'item_type_counts': typeCounts,
     'filtered_non_eu': filteredNonEu,
     'api_calls': apiCalls,
+    'get_item_calls': getItemCalls,
+    'shipping_check': shippingCheck.toJson(),
     'daily_api_calls': dailyApiCalls,
     'daily_browse_calls': dailyBrowseCalls,
     'quota_warning': null,

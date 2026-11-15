@@ -5,6 +5,31 @@ import 'package:flutter_test/flutter_test.dart';
 import 'fixtures/responses.dart';
 
 void main() {
+  test('price, buying option and console filters operate on local results', () {
+    final items = [
+      Listing.fromJson(
+        listing(id: 'fixed', price: '30', shipping: '0', total: '30'),
+      ),
+      Listing.fromJson(
+        listing(id: 'auction', price: '35', end: testTime.add(day)),
+      ),
+      Listing.fromJson(
+        listing(id: 'xbox', price: '40', model: 'Xbox Series S'),
+      ),
+    ];
+    Iterable<String> ids(ListingFilters filters) => selectListings(
+      items,
+      filters,
+      ListingOrder.total,
+      testTime,
+    ).map((item) => item.id);
+    expect(ids(const ListingFilters(maxPrice: 34)), ['fixed']);
+    expect(ids(const ListingFilters(buying: BuyingFilter.auction)), [
+      'auction',
+    ]);
+    expect(ids(const ListingFilters(models: {'Xbox Series S'})), ['xbox']);
+  });
+
   test('missing nullable fields and invalid amounts fail while seller data is discarded', () {
     final missing = listing()..remove('shipping_cost');
     expect(() => Listing.fromJson(missing), throwsFormatException);

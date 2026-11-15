@@ -14,6 +14,56 @@ void main() {
     await tester.pumpWidget(MaterialApp(home: page));
   }
 
+  testWidgets('ships-no and other hidden types open in separate groups', (
+    tester,
+  ) async {
+    final result = SearchResult.fromJson(
+      search(
+        unknown: [
+          listing(title: 'Bizonytalan szállítás', shipsToHu: 'unknown'),
+          listing(id: 'v1|2|0', title: 'Belföldi konzol', shipsToHu: 'no'),
+          listing(
+            id: 'v1|3|0',
+            title: 'Régi modell',
+            type: 'unsupported_model',
+          ),
+          listing(id: 'v1|4|0', title: 'Üres doboz', type: 'not_console'),
+          listing(id: 'v1|5|0', title: 'Donor alaplap', type: 'mainboard'),
+        ],
+      ),
+    );
+    await screen(
+      tester,
+      SearchScreen(
+        initial: result,
+        clock: () => testTime,
+        search: () async => result,
+        loadDetails: (_) async => ListingDetails.fromJson(details),
+      ),
+    );
+    expect(find.text('Bizonytalan szállítás'), findsOneWidget);
+    expect(
+      find.text('Nem ellenőrizhető, szállít-e Magyarországra'),
+      findsOneWidget,
+    );
+    for (final (group, item) in [
+      ('Nem szállít Magyarországra', 'Belföldi konzol'),
+      ('Nem támogatott modell', 'Régi modell'),
+      ('Nem konzol', 'Üres doboz'),
+      ('Alaplap', 'Donor alaplap'),
+    ]) {
+      expect(find.text(item), findsNothing);
+      await tester.tap(find.text('1 · $group'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(AppBar, group), findsOneWidget);
+      expect(find.text(item), findsOneWidget);
+      expect(find.text('Bizonytalan szállítás'), findsNothing);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('Bizonytalan szállítás'), findsOneWidget);
+  });
+
   testWidgets(
     'cards show shipping and totals only when known and load an expandable description',
     (tester) async {

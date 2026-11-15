@@ -93,13 +93,9 @@ Sikertelen vagy részleges keresésnél a mérő megmutatja a lekérdezéshibák
 
 A diagnosztika egy friss OAuth-kérést indít. A naplóban például `HTTP 200`, `HTTP 401 | error: invalid_client` vagy a kitakart Apps Script-kivétel jelenik meg. A függvényhez elég a forrás feltöltése. A `/exec` címen futó verziót a **Bevezetés → Bevezetések kezelése** alatt lehet frissíteni. [Google útmutató az Apps Script engedélyhibáihoz](https://developers.google.com/apps-script/guides/support/troubleshooting)
 
-## Magyarországi szállítás diagnosztikája
+## Magyarországi szállítás ellenőrzése
 
-1. Nyisd meg a **Console Deal Finder** Apps Script-projektet, és a **Szerkesztő** nézetben frissítsd az oldalt a feltöltés után.
-2. Válaszd a **ship_to_diagnostic.gs** fájlt, majd a felső függvénylistában a **diagnoseShipToLocations** függvényt. Kattints a **Futtatás** gombra.
-3. Az eredmény a **Végrehajtási naplóban** jelenik meg. A teljes keresés, a tokenkérések és a részletlekérések beleszámítanak a projekt napi eBay-hívásszámlálójába.
-
-A diagnosztika külön bulk tokent kér a `getItems` végponthoz. Ha az eBay megtagadja a hozzáférést, vagy a kötegelt válaszokban nincs használható `shipToLocations`, a keresés első tíz ismeretlen díjú tételét egyenként is lekéri. A mintán kívüli, sikertelenül lekért vagy egyértelmű régióadat nélküli tételek a „nem eldönthető” csoportba kerülnek. A szállítási opciókból csak a díj, a szolgáltatás, a kézbesítési idő és a becslési célország adatai jelennek meg. [eBay Browse API OpenAPI-leírás](https://developer.ebay.com/api-docs/master/buy/browse/openapi/3/buy_browse_v1_oas3.json)
+A keresés legfeljebb 60 külön `getItem` hívást indít az ismeretlen szállítási díjú tételek ellenőrzésére. A sikeres ellenőrzés besorolása és esetleges díja legfeljebb hat óráig használható fel újra a gyorsítótárból. Az `api_calls` a részletlekéréseket is tartalmazza, a `get_item_calls` mező ezeket külön számolja. A `shipping_check` az eredetileg ismeretlen díjú tételek számát, szállítási besorolását és a sikertelen részletlekérések számát adja meg.
 
 ## A kliensnek szánt API
 
@@ -108,7 +104,7 @@ A `POST` JSON-törzse `token`, `action`, `params` és opcionális `request_id` m
 | `action` | `params` | `data` |
 |---|---|---|
 | `ping` | `{}` | `version`, `server_time` |
-| `search` | Opcionális `countries` ISO-kódokkal és `queries` a `ps5`, `xbox series` értékek közül. Mindkettő alapértéke a teljes lista. | Normalizált tételek, `unknown_shipping`, típus- és szállítási bontás, országonkénti és lekérdezésenkénti állapot, számlálók. Az alaplapokat is lekéri a későbbi kliensoldali szűréshez. |
+| `search` | Opcionális `countries` ISO-kódokkal és `queries` a `ps5`, `xbox series` értékek közül. Mindkettő alapértéke a teljes lista. | Minden tételtípus `ships_to_hu` besorolással a `listings` és `unknown_shipping` listákban, típus- és szállítási bontás, országonkénti és lekérdezésenkénti állapot, számlálók. |
 | `listing_details` | `source_listing_id` az eBay Browse válaszából | `condition_description`, `short_description`, `description_text` vagy `null` a hiányzó mezőknél. Egyszerű szövegként jelenítsd meg. |
 
 A `search` esetében az `ok: true` azt jelenti, hogy a keresés állapota kiolvasható a `data` mezőből. A kliens ott ellenőrizze a `status` értékét. A `partial` a keresés hiányosságát, az `error` minden első oldal sikertelenségét jelzi. A pénzösszegek decimális sztringek. A napi számláló a projekten keresztül megkísérelt eBay-hívásokat számolja, budapesti idő szerint.

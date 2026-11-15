@@ -6,6 +6,29 @@ const day = Duration(days: 1);
 const uncheckedAfter = Duration(hours: 2);
 const maxListingAge = Duration(hours: 6);
 
+enum HiddenGroup {
+  unsupported('Nem támogatott modell', 'unsupported_model'),
+  accessory('Nem konzol', 'not_console'),
+  mainboard('Alaplap', 'mainboard'),
+  noShipping('Nem szállít Magyarországra', null);
+
+  const HiddenGroup(this.title, this.type);
+  final String title;
+  final String? type;
+
+  bool contains(Listing item) =>
+      type == null ? item.shipsToHu == 'no' : item.type == type;
+}
+
+bool inMainResults(Listing item, {required bool mainboards}) =>
+    item.shipsToHu != 'no' &&
+    !HiddenGroup.unsupported.contains(item) &&
+    !HiddenGroup.accessory.contains(item) &&
+    (mainboards || !HiddenGroup.mainboard.contains(item));
+
+bool inUnknownShippingBlock(Listing item) =>
+    item.shipping == null || item.shipsToHu == 'unknown';
+
 const consoleModels = [
   'PS5 (Fat)',
   'PS5 Slim',
@@ -107,7 +130,7 @@ class ListingFilters {
   final String? country;
 
   bool matches(Listing item, DateTime now) {
-    if (item.type == 'mainboard' && !mainboards) return false;
+    if (!inMainResults(item, mainboards: mainboards)) return false;
     if (buying == BuyingFilter.auction && !item.auction) return false;
     if (buying == BuyingFilter.fixed && !item.options.contains('FIXED_PRICE')) {
       return false;
@@ -167,8 +190,8 @@ List<Listing> selectListings(
       .where((item) => visibleListing(item, now) && filters.matches(item, now))
       .toList();
   selected.sort((a, b) {
-    if ((a.shipping == null) != (b.shipping == null)) {
-      return a.shipping == null ? 1 : -1;
+    if (inUnknownShippingBlock(a) != inUnknownShippingBlock(b)) {
+      return inUnknownShippingBlock(a) ? 1 : -1;
     }
     final comparison = switch (order) {
       ListingOrder.total => _compare(_price(a.total), _price(b.total)),

@@ -19,7 +19,7 @@ const missingRoute = request => {
 export function runtime({
   browse = () => response(200, { total: 0 }),
   oauth = () => response(200, fixture('token')), details = missingRoute, properties = {},
-  batchFailure = () => false,
+  batchFailure = () => false, shipping = () => response(503),
 } = {}) {
   let now = Date.parse('2026-11-14T12:00:00Z');
   let locked = false;
@@ -50,7 +50,7 @@ export function runtime({
         batches.push(Array.from(requests));
         calls.push(...requests);
         if (batchFailure(requests)) throw new Error('fixture timeout fixture-cert-id');
-        return requests.map(browse);
+        return requests.map(request => new URL(request.url).pathname.includes('/item/') ? shipping(request) : browse(request));
       },
     },
     PropertiesService: {
@@ -66,6 +66,13 @@ export function runtime({
       getScriptCache: () => ({
         get: key => cache.get(key)?.expires > now ? cache.get(key).value : null,
         put: (key, value, ttl) => cache.set(key, { value, ttl, expires: now + ttl * 1000 }),
+        getAll: keys => Object.fromEntries(keys.filter(key => cache.get(key)?.expires > now)
+          .map(key => [key, cache.get(key).value])),
+        putAll(values, ttl) {
+          for (const [key, value] of Object.entries(values)) {
+            cache.set(key, { value, ttl, expires: now + ttl * 1000 });
+          }
+        },
       }),
     },
     LockService: {
@@ -117,7 +124,7 @@ export function runtime({
       action, params, token: 'test-client-token', request_id: 'request-1', ...rest,
     })),
     setTime: time => { now = Date.parse(time); },
-    search: (countries, queries, filters = {}) => run('searchEbay', countries, queries, [], filters),
+    search: (countries, queries) => run('searchEbay', countries, queries, []),
   };
 }
 

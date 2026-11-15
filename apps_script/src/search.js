@@ -37,7 +37,7 @@ function applySearchPage(state, payload, checkedAt, secrets) {
   return true;
 }
 
-function searchEbay(countries, queries, clientSecrets, filters = {}) {
+function searchEbay(countries, queries, clientSecrets) {
   const searchedAt = new Date();
   const states = countries.flatMap(country => queries.map(query => ({
     country, query, error: null, warnings: [], listings: [], filteredNonEu: 0, pagesRead: 0,
@@ -124,27 +124,15 @@ function searchEbay(countries, queries, clientSecrets, filters = {}) {
   }
   const stopReason = calls >= RUN_LIMIT ? BUDGET_MESSAGE : 'A keresés elérte a futási időkorlátot.';
   for (const job of pending) job.state.error = stopReason;
-  return collectSearchResults(states, searchedAt, new Date(), filters, calls, dailyCounter());
+  return collectSearchResults(states, searchedAt, new Date(), items => {
+    const shipping = checkHungarianShipping(items, token, batchSize, countCall,
+      searchedAt.getTime() + SEARCH_TIME_LIMIT_MS, secrets);
+    return { ...shipping, api_calls: calls, ...dailyCounter() };
+  });
 }
 
 function effectivePrice(item) {
   return item.buying_options.includes('AUCTION') ? item.current_bid : item.price;
-}
-
-function matchesListing(item, filters) {
-  const requiredOption = { auction: 'AUCTION', fixed: 'FIXED_PRICE' }[filters.buying_options];
-  if (requiredOption && !item.buying_options.includes(requiredOption)) return false;
-  const model = item.console_model;
-  const family = model === 'PS5 Digital' ? 'PS5 (változat nem ismert)' : model.replace(/ (Disc|Digital)$/, '');
-  if (filters.console_models?.length && !filters.console_models.some(value => [model, family].includes(value))) {
-    return false;
-  }
-  const price = effectivePrice(item);
-  if (filters.max_price != null && (price === null || Number(price) > filters.max_price)) return false;
-  if (filters.max_total_price != null && item.shipping_cost !== null) {
-    return item.total_price !== null && Number(item.total_price) <= filters.max_total_price;
-  }
-  return true;
 }
 
 function aggregateStatus(statuses) {
@@ -169,7 +157,7 @@ function compareAmounts(left, right) {
   return right === null ? -1 : Number(left) - Number(right);
 }
 
-function collectSearchResults(states, searchedAt, now, filters, calls, daily) {
+function collectSearchResults(states, searchedAt, now, enrich) {
   const byCountry = new Map();
   const unique = new Map();
   let filteredNonEu = 0;
@@ -188,7 +176,9 @@ function collectSearchResults(states, searchedAt, now, filters, calls, daily) {
       }
       if (item.status !== 'ACTIVE' || (item.end_time && Date.parse(item.end_time) <= now.getTime())) continue;
       const key = item.source + ':' + item.source_listing_id;
-      if (!unique.has(key)) unique.set(key, item);
+      if (!unique.has(key) || (unique.get(key).shipping_cost === null && item.shipping_cost !== null)) {
+        unique.set(key, item);
+      }
     }
   }
   const countries = Array.from(byCountry, ([country, queries]) => ({
@@ -198,11 +188,10 @@ function collectSearchResults(states, searchedAt, now, filters, calls, daily) {
   const typeCounts = Object.fromEntries(ITEM_TYPES.map(type => [type, 0]));
   const known = [];
   const unknown = [];
+  const stats = enrich(Array.from(unique.values()));
   for (const item of unique.values()) {
+    if (item.end_time && Date.parse(item.end_time) <= Date.now()) continue;
     typeCounts[item.item_type]++;
-    if (['not_console', 'unsupported_model'].includes(item.item_type)) continue;
-    if (item.item_type === 'mainboard' && !filters.include_mainboards) continue;
-    if (!matchesListing(item, filters)) continue;
     (item.shipping_cost === null ? unknown : known).push(item);
   }
   known.sort((a, b) => compareAmounts(a.total_price, b.total_price));
@@ -212,8 +201,8 @@ function collectSearchResults(states, searchedAt, now, filters, calls, daily) {
   return {
     status, listings: known, unknown_shipping: unknown,
     unknown_shipping_breakdown: shippingBreakdown(unknown), countries, filtered_non_eu: filteredNonEu,
-    item_type_counts: typeCounts, api_calls: calls, ...daily,
-    quota_warning: daily.daily_browse_calls >= EBAY_DAILY_LIMIT * 0.9
+    item_type_counts: typeCounts, ...stats,
+    quota_warning: stats.daily_browse_calls >= EBAY_DAILY_LIMIT * 0.9
       ? 'Az eBay napi Browse-kerete közel van a kimerüléshez.' : null,
     searched_at: searchedAt.toISOString(),
   };

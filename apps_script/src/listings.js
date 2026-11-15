@@ -87,6 +87,7 @@ function normalizeListing(item, checkedAt, secrets = []) {
     price: auction ? null : amount, current_bid: auction ? amount : null,
     bid_count: auction && Number.isInteger(item.bidCount) && item.bidCount >= 0 ? item.bidCount : null,
     currency, shipping_cost: shippingCost, shipping_currency: shippingCurrency,
+    ships_to_hu: shippingCost === null ? 'unknown' : 'yes',
     total_price: amount !== null && shippingCost !== null && currency === shippingCurrency
       ? addMoney(amount, shippingCost) : null,
     item_country: itemCountry(item), end_time: end,

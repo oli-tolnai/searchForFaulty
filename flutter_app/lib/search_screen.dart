@@ -41,6 +41,7 @@ class _SearchScreenState extends State<SearchScreen>
   late bool cached = widget.initial != null;
   BuyingFilter buying = BuyingFilter.both;
   ListingOrder order = ListingOrder.total;
+  HiddenGroup? selectedGroup;
   String? country;
   bool ending = false, boards = false, busy = false;
   String? error, cacheError;
@@ -150,6 +151,9 @@ class _SearchScreenState extends State<SearchScreen>
     final active =
         data?.allListings.where((item) => visibleListing(item, now)).toList() ??
         <Listing>[];
+    if (selectedGroup case final group?) {
+      return hiddenResults(group, active.where(group.contains).toList(), now);
+    }
     final visible = selectListings(
       active,
       ListingFilters(
@@ -165,8 +169,10 @@ class _SearchScreenState extends State<SearchScreen>
       order,
       now,
     );
-    final known = visible.where((item) => item.shipping != null).toList();
-    final unknown = visible.where((item) => item.shipping == null).toList();
+    final known = visible
+        .where((item) => !inUnknownShippingBlock(item))
+        .toList();
+    final unknown = visible.where(inUnknownShippingBlock).toList();
     return Scaffold(
       appBar: AppBar(
         leading: Icon(
@@ -242,7 +248,7 @@ class _SearchScreenState extends State<SearchScreen>
                               'A keresés sikertelen – egyetlen lekérdezés sem sikerült.',
                               warning: true,
                             ),
-                          summary(data, visible.length, active.length),
+                          summary(data, visible.length, active),
                           if (data.status != 'error' && visible.isEmpty)
                             notice(
                               'Nincs megjeleníthető találat az aktuális szűrőkkel.',
@@ -500,7 +506,53 @@ class _SearchScreenState extends State<SearchScreen>
 
   String safeText(String text) => widget.sanitize?.call(text) ?? text;
 
-  Widget summary(SearchResult data, int count, int total) => Card(
+  Widget hiddenResults(HiddenGroup group, List<Listing> items, DateTime now) {
+    void back() => setState(() => selectedGroup = null);
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) back();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: BackButton(onPressed: back),
+          title: Text(group.title),
+        ),
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, box) {
+              final columns = box.maxWidth >= 1080
+                  ? 3
+                  : box.maxWidth >= 720
+                  ? 2
+                  : 1;
+              final inset =
+                  ((box.maxWidth - 1320) / 2).clamp(0.0, double.infinity) +
+                  (box.maxWidth >= 600 ? 28.0 : 16.0);
+              return CustomScrollView(
+                slivers: [
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(inset, 16, inset, 14),
+                    sliver: SliverToBoxAdapter(
+                      child: Text(
+                        items.isEmpty
+                            ? 'Ebben a csoportban nincs megjeleníthető tétel.'
+                            : '${items.length} tétel',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ),
+                  ),
+                  ...resultRows(items, columns, inset, now),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget summary(SearchResult data, int count, List<Listing> active) => Card(
     margin: const EdgeInsets.only(top: 12),
     child: Padding(
       padding: const EdgeInsets.all(16),
@@ -509,7 +561,7 @@ class _SearchScreenState extends State<SearchScreen>
         children: [
           if (data.status != 'error')
             Text(
-              '$count / $total találat',
+              '$count / ${active.length} találat',
               style: Theme.of(context).textTheme.titleLarge,
             ),
           const SizedBox(height: 6),
@@ -528,12 +580,13 @@ class _SearchScreenState extends State<SearchScreen>
             spacing: 16,
             runSpacing: 6,
             children: [
-              Text(
-                '${data.typeCounts['unsupported_model']} nem támogatott modell kiszűrve',
-              ),
-              Text('${data.typeCounts['not_console']} nem konzol kiszűrve'),
-              if (!boards)
-                Text('${data.typeCounts['mainboard']} alaplap kiszűrve'),
+              for (final group in HiddenGroup.values)
+                TextButton(
+                  onPressed: () => setState(() => selectedGroup = group),
+                  child: Text(
+                    '${active.where(group.contains).length} · ${group.title}',
+                  ),
+                ),
               Text(
                 '${data.filteredNonEu} EU-n kívüli vagy ismeretlen helyű tétel kiszűrve',
               ),

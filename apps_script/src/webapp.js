@@ -45,7 +45,7 @@ function runAction(action, params, secrets) {
     case 'search':
       requireKeys(params, ['queries', 'countries']);
       return searchEbay(searchValues(params.countries, EU_COUNTRIES), searchValues(params.queries, QUERIES),
-        secrets, { include_mainboards: true });
+        secrets);
     case 'listing_details': {
       requireKeys(params, ['source_listing_id']);
       const id = params.source_listing_id;

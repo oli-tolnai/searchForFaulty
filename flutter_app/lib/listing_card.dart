@@ -145,6 +145,17 @@ class _ListingCardState extends State<ListingCard> {
                       tag('Ellenőrzendő', colors.secondary),
                     if (item.type == 'mainboard')
                       tag('Alaplap', colors.secondary),
+                    if (HiddenGroup.unsupported.contains(item))
+                      tag(HiddenGroup.unsupported.title, colors.tertiary),
+                    if (HiddenGroup.accessory.contains(item))
+                      tag(HiddenGroup.accessory.title, colors.tertiary),
+                    if (item.shipsToHu == 'no')
+                      tag(HiddenGroup.noShipping.title, colors.tertiary),
+                    if (item.shipsToHu == 'unknown')
+                      tag(
+                        'Nem ellenőrizhető, szállít-e Magyarországra',
+                        colors.tertiary,
+                      ),
                     if (item.banned) tag('Tiltott (banned)', colors.error),
                     if (item.possiblyNotFaulty)
                       tag('Lehet, hogy nem hibás', colors.secondary),
