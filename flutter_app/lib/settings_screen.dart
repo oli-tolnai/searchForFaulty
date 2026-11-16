@@ -10,12 +10,14 @@ class SettingsScreen extends StatefulWidget {
     this.initial,
     this.initialError,
     this.shared,
+    this.sendTestNotification,
     required this.save,
   });
   final WebappSettings? initial;
   final String? initialError;
   final SharedState? shared;
   final Future<void> Function(WebappSettings settings) save;
+  final Future<void> Function(WebappSettings settings)? sendTestNotification;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -61,6 +63,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } on Exception {
       if (mounted) {
         setState(() => feedback = 'A beállításokat nem sikerült menteni.');
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> testNotification() async {
+    setState(() {
+      feedback = null;
+      busy = true;
+      success = false;
+    });
+    try {
+      final settings = WebappSettings(address.text, token.text);
+      if (widget.sendTestNotification case final send?) {
+        await send(settings);
+      } else {
+        await WebappClient(settings).notifyTest();
+      }
+      if (mounted) {
+        setState(() {
+          success = true;
+          feedback = 'A próbaértesítést elküldtük.';
+        });
+      }
+    } on AppFailure catch (error) {
+      if (mounted) setState(() => feedback = error.message);
+    } on Exception {
+      if (mounted) {
+        setState(() => feedback = 'A próbaértesítés küldése sikertelen.');
       }
     } finally {
       if (mounted) setState(() => busy = false);
@@ -167,7 +199,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               icon: const Icon(Icons.check),
                               label: const Text('Mentés'),
                             ),
+                            OutlinedButton.icon(
+                              onPressed: busy ? null : testNotification,
+                              icon: const Icon(Icons.notifications_outlined),
+                              label: const Text('Próbaértesítés küldése'),
+                            ),
                           ],
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Az értesítésekhez iratkozz fel az ntfy appban arra a csatornára, '
+                          'amelynek neve az Apps Script Script Properties beállításaiban található.',
                         ),
                       ],
                     ),

@@ -8,6 +8,7 @@ import 'api/webapp.dart';
 import 'listing_card.dart';
 import 'listings.dart';
 import 'sync.dart';
+import 'watch_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({
@@ -226,6 +227,13 @@ class _SearchScreenState extends State<SearchScreen>
   @override
   Widget build(BuildContext context) {
     final now = widget.clock();
+    if (section == 3 && widget.shared != null) {
+      return WatchScreen(
+        shared: widget.shared!,
+        now: now,
+        navigation: navigation(),
+      );
+    }
     if (section != 0 && widget.shared != null) return savedScreen(now);
     final data = result;
     final active =
@@ -776,7 +784,23 @@ class _SearchScreenState extends State<SearchScreen>
         ? null
         : () => unawaited(widget.shared!.toggleFavorite(item)),
     onHide: widget.shared == null ? null : () => hide(item),
+    watchThreshold: widget.shared?.watchFor(item)?.threshold,
+    onWatch: widget.shared == null || item.status != 'ACTIVE'
+        ? null
+        : () => watchAuction(item),
   );
+
+  Future<void> watchAuction(Listing item) async {
+    final shared = widget.shared!;
+    final watch = shared.watchFor(item);
+    final terms = await editWatchTerms(context, watch);
+    if (terms == null || !mounted) return;
+    if (watch == null) {
+      await shared.addWatch(item, terms.threshold, terms.lead);
+    } else {
+      await shared.updateWatch(watch, terms.threshold, terms.lead);
+    }
+  }
 
   void hide(Listing item) {
     final shared = widget.shared!;
@@ -800,14 +824,14 @@ class _SearchScreenState extends State<SearchScreen>
     return NavigationBar(
       selectedIndex: section,
       onDestinationSelected: (value) {
-        if (value == 3) {
+        if (value == 4) {
           widget.openSettings?.call();
           return;
         }
         setState(() => section = value);
         scheduleRefresh();
         if (value == 1) unawaited(widget.shared!.refresh());
-        if (value == 2) unawaited(widget.shared!.sync());
+        if (value == 2 || value == 3) unawaited(widget.shared!.sync());
       },
       destinations: const [
         NavigationDestination(icon: Icon(Icons.search), label: 'Keresés'),
@@ -818,6 +842,10 @@ class _SearchScreenState extends State<SearchScreen>
         NavigationDestination(
           icon: Icon(Icons.visibility_off_outlined),
           label: 'Elrejtett',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.notifications_outlined),
+          label: 'Figyelés',
         ),
         NavigationDestination(
           icon: Icon(Icons.settings_outlined),
@@ -859,6 +887,13 @@ class _SearchScreenState extends State<SearchScreen>
                             item: favorite.item,
                             now: now,
                             favorite: true,
+                            watchThreshold: shared
+                                .watchFor(favorite.item)
+                                ?.threshold,
+                            onWatch:
+                                favoriteStatus(favorite.item, now) == 'ACTIVE'
+                                ? () => watchAuction(favorite.item)
+                                : null,
                             savedStatus: favoriteStatus(favorite.item, now),
                             onFavorite: () =>
                                 unawaited(shared.toggleFavorite(favorite.item)),

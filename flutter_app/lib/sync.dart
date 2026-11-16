@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 
 import 'api/models.dart';
 import 'listings.dart';
+import 'notifications.dart';
 
 String listingKey(Listing item) => '${item.source}:${item.id}';
 String stateKey(Json row) => '${row['source']}:${row['source_listing_id']}';
@@ -73,7 +74,13 @@ class SharedState extends ChangeNotifier {
   final DateTime Function() clock;
   static final _random = Random.secure();
   final _tables = {
-    for (final table in ['favorites', 'hidden', 'settings'])
+    for (final table in [
+      'favorites',
+      'hidden',
+      'settings',
+      'watches',
+      'alerts',
+    ])
       table: <String, Json>{},
   };
   final _queue = <Json>[];
@@ -103,6 +110,53 @@ class SharedState extends ChangeNotifier {
       _view('hidden')[listingKey(item)]?['deleted'] == false;
   bool isNew(Listing item) =>
       item.isNew && !_dismissedNew.contains(listingKey(item));
+
+  Iterable<AuctionWatch> get watches =>
+      _view('watches').values
+          .where((row) => row['deleted'] == false)
+          .map(AuctionWatch.new);
+  Iterable<AlertRule> get alerts =>
+      _view('alerts').values
+          .where((row) => row['deleted'] == false)
+          .map(AlertRule.new);
+
+  AuctionWatch? watchFor(Listing item) {
+    final row = _view('watches')[listingKey(item)];
+    return row == null || row['deleted'] != false ? null : AuctionWatch(row);
+  }
+
+  Future<void> addWatch(Listing item, num threshold, int lead) => _add({
+    'type': 'watch_add',
+    'source': item.source,
+    'source_listing_id': item.id,
+    'listing': item.toJson(),
+    'threshold': threshold,
+    'lead_minutes': lead,
+  });
+
+  Future<void> updateWatch(AuctionWatch watch, num threshold, int lead) =>
+      _add({
+        'type': 'watch_update',
+        'source': watch.source,
+        'source_listing_id': watch.id,
+        'threshold': threshold,
+        'lead_minutes': lead,
+      });
+
+  Future<void> removeWatch(AuctionWatch watch) => _add({
+    'type': 'watch_remove',
+    'source': watch.source,
+    'source_listing_id': watch.id,
+  });
+
+  Future<void> saveAlert(AlertRule? rule, Json values) => _add({
+    ...values,
+    'type': rule == null ? 'alert_add' : 'alert_update',
+    'id': rule?.id ?? _newId(),
+  });
+
+  Future<void> removeAlert(AlertRule rule) =>
+      _add({'type': 'alert_remove', 'id': rule.id});
 
   Future<void> toggleFavorite(Listing item) => _add(
     isFavorite(item)
@@ -147,10 +201,7 @@ class SharedState extends ChangeNotifier {
   Future<void> _add(Json op) async {
     _queue.add({
       ...op,
-      'op_id': List.generate(
-        16,
-        (_) => _random.nextInt(256).toRadixString(16).padLeft(2, '0'),
-      ).join(),
+      'op_id': _newId(),
       'local_at': clock().toUtc().toIso8601String(),
     });
     _notify();
@@ -161,6 +212,11 @@ class SharedState extends ChangeNotifier {
       // The pending operation remains available for retry in memory.
     }
   }
+
+  static String _newId() => List.generate(
+    16,
+    (_) => _random.nextInt(256).toRadixString(16).padLeft(2, '0'),
+  ).join();
 
   Map<String, Json> _view(String table) {
     final rows = Map<String, Json>.of(_tables[table]!);
@@ -185,6 +241,45 @@ class SharedState extends ChangeNotifier {
           };
         case ('settings', 'setting_set'):
           rows['filters'] = {'key': 'filters', 'value': op['value']};
+        case ('watches', 'watch_add'):
+          final listing = object(op['listing']);
+          final previous = rows[stateKey(op)];
+          rows[stateKey(op)] = {
+            'source': op['source'],
+            'source_listing_id': op['source_listing_id'],
+            'title': listing['title'],
+            'url': listing['url'],
+            'end_time': listing['end_time'],
+            'last_bid': listing['currency'] == 'EUR'
+                ? listing['current_bid']
+                : null,
+            'last_checked_at': listing['last_checked_at'],
+            'status': previous?['notified_at'] != null ? 'notified' : 'active',
+            'threshold': op['threshold'],
+            'lead_minutes': op['lead_minutes'],
+            'deleted': false,
+          };
+        case ('watches', 'watch_update'):
+          final key = stateKey(op);
+          if (rows[key] case final previous?
+              when previous['deleted'] == false) {
+            rows[key] = {
+              ...previous,
+              'threshold': op['threshold'],
+              'lead_minutes': op['lead_minutes'],
+            };
+          }
+        case ('watches', 'watch_remove'):
+          final key = stateKey(op);
+          if (rows[key] case final previous?) {
+            rows[key] = {...previous, 'deleted': true};
+          }
+        case ('alerts', 'alert_add'):
+        case ('alerts', 'alert_update'):
+          final id = op['id'] as String;
+          rows[id] = {...op, 'deleted': false};
+        case ('alerts', 'alert_remove'):
+          rows.remove(op['id']);
       }
     }
     return rows;
@@ -251,7 +346,14 @@ class SharedState extends ChangeNotifier {
     final fields = Fields(payload);
     final revision = fields.count('revision');
     final delta = {
-      for (final table in _tables.keys) table: fields.list(table, object),
+      for (final table in _tables.keys)
+        table:
+            (table == 'watches' || table == 'alerts') &&
+                !payload.containsKey(table)
+            ? <
+                Json
+              >[] // Snapshots and webapp deployments from before notifications.
+            : fields.list(table, object),
     };
     for (final entry in delta.entries) {
       for (final row in entry.value) {
@@ -281,12 +383,17 @@ class SharedState extends ChangeNotifier {
               invalidResponse();
             }
           }
+        } else if (entry.key == 'alerts') {
+          rowFields.required<String>('id');
+          if (!rowFields.required<bool>('deleted')) AlertRule(row);
         } else {
           rowFields.required<String>('source');
           rowFields.required<String>('source_listing_id');
           if (!rowFields.required<bool>('deleted')) {
             if (entry.key == 'favorites') {
               SavedFavorite(row);
+            } else if (entry.key == 'watches') {
+              AuctionWatch(row);
             } else {
               rowFields.required<String>('title');
             }
@@ -297,10 +404,12 @@ class SharedState extends ChangeNotifier {
     if (revision < _revision) invalidResponse();
     for (final entry in delta.entries) {
       for (final row in entry.value) {
-        _tables[entry.key]![entry.key == 'settings'
-                ? row['key'] as String
-                : stateKey(row)] =
-            row;
+        final key = switch (entry.key) {
+          'settings' => row['key'] as String,
+          'alerts' => row['id'] as String,
+          _ => stateKey(row),
+        };
+        _tables[entry.key]![key] = row;
       }
     }
     _revision = revision;

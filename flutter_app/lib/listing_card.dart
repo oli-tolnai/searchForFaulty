@@ -36,6 +36,8 @@ class ListingCard extends StatefulWidget {
     this.favorite = false,
     this.onFavorite,
     this.onHide,
+    this.onWatch,
+    this.watchThreshold,
     this.onOpened,
     this.newLabel = false,
     this.savedStatus,
@@ -47,7 +49,8 @@ class ListingCard extends StatefulWidget {
   final VoidCallback onUnavailable;
   final bool unavailable;
   final bool favorite, newLabel;
-  final VoidCallback? onFavorite, onHide, onOpened;
+  final VoidCallback? onFavorite, onHide, onOpened, onWatch;
+  final num? watchThreshold;
   final String? savedStatus;
 
   @override
@@ -146,6 +149,8 @@ class _ListingCardState extends State<ListingCard> {
                   runSpacing: 6,
                   children: [
                     if (widget.newLabel) tag('ÚJ', colors.primary),
+                    if (widget.watchThreshold case final threshold?)
+                      tag('Figyelve · $threshold €', colors.primary),
                     if (widget.savedStatus == 'ENDED')
                       tag('Lejárt / nem elérhető', colors.error),
                     if (widget.savedStatus == 'UNKNOWN' && !stale)
@@ -277,6 +282,17 @@ class _ListingCardState extends State<ListingCard> {
                               ? Icons.favorite
                               : Icons.favorite_border,
                         ),
+                      ),
+                    if (widget.onWatch != null &&
+                        item.auction &&
+                        !archive &&
+                        !widget.unavailable &&
+                        remaining != null &&
+                        remaining > Duration.zero)
+                      OutlinedButton.icon(
+                        onPressed: widget.onWatch,
+                        icon: const Icon(Icons.notifications_outlined),
+                        label: const Text('Figyelés'),
                       ),
                     if (widget.onHide != null)
                       TextButton(

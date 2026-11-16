@@ -93,6 +93,10 @@ class WebappClient {
   Future<Json> refreshFavorites() =>
       _call('favorites_refresh', {}, searchTimeout, object);
 
+  Future<void> notifyTest() => _call('notify_test', {}, pingTimeout, (value) {
+    if (!Fields(value).required<bool>('sent')) invalidResponse();
+  });
+
   Future<T> _call<T>(
     String action,
     Json params,
