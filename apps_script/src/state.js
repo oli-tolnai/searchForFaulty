@@ -6,9 +6,13 @@ const STATE_COLUMNS = {
   hidden: ['source', 'source_listing_id', 'hidden_at', 'title', 'revision', 'deleted'],
   seen: ['source', 'source_listing_id', 'first_seen_at'],
   settings: ['key', 'value', 'revision'],
+  watches: ['source', 'source_listing_id', 'title', 'url', 'threshold', 'lead_minutes', 'created_at',
+    'status', 'last_bid', 'last_checked_at', 'end_time', 'notified_at', 'revision', 'deleted'],
+  alerts: ['id', 'models', 'max_total_price', 'include_unknown_shipping', 'enabled', 'revision', 'deleted'],
+  notified: ['source', 'source_listing_id', 'notified_at'],
   meta: ['key', 'value'],
 };
-const STATE_TABLES = ['favorites', 'hidden', 'settings'];
+const STATE_TABLES = ['favorites', 'hidden', 'settings', 'watches', 'alerts'];
 const FILTER_MODELS = ['PS5 (Fat)', 'PS5 Slim', 'PS5 Pro', 'PS5 (változat nem ismert)', 'Xbox Series X', 'Xbox Series S'];
 const FILTER_FIELDS = ['models', 'max_price', 'max_total', 'buying', 'ending', 'boards', 'order'];
 
@@ -66,7 +70,7 @@ function readRows(book, table) {
     return Object.fromEntries(columns.map((key, index) => {
       let value = cells[index];
       if (value === '') value = null;
-      if (value != null && ['buying_options', 'value'].includes(key)) value = JSON.parse(value);
+      if (value != null && ['buying_options', 'models', 'value'].includes(key)) value = JSON.parse(value);
       return [key, value];
     }));
   });
@@ -85,7 +89,7 @@ function writeRows(book, table, rows) {
 }
 
 function rowKey(row) {
-  return row.key || row.source + ':' + row.source_listing_id;
+  return row.key || row.id || row.source + ':' + row.source_listing_id;
 }
 
 function readState(book) {
@@ -209,21 +213,50 @@ function stateApply(params, secrets) {
         table = 'settings';
         row = { key: op.key, value: filterSettings(op.value) };
         break;
+      case 'watch_add':
+      case 'watch_update':
+      case 'watch_remove':
+        table = 'watches';
+        row = watchOperation(op, secrets, now);
+        break;
+      case 'alert_add':
+      case 'alert_update':
+      case 'alert_remove':
+        table = 'alerts';
+        row = alertOperation(op, secrets);
+        break;
       default: invalidState();
     }
-    return { id: op.op_id, table, row };
+    return { id: op.op_id, type: op.type, table, row };
   });
   return withStateLock(book => {
     const meta = readState(book);
     const applied = new Set(meta.op_ids);
     const updates = {};
-    for (const { id, table, row } of ops) {
+    const current = {};
+    for (const { id, type, table, row } of ops) {
       if (applied.has(id)) continue;
       applied.add(id);
+      let next = row;
+      if (table === 'watches' || table === 'alerts') {
+        if (!current[table]) {
+          current[table] = new Map(readRows(book, table).map(existing => [rowKey(existing), existing]));
+        }
+        const key = rowKey(row);
+        const previous = current[table].get(key);
+        if (type.endsWith('_update') && (!previous || previous.deleted)) continue;
+        next = { ...previous, ...row };
+        if (table === 'watches') {
+          if (row.deleted) next.status = 'cancelled';
+          else if (previous?.notified_at) next.status = previous.status === 'ended' ? 'ended' : 'notified';
+          else if (type === 'watch_add' && previous?.status === 'ended') next.status = 'ended';
+        }
+        current[table].set(key, next);
+      }
       if (!updates[table]) updates[table] = [];
-      updates[table].push({ ...row, revision: ++meta.revision });
+      updates[table].push({ ...next, revision: ++meta.revision });
     }
-    if (Object.keys(updates).length) {
+    if (applied.size !== meta.op_ids.length) {
       meta.op_ids = Array.from(applied).slice(-500);
       commitStateWrite(book, meta, updates);
     }

@@ -34,7 +34,7 @@ function requireKeys(params, allowed) {
 }
 
 function runAction(action, params, secrets) {
-  if (!['ping', 'search', 'listing_details', 'state_get', 'state_apply', 'favorites_refresh'].includes(action)) {
+  if (!['ping', 'search', 'listing_details', 'state_get', 'state_apply', 'favorites_refresh', 'notify_test'].includes(action)) {
     throw new AppError('unknown_action', 'Ismeretlen művelet.');
   }
   if (!record(params)) throw new AppError('invalid_params', 'A params mezőnek objektumnak kell lennie.');
@@ -52,6 +52,10 @@ function runAction(action, params, secrets) {
       return stateApply(params, secrets);
     case 'favorites_refresh':
       return refreshFavorites(params, secrets);
+    case 'notify_test':
+      requireKeys(params, []);
+      publishNotification('Console Deal Finder', 'Megérkezett a próbaértesítés.', 'default', 'bell');
+      return { sent: true };
     case 'listing_details': {
       requireKeys(params, ['source_listing_id']);
       const id = params.source_listing_id;
@@ -81,7 +85,7 @@ function doPost(event) {
     const tokens = (properties.getProperty('CLIENT_TOKENS') || '').split(',').map(value => value.trim()).filter(Boolean);
     if (!validToken(request?.token, tokens)) return jsonOutput({ ok: false, error: { code: 'unauthorized' } });
 
-    const protectedValues = [...tokens, properties.getProperty('EBAY_CLIENT_ID')?.trim(),
+    const protectedValues = [...tokens, properties.getProperty('NTFY_TOPIC')?.trim(), properties.getProperty('EBAY_CLIENT_ID')?.trim(),
       properties.getProperty('EBAY_CLIENT_SECRET')?.trim(), CacheService.getScriptCache().get(OAUTH_CACHE_KEY)];
     if (typeof request.request_id === 'string' && /^[a-z0-9_.:-]{1,128}$/i.test(request.request_id)
       && redactText(request.request_id, protectedValues) === request.request_id) {

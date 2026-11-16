@@ -99,6 +99,7 @@ export function runtime({
           assert.ok(locked, 'Counter writes must be locked');
           props.set(key, value);
         },
+        deleteProperty(key) { assert.ok(locked); props.delete(key); },
       }),
     },
     SpreadsheetApp: {
@@ -141,6 +142,9 @@ export function runtime({
       base64Encode: raw => Buffer.from(raw).toString('base64'),
       sleep: ms => sleeps.push(ms),
       formatDate(date, zone, format) {
+        if (format === 'HH:mm') return new Intl.DateTimeFormat('en-GB', {
+          timeZone: zone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+        }).format(date);
         assert.equal(format, 'yyyy-MM-dd');
         const parts = new Intl.DateTimeFormat('en-GB', {
           timeZone: zone, year: 'numeric', month: '2-digit', day: '2-digit',
@@ -160,7 +164,8 @@ export function runtime({
   script.runInContext(context);
   function run(name, ...args) {
     context.args = args;
-    return JSON.parse(JSON.stringify(vm.runInContext(name + '(...args)', context)));
+    const result = vm.runInContext(name + '(...args)', context);
+    return result === undefined ? undefined : JSON.parse(JSON.stringify(result));
   }
   function postRaw(contents, length = Buffer.byteLength(contents)) {
     const output = context.doPost({ postData: { contents, length } });

@@ -74,6 +74,14 @@ A forrás feltöltése és a webapp-verzió telepítése külön művelet. [Goog
 
 A Google Táblázatok engedélye az alkalmazás által létrehozott vagy a `SHEET_ID`-ben megadott fájl megnyitásához szükséges. [SpreadsheetApp dokumentáció](https://developers.google.com/apps-script/reference/spreadsheet/spreadsheet-app)
 
+### Értesítések bekapcsolása
+
+1. A **Projektbeállítások → Szkript tulajdonságai** alatt vedd fel az `NTFY_TOPIC` tulajdonságot. Értéknek adj meg egy hosszú, véletlenszerű csatornanevet. A telefonon az ntfy appban iratkozz fel ugyanerre a csatornára az `ntfy.sh` kiszolgálón.
+2. A szerkesztőben válaszd a **notifications.gs** fájlban az **installTriggers** függvényt, kattints a **Futtatás** gombra, és engedélyezd az időzítők kezelését. Ha az engedélyezés után az első futás megszakadt, indítsd újra a függvényt.
+3. A meglévő webappnál válaszd a **Bevezetés → Bevezetések kezelése → Szerkesztés → Új verzió → Bevezetés** útvonalat. Az alkalmazás Beállítások lapján válaszd a **Próbaértesítés küldése** gombot, és ellenőrizd a telefont.
+
+Az aukciófigyelés 10 percenként, az új találatok ellenőrzése 2 óránként fut. A **removeTriggers** függvénnyel mindkettő kikapcsolható. Az ntfy gyorsítótárazása aktív marad, így az átmenetileg offline telefon később is megkaphatja az üzenetet. [Apps Script időzítők](https://developers.google.com/apps-script/guides/triggers/installable) · [ntfy gyorsítótárazás](https://docs.ntfy.sh/publish/#message-caching)
+
 ## 5. Éles mérés
 
 Az `apps_script/` mappában állítsd be a két környezeti változót a futtatás idejére. Ha a `$cdfToken` már nincs az aktuális PowerShell-munkamenetben, a második sor helyett használd a `$env:CDF_TOKEN = Read-Host 'Kliens-token' -MaskInput` parancsot PowerShell 7-ben. Windows PowerShell 5.1-ben használhatod a `$env:CDF_TOKEN = Get-Clipboard` parancsot közvetlenül a token biztonságos kimásolása után.
@@ -114,6 +122,7 @@ A `POST` JSON-törzse `token`, `action`, `params` és opcionális `request_id` m
 | `ping` | `{}` | `version`, `server_time` |
 | `search` | Opcionális `countries` ISO-kódokkal és `queries` a `ps5`, `xbox series` értékek közül. Mindkettő alapértéke a teljes lista. | Minden tételtípus `ships_to_hu` besorolással a `listings` és `unknown_shipping` listákban, típus- és szállítási bontás, országonkénti és lekérdezésenkénti állapot, számlálók. |
 | `listing_details` | `source_listing_id` az eBay Browse válaszából | `condition_description`, `short_description`, `description_text` vagy `null` a hiányzó mezőknél. Egyszerű szövegként jelenítsd meg. |
+| `notify_test` | `{}` | `sent: true`, ha az ntfy elfogadta a próbaértesítést. |
 
 A `search` esetében az `ok: true` azt jelenti, hogy a keresés állapota kiolvasható a `data` mezőből. A kliens ott ellenőrizze a `status` értékét. A `partial` a keresés hiányosságát, az `error` minden első oldal sikertelenségét jelzi. A pénzösszegek decimális sztringek. A napi számláló a projekten keresztül megkísérelt eBay-hívásokat számolja, budapesti idő szerint.
 
