@@ -42,22 +42,41 @@ function publishNotification(title, message, priority, tags, click) {
     throw new AppError('ntfy_not_configured', 'Az értesítési csatornát az Apps Script beállításaiban kell megadni.');
   }
   const safeTitle = redactText(title, [topic]);
+  // X-Priority is ntfy's canonical header and avoids conflicts with HTTP Priority.
   const headers = { Title: '=?UTF-8?B?' + Utilities.base64Encode(safeTitle, Utilities.Charset.UTF_8) + '?=',
-    Priority: priority, Tags: tags };
+    'X-Priority': priority, Tags: tags };
   if (click && redactText(click, [topic]) === click &&
       /^https:\/\/(?:[a-z0-9-]+\.)*ebay\.[a-z.]+\/[^\s]*$/i.test(click)) headers.Click = click;
   const payload = redactText(message, [topic]);
+  let response;
   try {
-    const response = UrlFetchApp.fetch('https://ntfy.sh/' + topic, {
+    response = UrlFetchApp.fetch('https://ntfy.sh/' + topic, {
       method: 'post', contentType: 'text/plain; charset=utf-8', payload, headers,
       muteHttpExceptions: true, followRedirects: false,
     });
-    const status = response.getResponseCode();
-    if (status >= 200 && status < 300) return;
-  } catch {
+  } catch (error) {
     // Fetch errors can contain the full topic URL.
+    const exception = String(error?.message || '');
+    const reason = /timed out|timeout/i.test(exception) ? 'időtúllépés' : 'az ntfy nem érhető el az Apps Scriptből';
+    throw new AppError('ntfy_failed', 'Az értesítés küldése sikertelen (' + reason + ').');
   }
-  throw new AppError('ntfy_failed', 'Az értesítés küldése sikertelen.');
+  const status = response.getResponseCode();
+  if (status >= 200 && status < 300) return status;
+  const code = responseObject(response).code;
+  const provider = Number.isSafeInteger(code) && code >= 10000 && code <= 59999 ? ', ntfy ' + code : '';
+  throw new AppError('ntfy_failed', 'Az értesítés küldése sikertelen (HTTP ' + status + provider + ').');
+}
+
+function testNotification() {
+  return publishNotification('Console Deal Finder', 'Próbaértesítés a Console Deal Finder alkalmazásból.', 'default', 'bell');
+}
+
+function diagnoseNtfy() {
+  try {
+    Logger.log('Az ntfy elfogadta a próbaértesítést (HTTP ' + testNotification() + ').');
+  } catch (error) {
+    Logger.log(error instanceof AppError ? error.message : 'Az ntfy diagnosztikája sikertelen.');
+  }
 }
 
 function installTriggers() {
@@ -178,7 +197,7 @@ function sendDueWatches(watches) {
       saveWatchChecks([{ watch, change: { notified_at: now.toISOString() } }]);
     } catch (error) {
       if (!(error instanceof AppError) || !error.code.startsWith('ntfy_')) throw error;
-      Logger.log('Az aukció értesítését nem sikerült elküldeni.');
+      Logger.log(error.message);
     }
   }
 }
@@ -265,8 +284,14 @@ function checkNewListingAlerts() {
     const lines = matches.slice(0, 5).map(item => '• ' + notificationTitle(item.title) +
       (item.total_price === null ? ' – szállítási díj nem ismert' : ' – ' + item.total_price + ' €'));
     const message = matches.length + ' új találat megfelel az értesítési szabályoknak.\n' + lines.join('\n');
-    publishNotification('Új konzolajánlat', message,
-      'default', 'video_game', matches.length === 1 ? matches[0].url : null);
+    try {
+      publishNotification('Új konzolajánlat', message,
+        'default', 'video_game', matches.length === 1 ? matches[0].url : null);
+    } catch (error) {
+      if (!(error instanceof AppError) || !error.code.startsWith('ntfy_')) throw error;
+      Logger.log(error.message);
+      return;
+    }
     withStateLock(book => {
       const rows = readRows(book, 'notified');
       const notifiedAt = new Date().toISOString();

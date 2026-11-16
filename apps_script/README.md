@@ -82,6 +82,8 @@ A Google Táblázatok engedélye az alkalmazás által létrehozott vagy a `SHEE
 
 Az aukciófigyelés 10 percenként, az új találatok ellenőrzése 2 óránként fut. A **removeTriggers** függvénnyel mindkettő kikapcsolható. Az ntfy gyorsítótárazása aktív marad, így az átmenetileg offline telefon később is megkaphatja az üzenetet. [Apps Script időzítők](https://developers.google.com/apps-script/guides/triggers/installable) · [ntfy gyorsítótárazás](https://docs.ntfy.sh/publish/#message-caching)
 
+Ha a próbaértesítés hibát jelez, futtasd a szerkesztőben a **diagnoseNtfy** függvényt. Ez próbaüzenetet küld, és a végrehajtási naplóba a HTTP-státuszt, illetve az ntfy számszerű hibakódját írja, ha elérhető. A naplóban a csatornanév nem jelenik meg.
+
 ## 5. Éles mérés
 
 Az `apps_script/` mappában állítsd be a két környezeti változót a futtatás idejére. Ha a `$cdfToken` már nincs az aktuális PowerShell-munkamenetben, a második sor helyett használd a `$env:CDF_TOKEN = Read-Host 'Kliens-token' -MaskInput` parancsot PowerShell 7-ben. Windows PowerShell 5.1-ben használhatod a `$env:CDF_TOKEN = Get-Clipboard` parancsot közvetlenül a token biztonságos kimásolása után.

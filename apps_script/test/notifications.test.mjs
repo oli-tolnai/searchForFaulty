@@ -72,7 +72,7 @@ test('empty watches skip eBay; fetched bids, 404 and expiry update state, and a 
   assert.equal(watches[0].end_time, '2026-11-14T13:15:00.000Z');
   assert.equal(watches[0].lead_minutes, 120);
   assert.equal(ntfy(app).length, 1);
-  assert.equal(ntfy(app)[0].headers.Priority, 'high');
+  assert.equal(ntfy(app)[0].headers['X-Priority'], 'high');
   assert.equal(ntfy(app)[0].headers.Click, watches[0].url);
   assert.match(ntfy(app)[0].payload, /Ma 14:15-kor zárul.*75 €.*100 €/);
   assert.doesNotMatch(JSON.stringify(app.log) + JSON.stringify(watches) + ntfy(app)[0].payload, /private-(?:seller|fixture-topic)/);
@@ -140,7 +140,7 @@ test('scheduled search keeps seen intact, honors rules and sends one summary wit
   assert.equal(JSON.stringify(app.sheets.get('seen').rows), seen);
   assert.equal(ntfy(app).length, 1);
   const sent = ntfy(app)[0];
-  assert.equal(sent.headers.Priority, 'default');
+  assert.equal(sent.headers['X-Priority'], 'default');
   assert.equal(sent.headers.Click, undefined);
   assert.match(sent.payload, /^6 új találat/);
   assert.equal(sent.payload.split('\n').length, 6);
@@ -176,10 +176,23 @@ test('authenticated ntfy test uses the expected headers and protects the channel
   assert.deepEqual(app.post('notify_test').data, { sent: true });
   assert.equal(ntfy(app)[0].method, 'post');
   assert.equal(ntfy(app)[0].url, 'https://ntfy.sh/' + topic);
-  assert.deepEqual(Object.keys(ntfy(app)[0].headers).sort(), ['Priority', 'Tags', 'Title']);
-  assert.equal(ntfy(app)[0].headers.Priority, 'default');
+  assert.deepEqual(Object.keys(ntfy(app)[0].headers).sort(), ['Tags', 'Title', 'X-Priority']);
+  assert.equal(ntfy(app)[0].headers['X-Priority'], 'default');
   success = false;
   const failure = app.post('notify_test');
   assert.equal(failure.error.code, 'ntfy_failed');
   assert.ok(!JSON.stringify([failure, app.log]).includes(topic));
+});
+
+test('ntfy diagnostics expose only safe HTTP and provider error codes', () => {
+  const app = runtime({
+    properties: { NTFY_TOPIC: topic },
+    details: () => response(429, { code: 42901, error: 'Private URL includes ' + topic }),
+  });
+  const result = app.post('notify_test');
+  assert.equal(result.error.code, 'ntfy_failed');
+  assert.match(result.error.message, /HTTP 429, ntfy 42901/);
+  app.run('diagnoseNtfy');
+  assert.match(app.log.at(-1), /HTTP 429, ntfy 42901/);
+  assert.ok(!JSON.stringify([result, app.log]).includes(topic));
 });

@@ -54,7 +54,7 @@ function runAction(action, params, secrets) {
       return refreshFavorites(params, secrets);
     case 'notify_test':
       requireKeys(params, []);
-      publishNotification('Console Deal Finder', 'Megérkezett a próbaértesítés.', 'default', 'bell');
+      testNotification();
       return { sent: true };
     case 'listing_details': {
       requireKeys(params, ['source_listing_id']);
