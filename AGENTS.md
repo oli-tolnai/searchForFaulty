@@ -4,7 +4,7 @@ Ez a fájl a kódoló agentnek (pl. Codex) szól. Minden munka előtt olvasd el.
 
 ## A projekt
 
-Saját használatra készülő **Flutter-alkalmazás (Android és Windows)**, amely EU-s eBay-oldalakon hibás / alkatrésznek árult játékkonzolokat (PS5, Xbox Series X|S) keres, amelyek **közvetlenül Magyarországra rendelhetők**. A háttérrendszer **Google Apps Script** (a felhasználó privát Google-projektjében), az adattár **Google Sheets**, az értesítés **ntfy** (terv 19–20. pont).
+Saját használatra készülő **Flutter-alkalmazás (Android és Windows)**, amely EU-s eBay-oldalakon hibás / alkatrésznek árult játékkonzolokat (PS5, Xbox Series X|S) keres, amelyek **közvetlenül Magyarországra rendelhetők**. A háttérrendszer **Google Apps Script** (a felhasználó privát Google-projektjében), az adattár **Google Sheets**, az értesítés az **app saját helyi értesítése** egy szerveroldali értesítési sorból (terv 19–20. pont); az ntfy későbbi, opcionális bővítés.
 
 A `backend/` (Python/FastAPI) és a `frontend/` (React) mappa **referencia-prototípus**: a kimért logika portolásához használd, de ne fejleszd tovább, és ne töröld.
 
@@ -24,7 +24,7 @@ A `backend/` (Python/FastAPI) és a `frontend/` (React) mappa **referencia-proto
 ## Megszeghetetlen szabályok
 
 1. **Nincs demó- vagy kitalált adat az éles alkalmazásban.** Kitalált hirdetés, URL, ár, azonosító soha nem jelenhet meg a felületen. Rögzített mintaválaszok (fixture) **csak a tesztekben** használhatók (`apps_script/test/fixtures/`, `flutter_app/test/fixtures/`).
-2. **Titkok helye:** az `EBAY_CLIENT_ID`, az `EBAY_CLIENT_SECRET`, a kliens-token(ek) és az ntfy-csatorna neve **kizárólag az Apps Script Script Properties tárában** van. A Flutter-app csak a webapp címét és a kliens-tokent ismeri, és azokat `flutter_secure_storage`-ban tárolja (a felhasználó a Beállításokban adja meg). Titok soha nem kerülhet a kódba, a táblázatba, a naplóba, a Flutter buildbe vagy a gitbe. A `.clasp.json` (scriptId) és a webapp címe ne kerüljön a gitbe; a repóba csak minta (`.clasp.json.example`) kerül. A prototípus `.env` fájlja továbbra is csak helyben létezhet.
+2. **Titkok helye:** az `EBAY_CLIENT_ID`, az `EBAY_CLIENT_SECRET`, a kliens-token(ek) (és az opcionális ntfy-adatok) **kizárólag az Apps Script Script Properties tárában** van. A Flutter-app csak a webapp címét és a kliens-tokent ismeri, és azokat `flutter_secure_storage`-ban tárolja (a felhasználó a Beállításokban adja meg). Titok soha nem kerülhet a kódba, a táblázatba, a naplóba, a Flutter buildbe vagy a gitbe. A `.clasp.json` (scriptId) és a webapp címe ne kerüljön a gitbe; a repóba csak minta (`.clasp.json.example`) kerül. A prototípus `.env` fájlja továbbra is csak helyben létezhet.
 3. **A naplóban a tokenek és a kulcsok legyenek kitakarva.**
 4. **Csak `ACTIVE` státuszú hirdetés jelenhet meg az aktív listában** (terv 17. pont). Bizonytalan esetben `UNKNOWN`, soha nem megalapozatlan `ACTIVE`.
 5. **Ismeretlen adat = „Nem ismert”.** A szállítási díj soha ne legyen alapból 0. Hiányzó értéket ne pótolj becsléssel.

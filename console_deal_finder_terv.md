@@ -1,6 +1,6 @@
 # Console Deal Finder – fejlesztési terv
 
-> **Architektúra (2026. november, mérések alapján döntve):** Flutter-alkalmazás Androidra és Windowsra, Google Apps Script háttérrendszer, Google Sheets adattár, ntfy-értesítések. Részletek: 19. pont. A korábbi Python (FastAPI) + React prototípus (`backend/`, `frontend/`) referencia, nem fejlesztjük tovább.
+> **Architektúra (2026. november, mérések alapján döntve):** Flutter-alkalmazás Androidra és Windowsra, Google Apps Script háttérrendszer, Google Sheets adattár, értesítés az app saját, helyi értesítésével (az ntfy későbbi, opcionális bővítés). Részletek: 19. pont. A korábbi Python (FastAPI) + React prototípus (`backend/`, `frontend/`) referencia, nem fejlesztjük tovább.
 
 ## 1. A projekt célja
 
@@ -246,7 +246,7 @@ Fő képernyők / elemek:
 4. Összesítő: találatok száma (szűrt / összes), típusonként kiszűrt tételek, API-hívások, a keresés időpontja
 5. Kártyás eredménylista, a végén az „Ismeretlen szállítási díj” blokk
 6. Figyelés beállítása egy aukcióra (értesítési határár, 20. pont)
-7. Beállítások: Apps Script webapp-cím és titkos token (biztonságos tárolóban), ntfy-csatorna neve
+7. Beállítások: Apps Script webapp-cím és titkos token (biztonságos tárolóban), értesítések be/ki és engedélyek
 8. Később: magyar piacterek keresőlinkjei (Jófogás, HardverApró, Facebook Marketplace)
 
 A keresés közben jelenjen meg a folyamat állapota, utána a forrásonkénti siker/hiba, hogy egy részlegesen sikeres futás ne tűnjön teljesnek.
@@ -256,7 +256,7 @@ A keresés közben jelenjen meg a folyamat állapota, utána a forrásonkénti s
 - **Kliens:** Flutter (Dart), Android és Windows, egy kódbázisból
 - **Háttérrendszer:** Google Apps Script (V8 JavaScript), a felhasználó privát Google-projektjében, webapp-végponttal és időzített triggerekkel
 - **Adattár:** Google Sheets (a felhasználó saját táblázata)
-- **Értesítés:** ntfy (ingyenes Android-app, HTTP-ből küldhető)
+- **Értesítés:** az app saját helyi értesítése (Androidon háttérfeladattal, Windowson futó appnál); az ntfy későbbi opcionális bővítés
 - **Adatforrás:** eBay Browse API
 - **Árfolyam:** Európai Központi Bank napi referencia-árfolyama (ingyenes), kézi felülírási lehetőséggel
 - **Fejlesztés:** az Apps Script-kód a repóban (`apps_script/`), Node.js alatti tesztekkel, feltöltés `clasp`-pal; a Flutter-kód a `flutter_app/` mappában
@@ -308,7 +308,7 @@ Google Sheets: kedvencek, elrejtés, már látott tételek („ÚJ” jelölés)
 
 ### 4. fázis – értesítések
 
-Aukciófigyelés határárral és ntfy-értesítés (20. pont). Utána időzített keresés és értesítés új, feltételeknek megfelelő találatról.
+Aukciófigyelés határárral és értesítés az app helyi értesítésével (20. pont). Utána időzített keresés és értesítés új, feltételeknek megfelelő találatról.
 
 ### 5. fázis – kiegészítések
 
@@ -436,7 +436,7 @@ A használat során be kell tartani az eBay API License Agreement feltételeit, 
 ```
  Telefon (Flutter) ─┐                         ┌─ eBay Browse API
                     ├─► Apps Script webapp ───┤
- Gép (Flutter)     ─┘   + időzített triggerek └─ ntfy → telefon
+ Gép (Flutter)     ─┘   + időzített triggerek   (értesítési sor → app)
                               │
                        Google Sheets (állapot)
 ```
@@ -444,7 +444,7 @@ A használat során be kell tartani az eBay API License Agreement feltételeit, 
 **Apps Script (háttérrendszer):**
 - Webapp (`doPost`, JSON): keresés, hirdetés részletei, állapot olvasása/írása. Tulajdonosként fut, „Anyone” hozzáféréssel; **minden kérést először egy legalább 256 bites titkos tokennel kell hitelesíteni** (a POST törzsében), mielőtt Sheets vagy eBay elérés történne. Ismeretlen művelet, túl nagy kérés vagy hibás token → azonnali elutasítás.
 - Időzített triggerek: aukciófigyelő (5–15 percenként, csak a figyelt aukciókra, üres listánál azonnal kilép), később ritkább (pl. 2 óránkénti) időzített keresés.
-- Titkok: `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET`, a kliens-token(ek) és az ntfy-csatorna neve a Script Properties-ben. Az eBay-token a CacheService-ben, lejáratig.
+- Titkok: `EBAY_CLIENT_ID`, `EBAY_CLIENT_SECRET`, a kliens-token(ek) (és később az opcionális ntfy-adatok) a Script Properties-ben. Az eBay-token a CacheService-ben, lejáratig.
 - Hívásszámláló a Script Properties-ben (napi bontás), közös a két eszköz és a triggerek között.
 
 **Ismert keretek (fogyasztói Google-fiók):** UrlFetch 20 000/nap, egy futás max. 6 perc, időzített futások összesen 90 perc/nap, trigger legkisebb gyakorisága 1 perc. Az eBay napi 5000-es Browse-kerete a szűkebb: óránkénti teljes keresés kb. 1300 hívás/nap, ezért az időzített keresés legfeljebb óránként fusson.
@@ -460,6 +460,8 @@ A használat során be kell tartani az eBay API License Agreement feltételeit, 
 - **Figyelés beállítása:** egy aukciós kártyán „Figyelés” → határár megadása (pl. 150 €). A figyelés a `watches` munkalapra kerül.
 - **Ellenőrzés:** az Apps Script trigger 5–15 percenként tételenkénti `getItem` hívással (a `getItems` nem érhető el) lekéri a figyelt aukciók aktuális licitjét és záró időpontját.
 - **Értesítési szabály (alapértelmezés):** ha az aukció aznap (budapesti idő szerint) zárul, a zárásig legfeljebb 2 óra van hátra, és az aktuális licit (ismert, EUR) a határár alatt van → egy értesítés aukciónként. Lezárt aukciónál a figyelés automatikusan lezárul.
-- **Csatorna: ntfy.** A felhasználó telepíti az ntfy Android-appot, és feliratkozik egy hosszú, véletlenszerű csatornanévre (pl. `cdf-` + 20 véletlen karakter). Az Apps Script HTTPS POST-tal küld. Az üzenet gyorsítótárazását NEM kapcsoljuk ki (`Cache: no` nélkül), mert különben a pillanatnyilag offline telefon elveszítené az értesítést; a csatornanév hosszú és véletlenszerű, a tartalom nyilvános hirdetési adat. Az ntfy-appnak akkumulátor-kivételt kell adni a Xiaomi beállításaiban.
+- **Csatorna: az app saját helyi értesítése.** Az eBay-ellenőrzést továbbra is az Apps Script időzített triggere végzi (a telefontól függetlenül), és a kiváltott értesítéseket egy **értesítési sorba** (`notifications` munkalap) írja. A Flutter-app egy könnyű háttérfeladattal (Androidon WorkManager, kb. 15 percenként; csak egy webapp-hívás, eBay-hívás nélkül) lekéri a még meg nem jelenített értesítéseket, és helyi értesítésként megjeleníti őket. Windowson a futó app ugyanígy jelez, és az app megnyitásakor is lekéri a sort.
+- **Xiaomi-beállítások az app megbízható háttérfutásához:** értesítési engedély (Android 13+), Automatikus indítás bekapcsolva, Akkumulátor-takarékosság: „Nincs korlátozás”. Ha a háttérfeladat késik, az értesítés is késhet, ezért az alapértelmezett figyelmeztetési idő 2 óra a zárás előtt.
+- **Később (opcionális bővítés): ntfy.** A mérés szerint az ntfy.sh névtelen használatánál a napi keret IP-alapú, és az Apps Script közös Google-IP-címeiről küldve betelhet (HTTP 429 / 42908); bővítésnél ntfy-fiók és hozzáférési token, valamint e-mail-tartalék kell.
 - **Tartalom:** rövid cím, aktuális licit, határár, zárási idő és az eBay-hirdetés linkje (pl. „Ma 19:30-kor zárul: PS5 Slim Digital – 120 € (határ: 150 €)”). Eladói adat nem kerülhet bele.
 - **Később:** értesítés új, megadott feltételeknek (modell, max. teljes ár) megfelelő találatról, az időzített keresés alapján.
