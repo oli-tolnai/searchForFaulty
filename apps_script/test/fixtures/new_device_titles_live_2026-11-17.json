@@ -1,0 +1,3207 @@
+{
+  "date": "2026-11-17",
+  "diagnostic_only": true,
+  "examples": [
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch V1 Tablet defekt",
+      "diagnostic": {
+        "category": "V1",
+        "model": "V1",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch V1 defekt/Bastler",
+      "diagnostic": {
+        "category": "V1",
+        "model": "V1",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "FR",
+      "title": "Nintendo Switch HAC-001 Tablet Schwarz 32GB Wi-Fi USB-C Klinke Headset 720p",
+      "diagnostic": {
+        "category": "V1",
+        "model": "V1",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "FR",
+      "title": "Nintendo Switch V1 Jahr 2017",
+      "diagnostic": {
+        "category": "V1",
+        "model": "V1",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "IT",
+      "title": "Nintendo Switch Konsole HAC-001 Schwarz nur Display Bildschirm FÜR TEILE",
+      "diagnostic": {
+        "category": "V1",
+        "model": "V1",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "IT",
+      "title": "Nintendo Switch Konsole HAC-001 Schwarz Nur Bildschirm Display Für Teile",
+      "diagnostic": {
+        "category": "V1",
+        "model": "V1",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "IT",
+      "title": "Nintendo Switch Konsole HAC-001 Schwarz Nur Bildschirm Display Für Teile",
+      "diagnostic": {
+        "category": "V1",
+        "model": "V1",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "IT",
+      "title": "Nintendo Switch Konsole HAC-001 Schwarz nur Display Bildschirm FÜR TEILE",
+      "diagnostic": {
+        "category": "V1",
+        "model": "V1",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Konsole Nintendo Switch Ohne Joypads MOD HAC-001 ( -01)",
+      "diagnostic": {
+        "category": "V2",
+        "model": "V2",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo SWITCH HAC- 001 (-01) KONSOLE OHNE Joypad",
+      "diagnostic": {
+        "category": "V2",
+        "model": "V2",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Konsole ( nur Tablet) MOD HAC-001 ( -01) Defekt für Bastler",
+      "diagnostic": {
+        "category": "V2",
+        "model": "V2",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "ORIGINAL NINTENDO SWITCH GAMEPAD Tablet HAC-001 (-01) ERSATZ KONSOLE TEILDEFEKT",
+      "diagnostic": {
+        "category": "V2",
+        "model": "V2",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Tablet HAC-001(-01) V2 schwarz",
+      "diagnostic": {
+        "category": "V2",
+        "model": "V2",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch V2 HAC-001(-01) | Defekt | Startet nicht | Ersatzteile",
+      "diagnostic": {
+        "category": "V2",
+        "model": "V2",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch V2 HAC-001(-01) | Defekt | Startet nicht | Ersatzteile",
+      "diagnostic": {
+        "category": "V2",
+        "model": "V2",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch (Modell HAC-001-01) in OVP – Nur Offline-Betrieb / Gebannt",
+      "diagnostic": {
+        "category": "V2",
+        "model": "V2",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Lite HDH-001 Turquoise DEFEKT! # AU 314325",
+      "diagnostic": {
+        "category": "Lite",
+        "model": "Lite",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Lite HDH-001 Turquoise DEFEKT! # AU 314323",
+      "diagnostic": {
+        "category": "Lite",
+        "model": "Lite",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Lite Dialga Palkia Edition Pokémon TEILDEFEKT R-Taste",
+      "diagnostic": {
+        "category": "Lite",
+        "model": "Lite",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Lite • 32GB Spielkonsole Türkis • Defekt BSOD • Bastler",
+      "diagnostic": {
+        "category": "Lite",
+        "model": "Lite",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Lite Handheld-Konsole ungetestet für Nintendo Switch, Gelb",
+      "diagnostic": {
+        "category": "Lite",
+        "model": "Lite",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Lite Handheld-System 32 GB Rosa mit Kopfhöreranschluss",
+      "diagnostic": {
+        "category": "Lite",
+        "model": "Lite",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Lite 32GB Handheld-Spielekonsole - Gelb",
+      "diagnostic": {
+        "category": "Lite",
+        "model": "Lite",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Konsole Nintendo Switch Lite Gelb 32 GB - Defekt: Stick-Drift",
+      "diagnostic": {
+        "category": "Lite",
+        "model": "Lite",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch OLED HEG-001 White DEFEKT! # AU 314386",
+      "diagnostic": {
+        "category": "OLED",
+        "model": "OLED",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch OLED HEG-001 White DEFEKT! # AU 314369",
+      "diagnostic": {
+        "category": "OLED",
+        "model": "OLED",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Switch OLED Kühler Leitung Kühlkörper",
+      "diagnostic": {
+        "category": "OLED",
+        "model": "OLED",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Oled Original Ersatzteile",
+      "diagnostic": {
+        "category": "OLED",
+        "model": "OLED",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "FR",
+      "title": "LEERKARTON Konsole - Nintendo Switch OLED",
+      "diagnostic": {
+        "category": "OLED",
+        "model": "OLED",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "FR",
+      "title": "Nintendo Switch OLED HS Für Ersatzteile",
+      "diagnostic": {
+        "category": "OLED",
+        "model": "OLED",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "IT",
+      "title": "Nintendo Switch OLED",
+      "diagnostic": {
+        "category": "OLED",
+        "model": "OLED",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "DEFEKT Nintendo Switch 2 Konsole ohne Zubehör Schwarz OVP",
+      "diagnostic": {
+        "category": "Switch 2",
+        "model": "Switch 2",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "DEFEKT Nintendo Switch 2 Konsole ohne Zubehör Schwarz OVP",
+      "diagnostic": {
+        "category": "Switch 2",
+        "model": "Switch 2",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "GESPERRT Nintendo Switch 2 256 GB Schwarz",
+      "diagnostic": {
+        "category": "Switch 2",
+        "model": "Switch 2",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "GESPERRT Nintendo Switch 2 256 GB Schwarz",
+      "diagnostic": {
+        "category": "Switch 2",
+        "model": "Switch 2",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "GESPERRT Nintendo Switch 2 256 GB Schwarz",
+      "diagnostic": {
+        "category": "Switch 2",
+        "model": "Switch 2",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch 2 Konsole Schwarz mit OVP, Tasche/Case und 3 Spielen",
+      "diagnostic": {
+        "category": "Switch 2",
+        "model": "Switch 2",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch OLED Mainboard Defekt",
+      "diagnostic": {
+        "category": "Tartozék",
+        "model": "Tartozék",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch 2019 32GB - linker Joy-Con Stick gebrochen, G3 mit OVP",
+      "diagnostic": {
+        "category": "Tartozék",
+        "model": "Tartozék",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Original Nintendo Switch Joy-Con - Controller - Rechts - Rot - Defekt",
+      "diagnostic": {
+        "category": "Tartozék",
+        "model": "Tartozék",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch DEFEKT – Softwaresperre – 2 defekte Joy-Cons – Zubehör",
+      "diagnostic": {
+        "category": "Tartozék",
+        "model": "Tartozék",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Dock Station für Nintendo Switch 1 TV Dock - Schwarz - Defekt",
+      "diagnostic": {
+        "category": "Tartozék",
+        "model": "Tartozék",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Bildschirm Display Defekt nur für Teile oder Reparatur",
+      "diagnostic": {
+        "category": "Tartozék",
+        "model": "Tartozék",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Original Nintendo Switch Joy-Con - Links - Rot - Defekt",
+      "diagnostic": {
+        "category": "Tartozék",
+        "model": "Tartozék",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Heimkonsole 32 GB Grau mit Joy-Con Controllern in OVP",
+      "diagnostic": {
+        "category": "Tartozék",
+        "model": "Tartozék",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Lite 2x DEFEKT/Ersatzteilespender",
+      "diagnostic": {
+        "category": "Csomag",
+        "model": "Lite",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "2x Retro Gaming Gravis Controller U.S. Patent IBM, Quick Joy",
+      "diagnostic": {
+        "category": "Csomag",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "FR",
+      "title": "Konvolut 5 Switch Konsolen nur für Teile oder Reparatur im Zustand \"",
+      "diagnostic": {
+        "category": "Csomag",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Sports Set Konsole + Zubehör – Defekt / Ungeprüfte Retoure#124",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch defekt – ohne Zubehör – für Bastler/Ersatzteile",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Konsole defekt Ersatzteilspender HAD-CPU-01 kein Lebenszeichen",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Konsole Console Needs Repair",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Konsole / Tablet / Bildschirm OHNE Zubehör (DEFEKT) ⚡BLITZBEREIT",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Konsole – mit Station – DEFEKT - blauer Bildschirm ⚡BLITZBEREIT⚡",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "switch",
+      "country": "DE",
+      "title": "Nintendo Switch Konsole + Dock – defekt – Bastler",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "steam_deck",
+      "country": "DE",
+      "title": "Steam Deck - kaputter Lautsprecher - 256GB OVP",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 11 256GB Schwarz iOS Face ID Bluetooth Slate Design Beschreibung!",
+      "diagnostic": {
+        "category": "iPhone 11",
+        "model": "iPhone 11",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 11 Schwarz 128 GB – Display & Gehäuse Top - mit Platinenschaden",
+      "diagnostic": {
+        "category": "iPhone 11",
+        "model": "iPhone 11",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 11 A2221 (CDMA + GSM) - 64GB - gelb(Ohne Simlock) (Dual-SIM)defekt",
+      "diagnostic": {
+        "category": "iPhone 11",
+        "model": "iPhone 11",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 11, 64GB - Ersatzteile / Ersatzteilspender Schwarz",
+      "diagnostic": {
+        "category": "iPhone 11",
+        "model": "iPhone 11",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "APPLE iphone ???11???? in Ersatzverpackung",
+      "diagnostic": {
+        "category": "iPhone 11",
+        "model": "iPhone 11",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 11 64GB Schwarz – Akku 77% – OVP – Kamera defekt",
+      "diagnostic": {
+        "category": "iPhone 11",
+        "model": "iPhone 11",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 11 64GB Schwarz ohne Simlock Mit iCloud Sperre",
+      "diagnostic": {
+        "category": "iPhone 11",
+        "model": "iPhone 11",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 11 A2221 - 64GB - Schwarz (Ohne Simlock) defekt - (Bootloop)",
+      "diagnostic": {
+        "category": "iPhone 11",
+        "model": "iPhone 11",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iphone 11 pro 256 gb nachtgrün",
+      "diagnostic": {
+        "category": "iPhone 11 Pro",
+        "model": "iPhone 11 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple Iphone 11 Pro 64GB Gold Icloud Gesperrt an Bastler Ohne Simlock",
+      "diagnostic": {
+        "category": "iPhone 11 Pro",
+        "model": "iPhone 11 Pro",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 11 Pro 256 GB – sehr guter Zustand – Netzwerk/WLAN defekt – Bastler",
+      "diagnostic": {
+        "category": "iPhone 11 Pro",
+        "model": "iPhone 11 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 11 Pro A2215 (CDMA + GSM) - 64GB - Nachtgrün",
+      "diagnostic": {
+        "category": "iPhone 11 Pro",
+        "model": "iPhone 11 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 11 Pro - Silber (Ohne Simlock) (Dual-SIM)",
+      "diagnostic": {
+        "category": "iPhone 11 Pro",
+        "model": "iPhone 11 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 11 Pro A2215 (CDMA + GSM) - Nachtgrün",
+      "diagnostic": {
+        "category": "iPhone 11 Pro",
+        "model": "iPhone 11 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 11 Pro, Bastlergerät + OV + Zubehörpaket: Hülle Displayfolie Kopfhörer RG",
+      "diagnostic": {
+        "category": "iPhone 11 Pro",
+        "model": "iPhone 11 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 11 Pro A2215 (CDMA | GSM) - 64GB - Silber (Ohne Simlock)",
+      "diagnostic": {
+        "category": "iPhone 11 Pro",
+        "model": "iPhone 11 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 11 Pro Max 64GB Grau mit Dreifach-Kamera, Ersatzteil/defekt",
+      "diagnostic": {
+        "category": "iPhone 11 Pro Max",
+        "model": "iPhone 11 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 11 Pro Max 256 GB Gold",
+      "diagnostic": {
+        "category": "iPhone 11 Pro Max",
+        "model": "iPhone 11 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 11 Pro Max A2218 - 64GB - Space Grau (Ohne Simlock) (Dual-SIM)",
+      "diagnostic": {
+        "category": "iPhone 11 Pro Max",
+        "model": "iPhone 11 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 11 Pro Max",
+      "diagnostic": {
+        "category": "iPhone 11 Pro Max",
+        "model": "iPhone 11 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 11 Pro Max Grau 64 GB defekt – 100 % iCloud-frei - TOTALSCHADEN",
+      "diagnostic": {
+        "category": "iPhone 11 Pro Max",
+        "model": "iPhone 11 Pro Max",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 11 Pro Max – Grün – Defekt – Totalschaden",
+      "diagnostic": {
+        "category": "iPhone 11 Pro Max",
+        "model": "iPhone 11 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 11 Pro Max - 512GB - Green Icload Sperre Displayschaden",
+      "diagnostic": {
+        "category": "iPhone 11 Pro Max",
+        "model": "iPhone 11 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "IT",
+      "title": "iphone 11 pro max 256gb Leuchtet Entsperrt",
+      "diagnostic": {
+        "category": "iPhone 11 Pro Max",
+        "model": "iPhone 11 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 64GB Black DEFEKT! # AU 289900",
+      "diagnostic": {
+        "category": "iPhone 12",
+        "model": "iPhone 12",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 64GB Black DEFEKT! # AU 133366",
+      "diagnostic": {
+        "category": "iPhone 12",
+        "model": "iPhone 12",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 64GB Blau Display Defekt",
+      "diagnostic": {
+        "category": "iPhone 12",
+        "model": "iPhone 12",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 64GB Black DEFEKT! # AU 289898",
+      "diagnostic": {
+        "category": "iPhone 12",
+        "model": "iPhone 12",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 64GB Schwarz",
+      "diagnostic": {
+        "category": "iPhone 12",
+        "model": "iPhone 12",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 – 256 GB – Blau – DEFEKT (Kamera nach Sturz ohne Funktion)",
+      "diagnostic": {
+        "category": "iPhone 12",
+        "model": "iPhone 12",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 - 64GB Black (iPhone Sturzschaden aus Nachlass)",
+      "diagnostic": {
+        "category": "iPhone 12",
+        "model": "iPhone 12",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 iCloud Gut für Ersatzteile! Defekt",
+      "diagnostic": {
+        "category": "iPhone 12",
+        "model": "iPhone 12",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 mini 64GB Lila ohne Simlock 5G Wi‑Fi BT LTE A2399",
+      "diagnostic": {
+        "category": "iPhone 12 mini",
+        "model": "iPhone 12 mini",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "APPLE iPhone 12 Mini 64GB Blue Blau DEFEKT Displaybruch | OVP | MwSt ausweisbar",
+      "diagnostic": {
+        "category": "iPhone 12 mini",
+        "model": "iPhone 12 mini",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 Mini 128GB, Blau, ohne Simlock icloud gesperrt",
+      "diagnostic": {
+        "category": "iPhone 12 mini",
+        "model": "iPhone 12 mini",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 12 mini 256GB Violett Defekt Ersatzteilspender iCloud/FMI ON - Unlocked",
+      "diagnostic": {
+        "category": "iPhone 12 mini",
+        "model": "iPhone 12 mini",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Stark Gebrauchtes iPhone 12 Mini 64GB Blau",
+      "diagnostic": {
+        "category": "iPhone 12 mini",
+        "model": "iPhone 12 mini",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 Mini blau 64 GB 1x Kamera fokussiert nicht, ohne Simlock,defekt.",
+      "diagnostic": {
+        "category": "iPhone 12 mini",
+        "model": "iPhone 12 mini",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 mini A2399 (CDMA + GSM) - 256GB - Schwarz (Ohne Simlock)",
+      "diagnostic": {
+        "category": "iPhone 12 mini",
+        "model": "iPhone 12 mini",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 mini 64 GB Blau iOS Ohne Simlock – Ersatzteil/defekt",
+      "diagnostic": {
+        "category": "iPhone 12 mini",
+        "model": "iPhone 12 mini",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 12 Pro 128 GB – sehr gepflegt – Hörmuschel defekt",
+      "diagnostic": {
+        "category": "iPhone 12 Pro",
+        "model": "iPhone 12 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 pro Ersatzteile gesperrt",
+      "diagnostic": {
+        "category": "iPhone 12 Pro",
+        "model": "iPhone 12 Pro",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "❤️ TOP! IPHONE 12 PRO MIT 256GB OVP PACIFIC BLUE BLAU ❤️",
+      "diagnostic": {
+        "category": "iPhone 12 Pro",
+        "model": "iPhone 12 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Defekt! No iCloud Lock! Apple iPhone 12 Pro 256GB Pazifikblau Top Zustand",
+      "diagnostic": {
+        "category": "iPhone 12 Pro",
+        "model": "iPhone 12 Pro",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 Pro Pacific Blue / Pazifikblau - ↓ BITTE LESEN ↓",
+      "diagnostic": {
+        "category": "iPhone 12 Pro",
+        "model": "iPhone 12 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 12 Pro 64gb",
+      "diagnostic": {
+        "category": "iPhone 12 Pro",
+        "model": "iPhone 12 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 Pro 512GB Graphit Defekt Teilespender",
+      "diagnostic": {
+        "category": "iPhone 12 Pro",
+        "model": "iPhone 12 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 Pro A2407 (CDMA",
+      "diagnostic": {
+        "category": "iPhone 12 Pro",
+        "model": "iPhone 12 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 Pro Max - 128GB - Pacific Blue (Ohne Simlock) (Dual-SIM)",
+      "diagnostic": {
+        "category": "iPhone 12 Pro Max",
+        "model": "iPhone 12 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 12 Pro Max Pazifikblau Defekt / Bastlergerät",
+      "diagnostic": {
+        "category": "iPhone 12 Pro Max",
+        "model": "iPhone 12 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Defektes iPhone 12 Pro Max",
+      "diagnostic": {
+        "category": "iPhone 12 Pro Max",
+        "model": "iPhone 12 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 12 Pro Max 128 GB – funktioniert, Display defekt",
+      "diagnostic": {
+        "category": "iPhone 12 Pro Max",
+        "model": "iPhone 12 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 Pro Max - 128GB - Graphit (Ohne Simlock) A2411 (GSM+CDMA)",
+      "diagnostic": {
+        "category": "iPhone 12 Pro Max",
+        "model": "iPhone 12 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 12 Pro Max 256GB Weiß",
+      "diagnostic": {
+        "category": "iPhone 12 Pro Max",
+        "model": "iPhone 12 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 Pro Max - 128GB - Gold (O2)",
+      "diagnostic": {
+        "category": "iPhone 12 Pro Max",
+        "model": "iPhone 12 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 Pro Max 128GB Gold 88% Gehäuse original",
+      "diagnostic": {
+        "category": "iPhone 12 Pro Max",
+        "model": "iPhone 12 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 128Gb Mitternacht DEFEKT! # AU 236130",
+      "diagnostic": {
+        "category": "iPhone 13",
+        "model": "iPhone 13",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 128GB Blau",
+      "diagnostic": {
+        "category": "iPhone 13",
+        "model": "iPhone 13",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 - 128GB - Blau - Ohne Simlock - Display defekt / Bastler",
+      "diagnostic": {
+        "category": "iPhone 13",
+        "model": "iPhone 13",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 - 128GB - Mitternacht (Ohne Simlock) (Dual-SIM)",
+      "diagnostic": {
+        "category": "iPhone 13",
+        "model": "iPhone 13",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 13 128GB -ohne icloud",
+      "diagnostic": {
+        "category": "iPhone 13",
+        "model": "iPhone 13",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 13 128GB Grün Defekt Ersatzteilspender iCloud/FMI OFF - Unlocked",
+      "diagnostic": {
+        "category": "iPhone 13",
+        "model": "iPhone 13",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 13 128GB Blau Defekt Ersatzteilspender FMI OFF - Unlocked",
+      "diagnostic": {
+        "category": "iPhone 13",
+        "model": "iPhone 13",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 - 128GB - Mitternacht (Ohne Simlock) (Dual-SIM)",
+      "diagnostic": {
+        "category": "iPhone 13",
+        "model": "iPhone 13",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 mini 128 GB Schwarz Smartphone defekt/Ersatzteil, Kratzer",
+      "diagnostic": {
+        "category": "iPhone 13 mini",
+        "model": "iPhone 13 mini",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 mini 128 GB Schwarz iOS – Als Ersatzteil/defekt",
+      "diagnostic": {
+        "category": "iPhone 13 mini",
+        "model": "iPhone 13 mini",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 13 Mini 128GB",
+      "diagnostic": {
+        "category": "iPhone 13 mini",
+        "model": "iPhone 13 mini",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 13 mini – Schwarz – Defekt – Totalschaden - 128 GB",
+      "diagnostic": {
+        "category": "iPhone 13 mini",
+        "model": "iPhone 13 mini",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 mini Product Red Gehäuse /Ersatzteile/",
+      "diagnostic": {
+        "category": "iPhone 13 mini",
+        "model": "iPhone 13 mini",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "FR",
+      "title": "Apple iPhone 13 mini 128GB - Außer Betrieb",
+      "diagnostic": {
+        "category": "iPhone 13 mini",
+        "model": "iPhone 13 mini",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "FR",
+      "title": "Apple iPhone 13 mini 128GB Rot - iCloud Free - HS Panic Full - Für Ersatzteile",
+      "diagnostic": {
+        "category": "iPhone 13 mini",
+        "model": "iPhone 13 mini",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "FR",
+      "title": "Apple iPhone 13 mini - 128GB - Blau (Gesperrt)",
+      "diagnostic": {
+        "category": "iPhone 13 mini",
+        "model": "iPhone 13 mini",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 Pro 128 GB Grau Smartphone Gesspert Ohne Simlock Defekt",
+      "diagnostic": {
+        "category": "iPhone 13 Pro",
+        "model": "iPhone 13 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 Pro - 256GB - Graphit mit iCloud Sperre",
+      "diagnostic": {
+        "category": "iPhone 13 Pro",
+        "model": "iPhone 13 Pro",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 Pro - Defekt iCloud Sperre Für Ersatzteile",
+      "diagnostic": {
+        "category": "iPhone 13 Pro",
+        "model": "iPhone 13 Pro",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 Pro - 128GB - Sierrablau (Ohne Simlock) (Beschreibung lesen)",
+      "diagnostic": {
+        "category": "iPhone 13 Pro",
+        "model": "iPhone 13 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 13 Pro, 13 Pro Max & 14 Pro Max – Geräte, Gehäuse & Ersatzteile – Bastler",
+      "diagnostic": {
+        "category": "iPhone 13 Pro",
+        "model": "iPhone 13 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 13 Pro - 256GB - Funktioniert - 100% Kapazität",
+      "diagnostic": {
+        "category": "iPhone 13 Pro",
+        "model": "iPhone 13 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 Pro 128GB Grau iOS – Ersatzteil/defekt, bitte Beschreibung lesen",
+      "diagnostic": {
+        "category": "iPhone 13 Pro",
+        "model": "iPhone 13 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 13 Pro 128GB Gold - Defekt -",
+      "diagnostic": {
+        "category": "iPhone 13 Pro",
+        "model": "iPhone 13 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 Pro Max - 128GB - Sierra Blue ( Locked Defekt) DE",
+      "diagnostic": {
+        "category": "iPhone 13 Pro Max",
+        "model": "iPhone 13 Pro Max",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 Pro Max - 128GB - grün ! DEFEKT !",
+      "diagnostic": {
+        "category": "iPhone 13 Pro Max",
+        "model": "iPhone 13 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 13 Pro Max als Defekt/Ersatzteilspender BESCHREIBUNG LESEN",
+      "diagnostic": {
+        "category": "iPhone 13 Pro Max",
+        "model": "iPhone 13 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 13 Pro Max 512GB -defekt-",
+      "diagnostic": {
+        "category": "iPhone 13 Pro Max",
+        "model": "iPhone 13 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 Pro Max - 128GB - Alpingrün (Vodafone)",
+      "diagnostic": {
+        "category": "iPhone 13 Pro Max",
+        "model": "iPhone 13 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 Pro Max - 128GB - Silber (Ohne Simlock) (Dual-SIM)",
+      "diagnostic": {
+        "category": "iPhone 13 Pro Max",
+        "model": "iPhone 13 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "FR",
+      "title": "TELEPHONE APPLE IPHONE 13 pro max 128 GO DEBLOQUE * defaut *",
+      "diagnostic": {
+        "category": "iPhone 13 Pro Max",
+        "model": "iPhone 13 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "IT",
+      "title": "iphone 13 pro max 128gb defekt",
+      "diagnostic": {
+        "category": "iPhone 13 Pro Max",
+        "model": "iPhone 13 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 512GB Rot iOS Dual SIM (SIM + eSIM) ohne Vertrag",
+      "diagnostic": {
+        "category": "iPhone 14",
+        "model": "iPhone 14",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iphone 14 128gb schwarz",
+      "diagnostic": {
+        "category": "iPhone 14",
+        "model": "iPhone 14",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 14 128GB Starlight Defekt Ersatzteilspender iCloud/FMI OFF - Unlocked",
+      "diagnostic": {
+        "category": "iPhone 14",
+        "model": "iPhone 14",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iphone 14 128gb Mitternacht ohne Sperre Gehäuse Beschädigt",
+      "diagnostic": {
+        "category": "iPhone 14",
+        "model": "iPhone 14",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 128GB schwarz mit OVP - Ersatzteil / Defekt - Angebotstext lesen",
+      "diagnostic": {
+        "category": "iPhone 14",
+        "model": "iPhone 14",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 - 128GB - Midnight (Ohne Simlock) (Dual-SIM)",
+      "diagnostic": {
+        "category": "iPhone 14",
+        "model": "iPhone 14",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 14 128GB Polarstern | Defekt Bootloop | Original Display",
+      "diagnostic": {
+        "category": "iPhone 14",
+        "model": "iPhone 14",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 - 128GB - Schwarz (MDM Sperre).Defekt...",
+      "diagnostic": {
+        "category": "iPhone 14",
+        "model": "iPhone 14",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 Plus 128GB Kamera & Taste Defekt",
+      "diagnostic": {
+        "category": "iPhone 14 Plus",
+        "model": "iPhone 14 Plus",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 Plus 256GB Schwarz Display defekt, Hülle, Ladegerät+Kameraschutz",
+      "diagnostic": {
+        "category": "iPhone 14 Plus",
+        "model": "iPhone 14 Plus",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 Plus 256GB Schwarz ohne Face-ID, Hülle, Ladegerät+Kameraschutz",
+      "diagnostic": {
+        "category": "iPhone 14 Plus",
+        "model": "iPhone 14 Plus",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iphone 14 plus 128gb",
+      "diagnostic": {
+        "category": "iPhone 14 Plus",
+        "model": "iPhone 14 Plus",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "IPhone 14 Plus",
+      "diagnostic": {
+        "category": "iPhone 14 Plus",
+        "model": "iPhone 14 Plus",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "IT",
+      "title": "Apple iPhone 14 Plus - 256GB - Blau",
+      "diagnostic": {
+        "category": "iPhone 14 Plus",
+        "model": "iPhone 14 Plus",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "IT",
+      "title": "iPhone 14 Plus 128GB Weiß",
+      "diagnostic": {
+        "category": "iPhone 14 Plus",
+        "model": "iPhone 14 Plus",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 14 Pro - iCloud Sperre Defekt Für Ersatzteile",
+      "diagnostic": {
+        "category": "iPhone 14 Pro",
+        "model": "iPhone 14 Pro",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 14 Pro 128GB Silber Bastler iCloud Frei FMI OFF Defekt",
+      "diagnostic": {
+        "category": "iPhone 14 Pro",
+        "model": "iPhone 14 Pro",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 Pro 128GB Schwarz iOS ohne Simlock Ersatzteil/defekt",
+      "diagnostic": {
+        "category": "iPhone 14 Pro",
+        "model": "iPhone 14 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 14 Pro – Defekt | Geht gelegentlich aus | Für Bastler / mit viel Zubehör",
+      "diagnostic": {
+        "category": "iPhone 14 Pro",
+        "model": "iPhone 14 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 Pro 512 GB Grau iOS Smartphone – Ersatzteil/defekt mit iCloud Sp",
+      "diagnostic": {
+        "category": "iPhone 14 Pro",
+        "model": "iPhone 14 Pro",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 Pro 256GB Dunkellila für Bastler Ersatzteilspender",
+      "diagnostic": {
+        "category": "iPhone 14 Pro",
+        "model": "iPhone 14 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 Pro 256GB Space Black Defekt Teilespender",
+      "diagnostic": {
+        "category": "iPhone 14 Pro",
+        "model": "iPhone 14 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 Pro 128 GB Schwarz iOS Smartphone – Als Ersatzteil/defekt",
+      "diagnostic": {
+        "category": "iPhone 14 Pro",
+        "model": "iPhone 14 Pro",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 Pro Max - Space Black (Ohne Simlock) - Teildefekt",
+      "diagnostic": {
+        "category": "iPhone 14 Pro Max",
+        "model": "iPhone 14 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 Pro Max ICloud Sperre ohne Display Smartphone",
+      "diagnostic": {
+        "category": "iPhone 14 Pro Max",
+        "model": "iPhone 14 Pro Max",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 Pro Max A2894 Weiß Gesperrt /Defekt",
+      "diagnostic": {
+        "category": "iPhone 14 Pro Max",
+        "model": "iPhone 14 Pro Max",
+        "supported": true,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 14 Pro Max 128GB Weiß",
+      "diagnostic": {
+        "category": "iPhone 14 Pro Max",
+        "model": "iPhone 14 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Iphone 14 pro Max Defekt",
+      "diagnostic": {
+        "category": "iPhone 14 Pro Max",
+        "model": "iPhone 14 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 Pro Max - 128GB - Space Black (Ohne Simlock) (Dual-SIM)",
+      "diagnostic": {
+        "category": "iPhone 14 Pro Max",
+        "model": "iPhone 14 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 14 Pro Max 128gb Defekt",
+      "diagnostic": {
+        "category": "iPhone 14 Pro Max",
+        "model": "iPhone 14 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 14 Pro Max 128 GB Schwarz ohne Simlock iOS MQ9P3ZD/A",
+      "diagnostic": {
+        "category": "iPhone 14 Pro Max",
+        "model": "iPhone 14 Pro Max",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone X 256 GB Space Grau iOS Smartphone, Rückseite/Glas beschädigt",
+      "diagnostic": {
+        "category": "Régebbi",
+        "model": "Régebbi",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone XS 256GB Space Grey iOS Smartphone – Ersatzteil/defekt",
+      "diagnostic": {
+        "category": "Régebbi",
+        "model": "Régebbi",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 7 32GB rosegold DEFEKT! # AU 226919",
+      "diagnostic": {
+        "category": "Régebbi",
+        "model": "Régebbi",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "IPhone 7 128GB Schwarz A1778 GSM Defekt",
+      "diagnostic": {
+        "category": "Régebbi",
+        "model": "Régebbi",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 7 Schwarz Smartphone Aktivierungssperre",
+      "diagnostic": {
+        "category": "Régebbi",
+        "model": "Régebbi",
+        "supported": false,
+        "lock_mentioned": true
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 8 - 256GB - Farbe gold",
+      "diagnostic": {
+        "category": "Régebbi",
+        "model": "Régebbi",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone XS Max - 256GB - Silber - simlockfrei - incl. gratis Spiderman App",
+      "diagnostic": {
+        "category": "Régebbi",
+        "model": "Régebbi",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone XS 265GB Space grau MT9H2ZD/A inkl. Zubehörpaket",
+      "diagnostic": {
+        "category": "Régebbi",
+        "model": "Régebbi",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 16 - 128GB - Schwarz - Neues Austauschgerät",
+      "diagnostic": {
+        "category": "Újabb",
+        "model": "iPhone 16",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 16 Pro Max - 256 GB - White Titanium (Ohne Simlock)",
+      "diagnostic": {
+        "category": "Újabb",
+        "model": "iPhone 16 Pro Max",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 15 Pro 128 GB Schwarz Smartphone (als Ersatzteil/defekt)",
+      "diagnostic": {
+        "category": "Újabb",
+        "model": "iPhone 15 Pro",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 17 Pro 512 GB Silber – Display gebrochen - Batterie 93% - OVP",
+      "diagnostic": {
+        "category": "Újabb",
+        "model": "iPhone 17 Pro",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 15 Pro 128GB Blau | Ohne SIM-Lock | Kamera defekt | Ersatzteil",
+      "diagnostic": {
+        "category": "Újabb",
+        "model": "iPhone 15 Pro",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 16 Pro 256GB Titan Natur Mainboard Defekt, optischer Zustand top",
+      "diagnostic": {
+        "category": "Újabb",
+        "model": "iPhone 16 Pro",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iphone 15 128gb blau",
+      "diagnostic": {
+        "category": "Újabb",
+        "model": "iPhone 15",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 16 128GB Black DEFEKT! # AU 284543",
+      "diagnostic": {
+        "category": "Újabb",
+        "model": "iPhone 16",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "14x Apple Konvolut u.a. iPad, iPhone backcover, Rahmen, etc. Ersatzteile Bastler",
+      "diagnostic": {
+        "category": "Alkatrész",
+        "model": "Alkatrész",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "iPhone 12 Lila/Violett - DEFEKT / Bastler / Ersatzteile - Display gebrochen",
+      "diagnostic": {
+        "category": "Alkatrész",
+        "model": "Alkatrész",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 11 Schwarz - Defekt Display gebrochen Für Ersatzteile",
+      "diagnostic": {
+        "category": "Alkatrész",
+        "model": "Alkatrész",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Iphone 7 DEFEKT Geplatzte Batterie",
+      "diagnostic": {
+        "category": "Alkatrész",
+        "model": "Alkatrész",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 13 Pro Graphit Rücken Akku dick DEFEKT #8099",
+      "diagnostic": {
+        "category": "Alkatrész",
+        "model": "Alkatrész",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 7 Schwarz, Display gesprungen defekt",
+      "diagnostic": {
+        "category": "Alkatrész",
+        "model": "Alkatrész",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Original Display und Gehäuse Apple iPhone 11 Pro Max (Nachtgrün)",
+      "diagnostic": {
+        "category": "Alkatrész",
+        "model": "Alkatrész",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 7 weiß, Display o.k als defekt",
+      "diagnostic": {
+        "category": "Alkatrész",
+        "model": "Alkatrész",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple Konvolut - iPhones, iPods, iPad mini 2 - ungetestet - Ersatzteil/defekt",
+      "diagnostic": {
+        "category": "Csomag",
+        "model": "Csomag",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Smartphone Handy Tablet Konvolut Lot 10 Stück Samsung IPhone Poco Xiaomi Teildef",
+      "diagnostic": {
+        "category": "Csomag",
+        "model": "Csomag",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 12 Pro / iPhone 8 Konvolut",
+      "diagnostic": {
+        "category": "Csomag",
+        "model": "Csomag",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone Konvolut 4 Geräte iPhone 12 XS Max 2x iPhone 6 mit OVP Bastler",
+      "diagnostic": {
+        "category": "Csomag",
+        "model": "Csomag",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Konvolut 2 Apple iPhones ein 6s 64Gb und ein 7 32Gb und ein noname",
+      "diagnostic": {
+        "category": "Csomag",
+        "model": "Csomag",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Handy Tablet Konvolut iPhone iPad Samsung LG Huawei defekt",
+      "diagnostic": {
+        "category": "Csomag",
+        "model": "Csomag",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Smartphone Konvolut. Samsung Z Flip 4, X27, Samsung Galaxy Folder 2, IPhone 5etc",
+      "diagnostic": {
+        "category": "Csomag",
+        "model": "Csomag",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "9 Apple iPhones + Ersatzdisplay – defekt/ungeprüft – Bastler-Konvolut",
+      "diagnostic": {
+        "category": "Csomag",
+        "model": "Csomag",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 16e 128gb Schwarz A3409 MY1G4QN/A iOS USB-C ohne Simlock",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone s Smartphone 128 GB Silber als Ersatzteil/defekt",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 16e - 128 GB - 95% Akku + Zubehörpaket",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 2G A1203 8GB Original 2007 Defekt Für Bastler Sammler Rarität",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 3G Schwarz A1241",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Defekte iPhones: iPhone 13 mini, iPhone 13 und iPhone 14",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 6S 16GB Space Grau, guter Zustand!",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "iphone",
+      "country": "DE",
+      "title": "Apple iPhone 3G - 16GB - Schwarz mit OVP",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Palit Rtx 2080 Super 8GB Defekt Artefakte",
+      "diagnostic": {
+        "category": "RTX 20",
+        "model": "RTX 20",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "ASUS ROG Strix NVIDIA GeForce RTX 2080 super Grafikkarte PCIe x16 3 Lüfter USB-C",
+      "diagnostic": {
+        "category": "RTX 20",
+        "model": "RTX 20",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Defekt! MSI Gaming X Trio RTX2080 Super",
+      "diagnostic": {
+        "category": "RTX 20",
+        "model": "RTX 20",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Defekt! MSI Gaming X Trio RTX 2080 Super",
+      "diagnostic": {
+        "category": "RTX 20",
+        "model": "RTX 20",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "NVIDIA GeForce RTX 2080 Super Grafikkarte - Defekt",
+      "diagnostic": {
+        "category": "RTX 20",
+        "model": "RTX 20",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "NVIDIA GeForce RTX 2070 8GB Defekt",
+      "diagnostic": {
+        "category": "RTX 20",
+        "model": "RTX 20",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "ASUS GeForce RTX 2070 8gb STRIX Edition Boost Grafikkarte Gpu",
+      "diagnostic": {
+        "category": "RTX 20",
+        "model": "RTX 20",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "ZOTAC GAMING GeForce RTX 2080 SUPER 8GB – Defekt / Bastlerware mit OVP",
+      "diagnostic": {
+        "category": "RTX 20",
+        "model": "RTX 20",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "GIGABYTE GeForce RTX™ 3080 Ti GAMING OC 12GB GDDR6X - DEFEKT",
+      "diagnostic": {
+        "category": "RTX 30",
+        "model": "RTX 30",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "*Defekt* Asus Rog Strix RTX3060 OC V2 12GB GDDR6 Nvidia Geforce Gaming",
+      "diagnostic": {
+        "category": "RTX 30",
+        "model": "RTX 30",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Nvidia MSI Aero ITX RTX 3060 12GB GDDR6 OC Edition",
+      "diagnostic": {
+        "category": "RTX 30",
+        "model": "RTX 30",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "ASUS DUAL-RTX3050-O6G NVIDIA Grafikkarte Defekt",
+      "diagnostic": {
+        "category": "RTX 30",
+        "model": "RTX 30",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "RTX 3060 12 GB als Defekt kurzschluss?",
+      "diagnostic": {
+        "category": "RTX 30",
+        "model": "RTX 30",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "FR",
+      "title": "10x Micron GDDR6X VRAM Chips D8BWW MT61K256M32JE-19G Pulled RTX 3080 3090",
+      "diagnostic": {
+        "category": "RTX 30",
+        "model": "RTX 30",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "FR",
+      "title": "Rx 7800XT 16g + NVIDIA GeForce RTX 3060 12G",
+      "diagnostic": {
+        "category": "RTX 30",
+        "model": "RTX 30",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "FR",
+      "title": "NVIDIA GeForce RTX 3060 ti + RTX 3060",
+      "diagnostic": {
+        "category": "RTX 30",
+        "model": "RTX 30",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "ASUS TUF RTX 4090 OC 24GB | Ohne GPU-Chip & VRAM | Ersatzteile.",
+      "diagnostic": {
+        "category": "RTX 40",
+        "model": "RTX 40",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "ASUS TUF RTX 4080 SUPER OC 16GB | Ohne GPU-Chip & VRAM | Ersatzteile.",
+      "diagnostic": {
+        "category": "RTX 40",
+        "model": "RTX 40",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Original MSI GeForce RTX 4070 Ventus 2X White Lüftereinheit Abdeckung 1x Defekt",
+      "diagnostic": {
+        "category": "RTX 40",
+        "model": "RTX 40",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "NUR LEERKARTON - GeForce RTX 4060 Ti",
+      "diagnostic": {
+        "category": "RTX 40",
+        "model": "RTX 40",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "RTX 4090 Asus STRIX - Showpiece Sammlerstück Deko Originalkühler",
+      "diagnostic": {
+        "category": "RTX 40",
+        "model": "RTX 40",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "IT",
+      "title": "GIGABYTE GeForce RTX 4060 WINDFORCE OC 8GB GDDR6 Scheda Grafica",
+      "diagnostic": {
+        "category": "RTX 40",
+        "model": "RTX 40",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "IT",
+      "title": "(FÜR ERSATZTEILE) Gigabyte GeForce RTX 4090 Gaming OC nur Platine ohne VRAM",
+      "diagnostic": {
+        "category": "RTX 40",
+        "model": "RTX 40",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "IT",
+      "title": "Kühlkörper + Original Box Grafikkarte Msi Rtx 4090 Gaming X Trio 24Gb",
+      "diagnostic": {
+        "category": "RTX 40",
+        "model": "RTX 40",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "MSI GeForce RTX 5090 Decor (Kein PCB und VRAM)",
+      "diagnostic": {
+        "category": "RTX 50",
+        "model": "RTX 50",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Gigabyte GeForce RTX 5070 Ti WINDFORCE OC SFF *Bitte lesen*",
+      "diagnostic": {
+        "category": "RTX 50",
+        "model": "RTX 50",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "RTX 5090 Aorus White - Showpiece Sammlerstück Deko Originalkühler",
+      "diagnostic": {
+        "category": "RTX 50",
+        "model": "RTX 50",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Manli Stellar NVIDIA GeForce RTX 5090 ohne Chip & RAM.",
+      "diagnostic": {
+        "category": "RTX 50",
+        "model": "RTX 50",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "MSI GEFORCE RTX 5090 32GB OC GAMING TRIO Grafikkarte GDDR7 - Ohne VRAM und GPU!",
+      "diagnostic": {
+        "category": "RTX 50",
+        "model": "RTX 50",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "IT",
+      "title": "MSI NVIDIA GeForce RTX 5070 Ventus 2X OC 12GB WHITE GDDR7",
+      "diagnostic": {
+        "category": "RTX 50",
+        "model": "RTX 50",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "IT",
+      "title": "LEERKARTON - GRAFIKKARTE ASUS RTX 5060 PRIME DUAL 8G DDR7",
+      "diagnostic": {
+        "category": "RTX 50",
+        "model": "RTX 50",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "IT",
+      "title": "ASUS TUF Gaming GeForce RTX 5090 ⚠️LEGGI DESCRIZIONE⚠️",
+      "diagnostic": {
+        "category": "RTX 50",
+        "model": "RTX 50",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "4x Grafikkarte GTX 970 Gigabyte GTX 780 PNY Radeon RX480 Nitro Power color 4890",
+      "diagnostic": {
+        "category": "GTX",
+        "model": "GTX",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Gigabyte GeForce GTX 970 + Sapphire Radeon RX480 Nitro Grafikkarte Defekt",
+      "diagnostic": {
+        "category": "GTX",
+        "model": "GTX",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "3x Grafikkarte GTX 970 Gigabyte GTX 780 PNY Radeon RX480 Nitro Artefakte Gaming",
+      "diagnostic": {
+        "category": "GTX",
+        "model": "GTX",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "IT",
+      "title": "Konvolut Grafikkarten Amd ATI RADEON X550 9550 5770 Nvidia GTX 460 Gs",
+      "diagnostic": {
+        "category": "GTX",
+        "model": "GTX",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "SAPPHIRE PULSE AMD Radeon RX 5700 XT 8GB GDDR6 (Beschreibung lesen!!!)",
+      "diagnostic": {
+        "category": "RX 5000",
+        "model": "RX 5000",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "FR",
+      "title": "XFX Radeon RX 5700 XT Thicc II 8GB GDDR6 HS Grafikkarte für Teile",
+      "diagnostic": {
+        "category": "RX 5000",
+        "model": "RX 5000",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "IT",
+      "title": "XFX Radeon RX 5600 XT THICC II Pro 6GB GDDR6",
+      "diagnostic": {
+        "category": "RX 5000",
+        "model": "RX 5000",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "SAPPHIRE AMD Radeon RX 6900 XT TOXIC 16GB GDDR6 Grafikkarte (11308-13-20G)",
+      "diagnostic": {
+        "category": "RX 6000",
+        "model": "RX 6000",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "ASUS TUF Gaming Radeon RX 6800 XT OC 16 GB – defekt / Bastlerware",
+      "diagnostic": {
+        "category": "RX 6000",
+        "model": "RX 6000",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "PowerColor Red Devil AMD Radeon RX 6900 XT Grafikkarte Triple-Fan inkl. OVP",
+      "diagnostic": {
+        "category": "RX 6000",
+        "model": "RX 6000",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "DEFEKT!!! PowerColor Red Dragon AMD Radeon RX 6800 Grafikkarte Triple-Fan 16GB",
+      "diagnostic": {
+        "category": "RX 6000",
+        "model": "RX 6000",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "AMD Radeon RX6800 16Gb - DEFEKT!! - Ersatzteilspender",
+      "diagnostic": {
+        "category": "RX 6000",
+        "model": "RX 6000",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Gigabyte AMD Radeon RX 6800 XT Gaming Grafikkarte Defekt- wird erkannt in gpuz",
+      "diagnostic": {
+        "category": "RX 6000",
+        "model": "RX 6000",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "ASUS TUF Gaming AMD Radeon RX 6900 XT",
+      "diagnostic": {
+        "category": "RX 6000",
+        "model": "RX 6000",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "FR",
+      "title": "Sapphire Pulse AMD Radeon RX 6600 XT 8GB GDDR6 HS Grafikkarte für Ersatzteile",
+      "diagnostic": {
+        "category": "RX 6000",
+        "model": "RX 6000",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "XFX Speedster MERC 310 Radeon RX 7900 XTX Black Edition, 24GB GDDR6 !!!DEFEKT!!!",
+      "diagnostic": {
+        "category": "RX 7000",
+        "model": "RX 7000",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "PowerColor Hellhound RX 7900 XT 20GB OVP - läuft mit Fehlern - Bastler/Reparatur",
+      "diagnostic": {
+        "category": "RX 7000",
+        "model": "RX 7000",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "IT",
+      "title": "⭕ DEFEKTE Grafikkarte Acer Predator BiFrost AMD Radeon RX 7600 OC 8GB",
+      "diagnostic": {
+        "category": "RX 7000",
+        "model": "RX 7000",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "DEFEKT Sapphire Pulse Radeon RX 9060 XT Gaming OC 16 GB GDDR6 #N51",
+      "diagnostic": {
+        "category": "RX 9000",
+        "model": "RX 9000",
+        "supported": true,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "SAPPHIRE NITRO+ AMD Radeon RX 580 Grafikkarte PCIe x16 HDMI DP DVI-D",
+      "diagnostic": {
+        "category": "Egyéb",
+        "model": "Egyéb",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "ASUS AMD Radeon RX 580 8GB GDDR6 OC - Defek!!",
+      "diagnostic": {
+        "category": "Egyéb",
+        "model": "Egyéb",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Gigabyte Radeon 7500 64MB DDR AGP GV-AR64D-H DVI VGA TV-Out ungeprüft",
+      "diagnostic": {
+        "category": "Egyéb",
+        "model": "Egyéb",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Sapphire Nitro+ Radeon RX 570 8GB",
+      "diagnostic": {
+        "category": "Egyéb",
+        "model": "Egyéb",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Sapphire Radeon X1600 Pro 256MB DDR2, Grafikkarte AGP, DVI, VGA, TV-Out",
+      "diagnostic": {
+        "category": "Egyéb",
+        "model": "Egyéb",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Gigabyte Radeon RX Vega 56 Gaming OC 8GB HBM2 Grafikkarte – DEFEKT / Bastler",
+      "diagnostic": {
+        "category": "Egyéb",
+        "model": "Egyéb",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Sapphire Nitro+ Radeon RX 480 8G D5 OC 8 GB GDDR5 PCI-E DEFEKT #317408",
+      "diagnostic": {
+        "category": "Egyéb",
+        "model": "Egyéb",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "XFX Radeon HD 6950 Grafikkarte",
+      "diagnostic": {
+        "category": "Egyéb",
+        "model": "Egyéb",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "ONLY COOLER!!! NUR KÜHLER!! HP RTX 3070 Ti - 8 Gb - NO VRAM - NO GPU!!",
+      "diagnostic": {
+        "category": "Nem videokártya",
+        "model": "Nem videokártya",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Nur Lüfter - ASUS TUF Gaming RTX 4090 Ohne Chip-Karte + OVP",
+      "diagnostic": {
+        "category": "Nem videokártya",
+        "model": "Nem videokártya",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Nur Kühler - PNY Geforce RTX 4090 XLR8 Lüfter Ohne Chip-Karte + OVP",
+      "diagnostic": {
+        "category": "Nem videokártya",
+        "model": "Nem videokártya",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "4x - Nur Lüfter - Gainward GeForce RTX 4090 Phantom Ohne Chip-Karte",
+      "diagnostic": {
+        "category": "Nem videokártya",
+        "model": "Nem videokártya",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "3x - Nur KÜHLER - ZOTAC GAMING GeForce RTX 4090 Ohne Chip-Karte",
+      "diagnostic": {
+        "category": "Nem videokártya",
+        "model": "Nem videokártya",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Nur Kühler - MSI GeForce RTX 4090 VENTUS 3X Lüfter Ohne Chip-Karte + OVP",
+      "diagnostic": {
+        "category": "Nem videokártya",
+        "model": "Nem videokártya",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Nur Lüfter- ASUS ROG Astral RTX 5090 White OC Edition (Ohne Board) + OVP/Karton",
+      "diagnostic": {
+        "category": "Nem videokártya",
+        "model": "Nem videokártya",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "ASUS TUF Gaming NVIDIA GeForce RTX 4090 Triple-Fan Kühler HDMI",
+      "diagnostic": {
+        "category": "Nem videokártya",
+        "model": "Nem videokártya",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "NVIDIA RTX A2000 * PNY 6GB Edition * Workstation-GPU / Gaming Grafikkarte",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Gigabyte GV-RX460WF2OC-4GD - OC Edition - Defective",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Sapphire ATI HD 7870 Grafikkarte 2GB, 11199-00-20G, DEFEKT, NOT OK, LESEN #01",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Asus GF 4 V8460 Ultra 128MB AGP 4600TI AGP & Aopen Aeolus Ti 4200 DEFEKT",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "ASUS EAH5450 SILENT/DI/512MD2(LP) (512 MB) (90-C1CP2A-J0UANAYZ) Grafikkarte",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "Gainward Gefordert GT X 770 Phantom",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "9 ältere GPUs Grafikkarten teilw. defekt gtx560ti,gt630,hd6670,... siehe Beschr.",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    },
+    {
+      "device_group": "gpu",
+      "country": "DE",
+      "title": "ATI X1300 512Mb",
+      "diagnostic": {
+        "category": "Bizonytalan",
+        "model": "Bizonytalan",
+        "supported": false,
+        "lock_mentioned": false
+      }
+    }
+  ]
+}
