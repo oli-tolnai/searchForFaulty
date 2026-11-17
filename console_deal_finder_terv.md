@@ -22,7 +22,10 @@ Első körben:
 - Xbox Series X
 - Xbox Series S
 
-A rendszer felépítése tegye lehetővé további eszközök hozzáadását. Tervezett bővítés (6. fázis), a javíthatóság és a kereslet alapján: **Nintendo Switch** (V1, V2, Lite, OLED), majd **Steam Deck**. Apple termékek (MacBook, iPhone) csak később, kötelező „iCloud-/aktiválási zár” jelöléssel („iCloud”, „gesperrt”, „locked”, „Aktivierungssperre”), mert a zárolt készülék gyakorlatilag csak alkatrésznek jó. Minden új eszközcsoport keresésenként kb. +27 eBay-hívás. A modellek (név, eBay-kategória, felismerési szabályok) konfigurációs adatként legyenek tárolva, ne a kódba égetve.
+A rendszer felépítése tegye lehetővé további eszközök hozzáadását. Tervezett bővítés (6. fázis), a javíthatóság és a magyarországi továbbértékesíthetőség alapján:
+
+1. **Hibás kontrollerek (első helyen):** PS5 DualSense és DualSense Edge, Xbox Series kontroller (Xbox Wireless Controller, 1914-es modell) és Xbox Elite Series 2. Tipikus, olcsón javítható hibák (stick drift, gombok, töltőport, akkumulátor), kicsi és olcsó a szállítás, Magyarországon jól eladható. A régebbi generációk (PS4 DualShock 4, Xbox One kontroller) nem támogatott modellek. Több darabos csomagok („5x DualSense defekt”) jelölve, de látható módon.
+2. **Nintendo Switch** (V1, V2, Lite, OLED) és **Steam Deck**: alacsonyabb prioritás, mert Magyarországon kevésbé elterjedtek és nehezebben értékesíthetők. Apple termékek (MacBook, iPhone) csak később, kötelező „iCloud-/aktiválási zár” jelöléssel („iCloud”, „gesperrt”, „locked”, „Aktivierungssperre”), mert a zárolt készülék gyakorlatilag csak alkatrésznek jó. Minden új eszközcsoport keresésenként kb. +27 eBay-hívás. A modellek (név, eBay-kategória, felismerési szabályok) konfigurációs adatként legyenek tárolva, ne a kódba égetve.
 
 ## 3. Hirdetési források
 
@@ -316,7 +319,7 @@ Kiegészítő kulcsszavas keresés (állapotszűrő nélkül, csak a találatot 
 
 ### 6. fázis – új eszközök
 
-Nintendo Switch, Steam Deck; később esetleg Apple (2. pont).
+Először hibás kontrollerek (DualSense, DualSense Edge, Xbox Series, Xbox Elite Series 2), utána Nintendo Switch és Steam Deck; később esetleg Apple (2. pont). Minden új eszközcsoport előtt mérés: kategória (Taxonomy API), kulcsszavak lefedettsége, hívásszám.
 
 ## 15. Átadási és elfogadási feltételek
 
