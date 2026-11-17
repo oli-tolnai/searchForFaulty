@@ -365,8 +365,18 @@ class SharedState extends ChangeNotifier {
           filter.list(
             'models',
             (value) =>
-                consoleModels.contains(value) ? value : invalidResponse(),
+                allDeviceModels.contains(value) ? value : invalidResponse(),
           );
+          if (filter.json.containsKey('device_groups')) {
+            final groups = filter.list(
+              'device_groups',
+              (value) =>
+                  deviceGroups.contains(value) ? value : invalidResponse(),
+            );
+            if (groups.isEmpty || groups.toSet().length != groups.length) {
+              invalidResponse();
+            }
+          }
           filter.choice(
             'buying',
             BuyingFilter.values.map((value) => value.name),

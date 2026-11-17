@@ -25,7 +25,7 @@ class SearchScreen extends StatefulWidget {
     this.clock = DateTime.now,
   });
   final SearchResult? initial;
-  final Future<SearchResult> Function() search;
+  final Future<SearchResult> Function(Set<String> groups) search;
   final Future<ListingDetails> Function(String) loadDetails;
   final Future<void> Function(SearchResult)? saveResult;
   final VoidCallback? openSettings;
@@ -45,6 +45,7 @@ class _SearchScreenState extends State<SearchScreen>
   final price = TextEditingController();
   final total = TextEditingController();
   final models = <String>{};
+  final selectedDeviceGroups = deviceGroups.toSet();
   final unavailable = <String>{};
   late SearchResult? result = widget.initial;
   late bool cached = widget.initial != null;
@@ -119,6 +120,11 @@ class _SearchScreenState extends State<SearchScreen>
     final filters = widget.shared?.filters;
     if (filters == null || jsonEncode(filters) == appliedFilters) return;
     appliedFilters = jsonEncode(filters);
+    selectedDeviceGroups
+      ..clear()
+      ..addAll(
+        (filters['device_groups'] as List?)?.cast<String>() ?? deviceGroups,
+      );
     models
       ..clear()
       ..addAll((filters['models'] as List).cast<String>());
@@ -134,6 +140,7 @@ class _SearchScreenState extends State<SearchScreen>
     setState(change);
     final filters = <String, Object?>{
       'models': models.toList(),
+      'device_groups': selectedDeviceGroups.toList(),
       'max_price': limit(price),
       'max_total': limit(total),
       'buying': buying.name,
@@ -190,6 +197,7 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   Future<void> runSearch() async {
+    final groups = Set<String>.unmodifiable(selectedDeviceGroups);
     setState(() {
       busy = true;
       error = null;
@@ -198,7 +206,7 @@ class _SearchScreenState extends State<SearchScreen>
     try {
       await widget.shared?.sync();
       widget.shared?.searchedAgain(result?.allListings ?? []);
-      final searched = await widget.search();
+      final searched = await widget.search(groups);
       if (!mounted) return;
       if (searched.status == 'success') {
         try {
@@ -256,6 +264,7 @@ class _SearchScreenState extends State<SearchScreen>
             .where(
               (item) =>
                   visibleListing(item, now) &&
+                  selectedDeviceGroups.contains(item.deviceGroup) &&
                   widget.shared?.isHidden(item) != true,
             )
             .toList() ??
@@ -266,7 +275,7 @@ class _SearchScreenState extends State<SearchScreen>
     final visible = selectListings(
       active,
       ListingFilters(
-        models: models,
+        models: models.where(availableModels.contains).toSet(),
         maxPrice: limit(price),
         maxTotal: limit(total),
         buying: buying,
@@ -393,6 +402,9 @@ class _SearchScreenState extends State<SearchScreen>
     );
   }
 
+  Iterable<String> get availableModels =>
+      selectedDeviceGroups.expand((group) => modelsByDeviceGroup[group]!);
+
   Widget filters(List<Listing> active) => Card(
     margin: EdgeInsets.zero,
     child: Padding(
@@ -400,13 +412,40 @@ class _SearchScreenState extends State<SearchScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Konzolmodell', style: Theme.of(context).textTheme.titleSmall),
+          Text('Eszközcsoport', style: Theme.of(context).textTheme.titleSmall),
+          Wrap(
+            spacing: 8,
+            children: [
+              for (final (group, label) in [
+                ('consoles', 'Konzolok'),
+                ('controllers', 'Kontrollerek'),
+              ])
+                FilterChip(
+                  label: Text(label),
+                  selected: selectedDeviceGroups.contains(group),
+                  onSelected:
+                      busy ||
+                          (selectedDeviceGroups.length == 1 &&
+                              selectedDeviceGroups.contains(group))
+                      ? null
+                      : (selected) => changeFilters(() {
+                          if (selected) {
+                            selectedDeviceGroups.add(group);
+                          } else {
+                            selectedDeviceGroups.remove(group);
+                          }
+                        }),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text('Modell', style: Theme.of(context).textTheme.titleSmall),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 6,
             children: [
-              for (final model in consoleModels)
+              for (final model in availableModels)
                 FilterChip(
                   label: Text(model),
                   selected: models.contains(model),

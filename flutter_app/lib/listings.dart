@@ -9,6 +9,8 @@ const maxListingAge = Duration(hours: 6);
 enum HiddenGroup {
   unsupported('Nem támogatott modell', 'unsupported_model'),
   accessory('Nem konzol', 'not_console'),
+  notController('Nem kontroller (alkatrész vagy tartozék)', 'not_controller'),
+  thirdParty('Harmadik féltől származó kontroller', 'third_party'),
   mainboard('Alaplap', 'mainboard'),
   noShipping('Nem szállít Magyarországra', null);
 
@@ -22,9 +24,14 @@ enum HiddenGroup {
 
 bool inMainResults(Listing item, {required bool mainboards}) =>
     item.shipsToHu != 'no' &&
-    !HiddenGroup.unsupported.contains(item) &&
-    !HiddenGroup.accessory.contains(item) &&
-    (mainboards || !HiddenGroup.mainboard.contains(item));
+    ([
+          'console',
+          'console_bundle',
+          'controller',
+          'controller_bundle',
+          'needs_review',
+        ].contains(item.type) ||
+        (mainboards && item.type == 'mainboard'));
 
 bool inUnknownShippingBlock(Listing item) =>
     item.shipping == null || item.shipsToHu == 'unknown';
@@ -37,6 +44,18 @@ const consoleModels = [
   'Xbox Series X',
   'Xbox Series S',
 ];
+const controllerModels = [
+  'DualSense',
+  'DualSense Edge',
+  'Xbox Series kontroller',
+  'Xbox Elite Series 2',
+  'Xbox kontroller (generáció nem ismert)',
+];
+const modelsByDeviceGroup = {
+  'consoles': consoleModels,
+  'controllers': controllerModels,
+};
+const allDeviceModels = [...consoleModels, ...controllerModels];
 
 const countries = {
   'AT': 'Ausztria',
@@ -140,7 +159,7 @@ class ListingFilters {
     }
     final family = item.model == 'PS5 Digital'
         ? 'PS5 (változat nem ismert)'
-        : item.model.replaceFirst(RegExp(r' (Disc|Digital)$'), '');
+        : item.model.replaceFirst(RegExp(r' (Disc|Digital|\(Scuf\))$'), '');
     if (models.isNotEmpty &&
         !models.contains(item.model) &&
         !models.contains(family)) {

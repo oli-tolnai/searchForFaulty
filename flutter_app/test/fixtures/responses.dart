@@ -24,6 +24,8 @@ Json listing({
   String price = '75',
   String type = 'console',
   String model = 'PS5 Slim',
+  String deviceGroup = 'consoles',
+  bool isScuf = false,
   String shipsToHu = 'yes',
   bool isNew = false,
 }) => {
@@ -34,6 +36,8 @@ Json listing({
   'image_url': null,
   'console_model': model,
   'item_type': type,
+  'device_group': deviceGroup,
+  'is_scuf': isScuf,
   'is_banned': false,
   'possibly_not_faulty': false,
   'buying_options': [end == null ? 'FIXED_PRICE' : 'AUCTION'],

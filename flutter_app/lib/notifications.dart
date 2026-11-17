@@ -38,7 +38,7 @@ class AlertRule {
   AlertRule._(Fields fields)
     : id = fields.required<String>('id'),
       models = fields.list('models', (model) {
-        if (model is! String || !consoleModels.contains(model)) {
+        if (model is! String || !allDeviceModels.contains(model)) {
           invalidResponse();
         }
         return model;

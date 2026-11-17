@@ -118,7 +118,7 @@ Future<Json?> _editAlert(BuildContext context, AlertRule? rule) {
                 Wrap(
                   spacing: 8,
                   children: [
-                    for (final model in consoleModels)
+                    for (final model in allDeviceModels)
                       FilterChip(
                         label: Text(model),
                         selected: models.contains(model),

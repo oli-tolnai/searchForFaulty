@@ -65,7 +65,7 @@ class WebappClient {
     this.settings, {
     http.Client Function()? createClient,
     this.pingTimeout = const Duration(seconds: 20),
-    this.searchTimeout = const Duration(seconds: 90),
+    this.searchTimeout = const Duration(seconds: 320),
   }) : _createClient = createClient ?? http.Client.new;
 
   final WebappSettings settings;
@@ -75,8 +75,12 @@ class WebappClient {
 
   Future<PingResult> ping() =>
       _call('ping', {}, pingTimeout, PingResult.fromJson);
-  Future<SearchResult> search() =>
-      _call('search', {}, searchTimeout, SearchResult.fromJson);
+  Future<SearchResult> search([Iterable<String>? deviceGroups]) => _call(
+    'search',
+    {if (deviceGroups != null) 'device_groups': deviceGroups.toList()},
+    searchTimeout,
+    SearchResult.fromJson,
+  );
   Future<ListingDetails> details(String id) => _call(
     'listing_details',
     {'source_listing_id': id},

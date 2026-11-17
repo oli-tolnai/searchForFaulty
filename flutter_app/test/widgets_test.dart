@@ -15,6 +15,83 @@ void main() {
     await tester.pumpWidget(MaterialApp(home: page));
   }
 
+  testWidgets(
+    'controller selection is synced and only selected groups are requested',
+    (tester) async {
+      final response = SearchResult.fromJson(
+        search(
+          unknown: [
+            listing(
+              id: 'v1|10|0',
+              title: 'Scuf hibás kontroller',
+              type: 'controller',
+              deviceGroup: 'controllers',
+              model: 'DualSense (Scuf)',
+              isScuf: true,
+            ),
+            listing(
+              id: 'v1|11|0',
+              title: 'Utángyártott kontroller',
+              type: 'third_party',
+              deviceGroup: 'controllers',
+            ),
+            listing(
+              id: 'v1|12|0',
+              title: 'Külön töltőállomás',
+              type: 'not_controller',
+              deviceGroup: 'controllers',
+            ),
+          ],
+        ),
+      );
+      final shared = SharedState(
+        readRemote: (_) async => throw const AppFailure('offline'),
+        writeRemote: (_) async => throw const AppFailure('offline'),
+        refreshRemote: () async => {},
+        save: (_) async {},
+      );
+      addTearDown(shared.dispose);
+      Set<String>? requested;
+      await screen(
+        tester,
+        SearchScreen(
+          clock: () => testTime,
+          shared: shared,
+          search: (groups) async {
+            requested = groups;
+            return response;
+          },
+          loadDetails: (_) async => ListingDetails.fromJson(details),
+        ),
+      );
+      await tester.tap(find.text('Konzolok'));
+      await tester.pumpAndSettle();
+      expect(find.text('PS5 Slim'), findsNothing);
+      expect(find.text('DualSense Edge'), findsOneWidget);
+      expect(shared.filters!['device_groups'], ['controllers']);
+      await tester.tap(find.text('Keresés indítása'));
+      await tester.pumpAndSettle();
+      expect(requested, {'controllers'});
+      await tester.tap(find.text('DualSense'));
+      await tester.pumpAndSettle();
+      expect(find.text('Scuf hibás kontroller'), findsOneWidget);
+      expect(find.text('Scuf'), findsOneWidget);
+      expect(find.text('Utángyártott kontroller'), findsNothing);
+      expect(find.text('Külön töltőállomás'), findsNothing);
+      await tester.tap(find.text('1 · Harmadik féltől származó kontroller'));
+      await tester.pumpAndSettle();
+      expect(find.text('Utángyártott kontroller'), findsOneWidget);
+      expect(find.text('Külön töltőállomás'), findsNothing);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text('1 · Nem kontroller (alkatrész vagy tartozék)'),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Külön töltőállomás'), findsOneWidget);
+    },
+  );
+
   testWidgets('hidden entries stay out of both normal and grouped results', (
     tester,
   ) async {
@@ -43,7 +120,7 @@ void main() {
         initial: result,
         clock: () => testTime,
         shared: controller,
-        search: () async => result,
+        search: (_) async => result,
         loadDetails: (_) async => ListingDetails.fromJson(details),
       ),
     );
@@ -82,7 +159,7 @@ void main() {
       SearchScreen(
         initial: result,
         clock: () => testTime,
-        search: () async => result,
+        search: (_) async => result,
         loadDetails: (_) async => ListingDetails.fromJson(details),
       ),
     );
@@ -214,7 +291,7 @@ void main() {
       tester,
       SearchScreen(
         clock: () => testTime,
-        search: () async => result,
+        search: (_) async => result,
         loadDetails: (_) async => ListingDetails.fromJson(details),
       ),
     );
@@ -246,7 +323,7 @@ void main() {
       SearchScreen(
         initial: result,
         clock: now,
-        search: () async => result,
+        search: (_) async => result,
         loadDetails: (_) async => ListingDetails.fromJson(details),
       ),
     );
@@ -280,7 +357,7 @@ void main() {
         SearchScreen(
           initial: result,
           clock: () => testTime,
-          search: () async => result,
+          search: (_) async => result,
           loadDetails: (_) async => ListingDetails.fromJson(details),
         ),
       );

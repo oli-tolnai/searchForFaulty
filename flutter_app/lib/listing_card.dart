@@ -161,8 +161,12 @@ class _ListingCardState extends State<ListingCard> {
                           ? const Color(0xfff7c875)
                           : const Color(0xff84caff),
                     ),
-                    if (item.type == 'console_bundle')
+                    if (item.type == 'console_bundle' ||
+                        item.type == 'controller_bundle')
                       tag('Csomag', colors.secondary),
+                    if (item.isScuf) tag('Scuf', colors.secondary),
+                    if (item.model == 'Xbox kontroller (generáció nem ismert)')
+                      tag('Generáció nem ismert', colors.tertiary),
                     if (item.type == 'needs_review')
                       tag('Ellenőrzendő', colors.secondary),
                     if (item.type == 'mainboard')
@@ -171,6 +175,10 @@ class _ListingCardState extends State<ListingCard> {
                       tag(HiddenGroup.unsupported.title, colors.tertiary),
                     if (HiddenGroup.accessory.contains(item))
                       tag(HiddenGroup.accessory.title, colors.tertiary),
+                    if (HiddenGroup.notController.contains(item))
+                      tag(HiddenGroup.notController.title, colors.tertiary),
+                    if (HiddenGroup.thirdParty.contains(item))
+                      tag(HiddenGroup.thirdParty.title, colors.tertiary),
                     if (item.shipsToHu == 'no')
                       tag(HiddenGroup.noShipping.title, colors.tertiary),
                     if (item.shipsToHu == 'unknown')

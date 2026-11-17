@@ -123,8 +123,19 @@ const itemTypes = [
   'console_bundle',
   'mainboard',
   'not_console',
+  'controller',
+  'controller_bundle',
+  'not_controller',
+  'third_party',
   'unsupported_model',
   'needs_review',
+];
+const deviceGroups = ['consoles', 'controllers'];
+const controllerItemTypes = [
+  'controller',
+  'controller_bundle',
+  'not_controller',
+  'third_party',
 ];
 const searchStatuses = ['success', 'partial', 'error'];
 
@@ -139,6 +150,12 @@ class Listing {
       image = fields.link('image_url', optional: true),
       model = fields.required<String>('console_model'),
       type = fields.choice('item_type', itemTypes),
+      deviceGroup = fields.json['device_group'] == null
+          ? 'consoles'
+          : fields.choice('device_group', deviceGroups),
+      isScuf = fields.json['is_scuf'] == null
+          ? false
+          : fields.required<bool>('is_scuf'),
       banned = fields.required<bool>('is_banned'),
       possiblyNotFaulty = fields.required<bool>('possibly_not_faulty'),
       options = fields.list(
@@ -164,6 +181,7 @@ class Listing {
       checkedAt = fields.date('last_checked_at'),
       faultSource = fields.choice('fault_source', ['condition', 'text']) {
     if (id.isEmpty ||
+        (controllerItemTypes.contains(type) && deviceGroup != 'controllers') ||
         title.trim().isEmpty ||
         (bidCount != null && bidCount! < 0) ||
         (total != null &&
@@ -176,9 +194,10 @@ class Listing {
   }
 
   final String source, id, title, model, type, status, faultSource, shipsToHu;
+  final String deviceGroup;
   final Uri url;
   final Uri? image;
-  final bool banned, possiblyNotFaulty, isNew;
+  final bool banned, possiblyNotFaulty, isNew, isScuf;
   final List<String> options;
   final String? price,
       currentBid,
@@ -202,6 +221,8 @@ class Listing {
     'image_url': image?.toString(),
     'console_model': model,
     'item_type': type,
+    'device_group': deviceGroup,
+    'is_scuf': isScuf,
     'is_banned': banned,
     'possibly_not_faulty': possiblyNotFaulty,
     'buying_options': options,
@@ -305,7 +326,11 @@ class SearchResult {
       countries = fields.list('countries', CountryStatus.fromJson),
       typeCounts = Map.unmodifiable({
         for (final type in itemTypes)
-          type: Fields(fields.required<Json>('item_type_counts')).count(type),
+          type:
+              controllerItemTypes.contains(type) &&
+                  !fields.required<Json>('item_type_counts').containsKey(type)
+              ? 0 // Offline snapshots from before controller support.
+              : Fields(fields.required<Json>('item_type_counts')).count(type),
       }),
       filteredNonEu = fields.count('filtered_non_eu'),
       apiCalls = fields.count('api_calls'),

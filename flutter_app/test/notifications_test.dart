@@ -40,6 +40,9 @@ void main() {
         unknown: [
           listing(
             title: 'Figyelt aukció',
+            type: 'controller',
+            deviceGroup: 'controllers',
+            model: 'DualSense Edge',
             end: testTime.add(const Duration(hours: 3)),
           ),
         ],
@@ -51,13 +54,13 @@ void main() {
         initial: result,
         clock: () => testTime,
         shared: shared,
-        search: () async => result,
+        search: (_) async => result,
         loadDetails: (_) async => ListingDetails.fromJson(details),
       ),
     );
     await tester.drag(
       find.byType(CustomScrollView).first,
-      const Offset(0, -550),
+      const Offset(0, -750),
     );
     await tester.pumpAndSettle();
     await tap(tester, find.widgetWithText(OutlinedButton, 'Figyelés'));
@@ -97,10 +100,11 @@ void main() {
     );
     await tap(tester, find.text('Új szabály'));
     await tap(tester, find.text('PS5 Slim'));
+    await tap(tester, find.text('Xbox Elite Series 2'));
     await tester.enterText(find.byType(TextFormField), '160');
     await tap(tester, find.text('Ismeretlen szállítás bevonása'));
     await tap(tester, find.text('Mentés'));
-    expect(shared.alerts.single.models, ['PS5 Slim']);
+    expect(shared.alerts.single.models, ['PS5 Slim', 'Xbox Elite Series 2']);
     expect(shared.alerts.single.includeUnknown, true);
     expect(shared.alerts.single.maxTotal, 160);
     expect(shared.alerts.single.enabled, true);
