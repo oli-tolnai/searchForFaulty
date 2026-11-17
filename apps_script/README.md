@@ -123,13 +123,21 @@ A mérés németországi tételekkel dolgozik. Keresésenként legfeljebb öt, e
 
 ## Használt állapotú, cím szerint hibás tételek mérése
 
-A forrás feltöltése után a szerkesztőben nyisd meg a **diagnose_used_faulty.gs** fájlt, válaszd a **diagnoseUsedFaulty** függvényt, és kattints a **Futtatás** gombra. A **Végrehajtási naplóban** láthatók az ellenőrzött állapotazonosítók, a keresésenkénti példák és a DE, FR, IT, NL országokra számolt javaslatok. A diagnosztikához elég a forrás feltöltése. Az éles kereső továbbra is a 7000-es állapotot használja.
+A forrás feltöltése után a szerkesztőben nyisd meg a **diagnose_used_faulty.gs** fájlt, válaszd a **diagnoseUsedFaulty** függvényt, és kattints a **Futtatás** gombra. A **Végrehajtási naplóban** láthatók az ellenőrzött állapotazonosítók, a keresésenkénti példák és a DE, FR, IT, NL országokra számolt javaslatok. A diagnosztikához elég a forrás feltöltése.
+
+A fő keresés a 7000-es állapotot használja. A `supplementary_search.js` konfiguráció alapján Németországban mindkét eszközcsoporthoz két-két, Franciaországban a kontrollerekhez két kiegészítő keresés fut a mérésben visszaigazolt 3000-es állapottal. Ezek csak cím szerint hibás tételeket adnak, `fault_source: "title"` jelöléssel. Duplikált azonosítónál a fő keresés adata marad meg. A `filtered_not_faulty` az egyes kiegészítő lekérdezésekből cím alapján kihagyott találatok összes száma.
 
 A mérés a német piactér [Metadata API-jával](https://developer.ebay.com/develop/guides/sell/listing-metadata-guide) ellenőrzi az állapotokat. Csak az alkalmazástokennel ténylegesen visszakapott azonosítókat méri. Az eBay egyes felújított állapotokhoz felhasználói tokent igényel. A keresésenkénti ötoldalas korlát és a teljes futás időkorlátja részleges mintát eredményezhet, amit a napló jelöl.
 
 ## EUR és HUF
 
 A keresés és a `state_get` válasz az `exchange_rate` mezőben adja az árfolyamot (`eur_huf`, `date`, `source`, `stale`). Az app és a meglévő időzítő budapesti idő szerint 16:30-tól kérhet új jegyzést. Közzétételi időszakonként legfeljebb egy [ECB XML-lekérés](https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml) történik. Hiba esetén a korábbi árfolyam marad elérhető, ha van. A Beállításokban és a keresési összesítőben megjelenik a jegyzés dátuma. Az árszűrők és az értesítési határok EUR-ban szinkronizálódnak.
+
+## Új találatok értesítési szabályai
+
+A Figyelés lapon a szabály neve, eszközcsoportjai, modelljei, hirdetéstípusa, EUR-ban tárolt vételár- és teljesárhatára, szállítási feltétele, aukciózárási időkorlátja, tartalmazó/kizáró címszavai, országai és kizárási kapcsolói szerkeszthetők. A kulcsszavak kis- és nagybetűtől független részszövegek. Az üres modell- vagy országlista az összeset jelenti. Az időkorlát a fix áras tételeket megtartja.
+
+A meglévő szabályok olvasáskor megkapják az új alapértékeket, megtartva az eredeti árhatárt és az ismeretlen szállításra vonatkozó választást. Az új szabály alapból kizárja a „Lehet, hogy nem hibás” tételeket, és bevonja a használtként hirdetett, cím szerint hibás tételeket. Az árhatár üresen korlátlan. Az időzített keresés a szabályok által érintett eszközcsoportokat kéri le, és megtartja a napi 4000-es védelmet.
 
 ## A kliensnek szánt API
 

@@ -84,8 +84,9 @@ test('controller-only search uses four keywords, deduplicates hits and checks sh
   const result = app.post('search', input).data;
   assert.equal(result.status, 'success');
   assert.deepEqual(result.countries[0].queries.map(query => query.query),
-    ['ps5 controller', 'xbox series controller', 'xbox wireless controller', 'xbox elite controller']);
-  assert.equal(result.api_calls, 8);
+    ['ps5 controller', 'xbox series controller', 'xbox wireless controller', 'xbox elite controller',
+      'ps5 controller defekt', 'xbox controller defekt']);
+  assert.equal(result.api_calls, 10);
   assert.equal(result.get_item_calls, 3);
   assert.equal(result.unknown_shipping.length, titles.length);
   assert.ok(result.unknown_shipping.every(item => item.device_group === 'controllers'));
@@ -111,7 +112,7 @@ test('controller alert searches only the group of the enabled model and matches 
   assert.equal(app.post('state_apply', { ops: [rule, { ...rule, id: 'console-rule-0001',
     op_id: 'console-op-0001', enabled: false, models: ['PS5 Slim'] }] }).ok, true);
   app.run('checkNewListingAlerts');
-  assert.equal(app.calls.length, 109);
+  assert.equal(app.calls.length, 113);
   assert.equal(app.sheets.get('notifications').rows.length, 2);
   assert.match(JSON.stringify(app.sheets.get('notifications').rows), /Scuf Controller/);
   assert.equal(app.sheets.get('seen').rows.length, 1);

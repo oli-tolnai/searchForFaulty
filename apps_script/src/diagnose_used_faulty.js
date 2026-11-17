@@ -16,7 +16,7 @@ function diagnosticTitleWords(value) {
 
 function isDiagnosticFaultTitle(title, keywords) {
   const words = diagnosticTitleWords(title);
-  const denial = /\b(?:nicht defekt|kein(?:e[rmns]?)? defekt[e]?|ohne defekt[e]?|defektfrei|funktioniert einwandfrei|einwandfrei funktionsfahig|sans panne|pas en panne|non guasto|non difettoso|funziona perfettamente|no averiado|sin averias?|geen defect|niet kapot|werkt perfect|nieuszkodzony|nie uszkodzony)\b/;
+  const denial = /\b(?:nicht defekt|kein(?:e[rmns]?)? defekt[e]?|ohne defekt[e]?|defektfrei|funktioniert einwandfrei|voll funktionsfahig|einwandfrei funktionsfahig|sans panne|pas (?:du tout )?hs|non hs|pas en panne|non guasto|non difettoso|funziona perfettamente|no averiado|sin averias?|geen defect|niet kapot|werkt perfect|nieuszkodzony|nie uszkodzony)\b/;
   if (denial.test(words)) return false;
   return keywords.some(keyword => {
     const word = diagnosticTitleWords(keyword);

@@ -2,13 +2,15 @@ const STATE_COLUMNS = {
   favorites: ['source', 'source_listing_id', 'saved_at', 'title', 'url', 'image_url', 'console_model',
     'item_type', 'buying_options', 'price', 'current_bid', 'currency', 'shipping_cost', 'item_country',
     'end_time', 'status', 'last_checked_at', 'last_check_error', 'revision', 'deleted', 'last_check_error_at',
-    'shipping_currency', 'ships_to_hu', 'bid_count', 'is_banned', 'possibly_not_faulty', 'listed_at', 'device_group', 'is_scuf'],
+    'shipping_currency', 'ships_to_hu', 'bid_count', 'is_banned', 'possibly_not_faulty', 'listed_at', 'device_group', 'is_scuf', 'fault_source'],
   hidden: ['source', 'source_listing_id', 'hidden_at', 'title', 'revision', 'deleted'],
   seen: ['source', 'source_listing_id', 'first_seen_at'],
   settings: ['key', 'value', 'revision'],
   watches: ['source', 'source_listing_id', 'title', 'url', 'threshold', 'lead_minutes', 'created_at',
     'status', 'last_bid', 'last_checked_at', 'end_time', 'notified_at', 'revision', 'deleted'],
-  alerts: ['id', 'models', 'max_total_price', 'include_unknown_shipping', 'enabled', 'revision', 'deleted'],
+  alerts: ['id', 'models', 'max_total_price', 'include_unknown_shipping', 'enabled', 'revision', 'deleted',
+    'name', 'device_groups', 'buying_options', 'max_price', 'known_shipping_only', 'ending_hours',
+    'include_keywords', 'exclude_keywords', 'countries', 'exclude_possibly_not_faulty', 'exclude_banned', 'include_title_faults'],
   notified: ['source', 'source_listing_id', 'notified_at'],
   notifications: ['id', 'created_at', 'kind', 'title', 'body', 'url',
     'source_listing_ids', 'delivered_devices', 'expires_at'],
@@ -43,9 +45,9 @@ function openStateSheet() {
     const available = sheet.getMaxColumns();
     if (columns.length > available) sheet.insertColumnsAfter(available, columns.length - available);
     if (!sheet.getLastRow()) sheet.getRange(1, 1, 1, columns.length).setValues([columns]);
-    else if (name === 'favorites') {
+    else if (name === 'favorites' || name === 'alerts') {
       const headers = sheet.getRange(1, 1, 1, columns.length);
-      if (headers.getValues()[0][columns.length - 1] !== 'is_scuf') headers.setValues([columns]);
+      if (headers.getValues()[0][columns.length - 1] !== columns[columns.length - 1]) headers.setValues([columns]);
     }
   }
   return book;
@@ -72,14 +74,21 @@ function readRows(book, table) {
   const count = sheet.getLastRow() - 1;
   if (count < 1) return [];
   return sheet.getRange(2, 1, count, columns.length).getValues().map(cells => {
-    return Object.fromEntries(columns.map((key, index) => {
+    const row = Object.fromEntries(columns.map((key, index) => {
       let value = cells[index];
       if (value === '') value = null;
-      if (value != null && ['buying_options', 'models', 'value', 'source_listing_ids', 'delivered_devices'].includes(key)) {
+      if (value != null && (['models', 'value', 'source_listing_ids', 'delivered_devices',
+        'device_groups', 'include_keywords', 'exclude_keywords', 'countries'].includes(key) ||
+        (key === 'buying_options' && table !== 'alerts'))) {
         value = JSON.parse(value);
       }
       return [key, value];
     }));
+    if (table === 'alerts' && !row.deleted) {
+      return alertDefaults(Object.fromEntries(Object.entries(row).filter(([key, value]) =>
+        value !== null || ['max_total_price', 'max_price', 'ending_hours'].includes(key))));
+    }
+    return row;
   });
 }
 
@@ -181,12 +190,14 @@ function favoriteListing(listing, secrets) {
   const safe = Object.fromEntries(fields.map(key => [key, listing[key] ?? null]));
   safe.device_group = listing.device_group === undefined ? 'consoles' : listing.device_group;
   safe.is_scuf = listing.is_scuf === undefined ? false : listing.is_scuf;
+  safe.fault_source = listing.fault_source || 'condition';
   const link = value => typeof value === 'string' && value.length <= 2048 &&
     /^https:\/\/(?:[a-z0-9-]+\.)*(?:ebay\.(?:de|com|fr|it|es|nl|at|ie|be|co\.uk)|ebayimg\.com)\//i.test(value);
   if (!link(safe.url) || (safe.image_url !== null && !link(safe.image_url)) ||
       !nonempty(safe.title) || safe.title.length > 500 || !nonempty(safe.console_model) || safe.console_model.length > 100 ||
       !ITEM_TYPES.includes(safe.item_type) || !EU_COUNTRIES.includes(safe.item_country) ||
       !Object.keys(DEVICE_GROUPS).includes(safe.device_group) || typeof safe.is_scuf !== 'boolean' ||
+      !['condition', 'title', 'text'].includes(safe.fault_source) ||
       !['ACTIVE', 'ENDED', 'UNKNOWN'].includes(safe.status) ||
       !['yes', 'no', 'unknown'].includes(safe.ships_to_hu) ||
       !Array.isArray(safe.buying_options) || !safe.buying_options.length ||

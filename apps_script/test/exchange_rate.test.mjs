@@ -16,7 +16,7 @@ test('ECB rate is queried once per Budapest publication window and shared by sea
   app.cache.clear();
   assert.deepEqual(app.post('state_get', { since_revision: 0 }).data.exchange_rate, first.exchange_rate);
   assert.equal(app.exchangeCalls.length, 1);
-  assert.equal(app.calls.length, 2);
+  assert.equal(app.calls.length, 4);
 });
 
 test('failed or unavailable ECB feed returns the last rate marked stale, or null before the first success', () => {

@@ -60,12 +60,16 @@ for (const [title, expected] of [
 
 test('prototype retries 429 and paginates to five pages', () => {
   let attempts = 0;
-  const app = runtime({ browse: () => ++attempts === 1 ? response(429) : response(200, { total: 1100 }) });
+  const app = runtime({ browse: request => {
+    if (!new URL(request.url).searchParams.get('filter').includes('{7000}')) return response(200, { total: 0 });
+    return ++attempts === 1 ? response(429) : response(200, { total: 1100 });
+  } });
   const result = app.search(['DE'], ['ps5']);
   assert.equal(result.status, 'success');
   assert.deepEqual(result.countries[0].queries[0].warnings, ['Az ország keresése elérte az ötoldalas korlátot.']);
   assert.deepEqual(app.sleeps, [1000]);
-  assert.deepEqual(app.calls.slice(1).map(call => new URL(call.url).searchParams.get('offset')),
+  assert.deepEqual(app.calls.slice(1).filter(call => new URL(call.url).searchParams.get('filter').includes('{7000}'))
+    .map(call => new URL(call.url).searchParams.get('offset')),
     ['0', '0', '200', '400', '600', '800']);
   assert.doesNotMatch(app.log.join(' '), /fixture-application-token/);
 });
@@ -76,6 +80,7 @@ test('partial search preserves sorting, deduplication and call counts, including
     assert.equal(request.headers['X-EBAY-C-MARKETPLACE-ID'], 'EBAY_DE');
     assert.equal(request.headers['X-EBAY-C-ENDUSERCTX'], 'contextualLocation=country%3DHU');
     const params = new URL(request.url).searchParams;
+    if (!params.get('filter').includes('{7000}')) return response(200, { total: 0 });
     assert.ok(['ps5', 'xbox series'].includes(params.get('q')));
     const filters = params.get('filter').split(',');
     assert.deepEqual(filters.slice(0, 3), ['conditionIds:{7000}', 'buyingOptions:{AUCTION|FIXED_PRICE}', 'deliveryCountry:HU']);
@@ -87,9 +92,9 @@ test('partial search preserves sorting, deduplication and call counts, including
   const queries = ['ps5', 'xbox series'];
   const result = app.search(countries, queries);
   assert.equal(result.status, 'partial');
-  assert.equal(result.api_calls, 6);
-  assert.equal(result.daily_api_calls, 6);
-  assert.equal(result.daily_browse_calls, 5);
+  assert.equal(result.api_calls, 8);
+  assert.equal(result.daily_api_calls, 8);
+  assert.equal(result.daily_browse_calls, 7);
   assert.equal(result.filtered_non_eu, 4);
   assert.deepEqual(ids(result.listings), ['fixed', 'auction']);
   assert.deepEqual(ids(result.unknown_shipping), ['unknown-shipping']);
@@ -98,7 +103,7 @@ test('partial search preserves sorting, deduplication and call counts, including
   });
   const [de, fr] = result.countries;
   assert.equal(de.status, 'success');
-  assert.deepEqual(de.queries.map(query => query.query), queries);
+  assert.deepEqual(de.queries.map(query => query.query), [...queries, 'ps5 defekt', 'xbox series defekt']);
   assert.deepEqual(de.queries[0].warnings, [{ errorId: 123, message: 'Fixture warning' }]);
   assert.equal(fr.status, 'error');
   assert.ok(fr.queries.every(query => query.error.includes('503')));
@@ -107,8 +112,8 @@ test('partial search preserves sorting, deduplication and call counts, including
   const repeated = app.search(countries, queries);
   assert.deepEqual(ids(repeated.listings), ['fixed', 'auction']);
   assert.deepEqual(ids(repeated.unknown_shipping), ['unknown-shipping']);
-  assert.equal(repeated.api_calls, 5);
-  assert.equal(repeated.daily_api_calls, 11);
+  assert.equal(repeated.api_calls, 7);
+  assert.equal(repeated.daily_api_calls, 15);
   assert.equal(app.calls.filter(call => call.url.endsWith('/oauth2/token')).length, 1);
 });
 
@@ -142,11 +147,11 @@ test('prototype budget leaves room for every country', () => {
   const result = app.post('search', { device_groups: ['consoles'] }).data;
   const firstPages = app.calls.slice(1).map(call => new URL(call.url).searchParams)
     .filter(params => params.get('offset') === '0');
-  assert.equal(firstPages.length, 54);
-  assert.equal(new Set(firstPages.map(params => params.get('filter') + params.get('q'))).size, 54);
+  assert.equal(firstPages.length, 56);
+  assert.equal(new Set(firstPages.map(params => params.get('filter') + params.get('q'))).size, 56);
   assert.equal(result.status, 'partial');
-  assert.equal(result.api_calls, 59);
-  assert.equal(app.calls.length - 1, 58);
+  assert.equal(result.api_calls, 61);
+  assert.equal(app.calls.length - 1, 60);
 });
 
 test('the API returns all six item types and counts each deduplicated listing once', () => {
@@ -160,7 +165,7 @@ test('the API returns all six item types and counts each deduplicated listing on
   const result = app.post('search', { countries: ['DE'], device_groups: ['consoles'] }).data;
   assert.equal(result.status, 'partial');
   assert.equal(result.countries[0].status, 'partial');
-  assert.deepEqual(result.countries[0].queries.map(query => query.status), ['success', 'error']);
+  assert.deepEqual(result.countries[0].queries.map(query => query.status), ['success', 'error', 'success', 'success']);
   assert.equal(Object.values(result.item_type_counts).filter(count => count === 1).length, 6);
   assert.equal(Object.values(result.item_type_counts).reduce((sum, count) => sum + count, 0), 6);
   assert.deepEqual(new Set(result.listings.map(item => item.item_type)),

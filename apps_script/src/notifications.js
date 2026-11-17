@@ -27,14 +27,7 @@ function alertOperation(op, secrets) {
   if (typeof op.id !== 'string' || !/^[a-z0-9_-]{12,80}$/i.test(op.id) ||
       redactText(op.id, secrets) !== op.id) invalidState();
   if (op.type === 'alert_remove') return { id: op.id, deleted: true };
-  const models = configuredModels();
-  if (!Array.isArray(op.models) || op.models.length > models.length ||
-      op.models.some(model => !models.includes(model)) || !notificationPrice(op.max_total_price) ||
-      typeof op.include_unknown_shipping !== 'boolean' || typeof op.enabled !== 'boolean') invalidState();
-  return {
-    id: op.id, models: [...new Set(op.models)], max_total_price: op.max_total_price,
-    include_unknown_shipping: op.include_unknown_shipping, enabled: op.enabled, deleted: false,
-  };
+  return { ...alertValues(op, secrets), id: op.id, deleted: false };
 }
 
 function publishNotification(title, message, priority, tags, click) {
@@ -240,15 +233,6 @@ function notificationTitle(title) {
   return Array.from(title.replace(/\s+/g, ' ').trim()).slice(0, 100).join('');
 }
 
-function alertMatches(item, rule) {
-  if (item.currency !== 'EUR') return false;
-  if (rule.models.length && !rule.models.includes(listingModelFamily(item.console_model))) return false;
-  if (item.total_price !== null) return Number(item.total_price) <= rule.max_total_price;
-  const price = effectivePrice(item);
-  return rule.include_unknown_shipping && item.shipping_cost === null && price !== null &&
-    Number(price) <= rule.max_total_price;
-}
-
 function checkNewListingAlerts() {
   runNotifications('alerts', props => {
     ecbExchangeRate();
@@ -259,8 +243,9 @@ function checkNewListingAlerts() {
     const groups = withStateLock(book => {
       readState(book);
       const rules = readRows(book, 'alerts').filter(row => !row.deleted && row.enabled);
-      return Object.keys(DEVICE_GROUPS).filter(group => rules.some(rule => !rule.models.length ||
-        rule.models.some(model => DEVICE_GROUPS[group].models.includes(model))));
+      return Object.keys(DEVICE_GROUPS).filter(group => rules.some(rule =>
+        alertDefaults(rule).device_groups.includes(group) && (!rule.models.length ||
+        rule.models.some(model => DEVICE_GROUPS[group].models.includes(model)))));
     });
     if (!groups.length) return;
     const result = searchEbay(EU_COUNTRIES, configuredQueries(groups), notificationSecrets(props));

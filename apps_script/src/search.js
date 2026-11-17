@@ -12,7 +12,8 @@ const ACTIVE_ITEM_TYPES = ['console', 'console_bundle', 'controller', 'controlle
 function makeSearchRequest(job, token) {
   const params = {
     q: job.state.query, category_ids: DEVICE_GROUPS[job.state.group].category, limit: PAGE_SIZE, offset: PAGE_SIZE * job.page,
-    filter: 'conditionIds:{7000},buyingOptions:{AUCTION|FIXED_PRICE},deliveryCountry:HU,itemLocationCountry:'
+    filter: 'conditionIds:{' + (job.state.conditions || ['7000']).join('|') +
+      '},buyingOptions:{AUCTION|FIXED_PRICE},deliveryCountry:HU,itemLocationCountry:'
       + job.state.country,
   };
   const query = Object.entries(params).map(([key, val]) => key + '=' + encodeURIComponent(val)).join('&');
@@ -27,14 +28,23 @@ function applySearchPage(state, payload, checkedAt, secrets) {
     state.error = 'Az eBay keresési válasza hiányos vagy érvénytelen.';
     return false;
   }
+  if (state.total === undefined) state.total = payload.total;
   for (const item of items) {
     if (!record(item)) continue;
     if (!EU_COUNTRIES.includes(itemCountry(item))) {
       state.filteredNonEu++;
       continue;
     }
+    if (state.faultWord && (!state.conditions.includes(String(item.conditionId)) ||
+        !supplementaryFaultInTitle(item.title || '', state.faultWord, state.group))) {
+      state.filteredNotFaulty++;
+      continue;
+    }
     const listing = normalizeListing(item, checkedAt, secrets, state.group);
-    if (listing) state.listings.push(listing);
+    if (listing) {
+      if (state.faultWord) listing.fault_source = 'title';
+      state.listings.push(listing);
+    }
   }
   return true;
 }
@@ -43,10 +53,17 @@ function searchEbay(countries, queries, clientSecrets) {
   const searchedAt = new Date();
   const groupsByQuery = new Map(Object.entries(DEVICE_GROUPS).flatMap(([group, config]) =>
     config.queries.map(query => [query, group])));
-  const runLimit = Math.max(RUN_LIMIT, countries.length * queries.length + 5);
   const states = countries.flatMap(country => queries.map(query => ({
     country, query, group: groupsByQuery.get(query), error: null, warnings: [], listings: [], filteredNonEu: 0, pagesRead: 0,
   })));
+  const selectedGroups = [...new Set(queries.map(query => groupsByQuery.get(query)))];
+  const supplementary = countries.flatMap(country => selectedGroups.flatMap(group =>
+    (SUPPLEMENTARY_QUERIES[group]?.[country] || []).map(spec => ({
+      country, query: spec.query, group, faultWord: spec.word, conditions: SUPPLEMENTARY_CONDITIONS[group],
+      error: null, warnings: [], listings: [], filteredNonEu: 0, filteredNotFaulty: 0, pagesRead: 0,
+    }))));
+  states.push(...supplementary);
+  const runLimit = Math.max(RUN_LIMIT + supplementary.length, states.length + 5);
   let calls = 0;
   let oauthCalls = 0;
   const countCall = (kind, count) => {
@@ -169,8 +186,10 @@ function collectSearchResults(states, searchedAt, now, enrich) {
   for (const state of states) {
     if (!byCountry.has(state.country)) byCountry.set(state.country, []);
     byCountry.get(state.country).push({
-      query: state.query, device_group: state.group, status: state.error ? 'error' : 'success',
+      query: state.query, device_group: state.group, fault_source: state.faultWord ? 'title' : 'condition',
+      status: state.error ? 'error' : 'success',
       error: state.error, warnings: state.warnings, count: state.listings.length,
+      total: state.total ?? null, filtered_not_faulty: state.filteredNotFaulty || 0,
       ...(state.errorCode ? { error_code: state.errorCode } : {}),
     });
     filteredNonEu += state.filteredNonEu;
@@ -183,7 +202,9 @@ function collectSearchResults(states, searchedAt, now, enrich) {
       const key = item.source + ':' + item.source_listing_id;
       const previous = unique.get(key);
       const recognized = type => ['console', 'console_bundle', 'controller', 'controller_bundle'].includes(type);
-      if (!previous || (previous.device_group === item.device_group
+      if (!previous || (previous.fault_source !== item.fault_source
+        ? item.fault_source === 'condition'
+        : previous.device_group === item.device_group
         ? previous.shipping_cost === null && item.shipping_cost !== null
         : !recognized(previous.item_type) && recognized(item.item_type))) {
         unique.set(key, item);
@@ -210,6 +231,7 @@ function collectSearchResults(states, searchedAt, now, enrich) {
   return {
     status, listings: known, unknown_shipping: unknown,
     unknown_shipping_breakdown: shippingBreakdown(unknown), countries, filtered_non_eu: filteredNonEu,
+    filtered_not_faulty: states.reduce((sum, state) => sum + (state.filteredNotFaulty || 0), 0),
     item_type_counts: typeCounts, ...stats,
     quota_warning: stats.daily_browse_calls >= EBAY_DAILY_LIMIT * 0.9
       ? 'Az eBay napi Browse-kerete közel van a kimerüléshez.' : null,

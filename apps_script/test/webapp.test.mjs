@@ -57,9 +57,9 @@ test('default search uses both categories across all 27 EU countries', () => {
   const app = runtime();
   const result = app.post('search').data;
   assert.equal(result.status, 'success');
-  assert.deepEqual(app.batches.map(batch => batch.length), [...Array(40).fill(4), 2]);
-  assert.equal(result.api_calls, 163);
-  assert.equal(result.daily_browse_calls, 162);
+  assert.deepEqual(app.batches.map(batch => batch.length), Array(42).fill(4));
+  assert.equal(result.api_calls, 169);
+  assert.equal(result.daily_browse_calls, 168);
   const [oauth, ...browse] = app.calls;
   assert.equal(oauth.method, 'post');
   assert.equal(oauth.headers.Authorization, 'Basic ' + Buffer.from('fixture-app-id:fixture-cert-id').toString('base64'));
@@ -67,8 +67,8 @@ test('default search uses both categories across all 27 EU countries', () => {
   assert.equal(oauth.payload.scope, 'https://api.ebay.com/oauth/api_scope');
   assert.equal(app.cache.get('ebay:application_token').ttl, 7200);
   assert.ok(browse.every(call => call.followRedirects === false && call.muteHttpExceptions));
-  assert.equal(new Set(browse.map(call => call.url)).size, 162);
-  for (const [category, expected] of [['139971', 54], ['117042', 108]]) {
+  assert.equal(new Set(browse.map(call => call.url)).size, 168);
+  for (const [category, expected] of [['139971', 56], ['117042', 112]]) {
     assert.equal(browse.filter(call => new URL(call.url).searchParams.get('category_ids') === category).length, expected);
   }
   assert.ok(browse.every(call => new URL(call.url).searchParams.get('limit') === '200'));
@@ -78,7 +78,7 @@ test('configured batch size and duplicate allowlist inputs', () => {
   const app = runtime({ properties: { FETCH_BATCH_SIZE: '2' } });
   const output = app.post('search', { countries: ['DE', 'DE', 'FR', 'IT'], queries: ['ps5', 'ps5'] });
   assert.equal(output.data.countries.length, 3);
-  assert.deepEqual(app.batches.map(batch => batch.length), [2, 1]);
+  assert.deepEqual(app.batches.map(batch => batch.length), [2, 2, 1]);
 });
 
 test('one persistent 429 does not stop other queries and is retried only once', () => {
@@ -90,7 +90,7 @@ test('one persistent 429 does not stop other queries and is retried only once', 
   assert.match(data.countries[0].queries[0].error, /HTTP 429/);
   assert.deepEqual(data.countries[0].queries[0].warnings, [{ errorId: 12519 }, { errorId: 12519 }]);
   assert.equal(data.countries[0].queries[1].status, 'success');
-  assert.equal(data.api_calls, 4);
+  assert.equal(data.api_calls, 6);
   assert.deepEqual(app.sleeps, [1000]);
 });
 
@@ -99,7 +99,7 @@ test('transport exception in an entire batch leaves later batches running', () =
   const app = runtime({ batchFailure: () => ++batches === 1, properties: { FETCH_BATCH_SIZE: '1' } });
   const output = app.post('search', { countries: ['DE'], device_groups: ['consoles'] });
   assert.equal(output.data.status, 'partial');
-  assert.deepEqual(output.data.countries[0].queries.map(query => query.status), ['error', 'success']);
+  assert.deepEqual(output.data.countries[0].queries.map(query => query.status), ['error', 'success', 'success', 'success']);
   assert.doesNotMatch(JSON.stringify(output), /fixture-cert-id|fixture timeout/);
 });
 
@@ -107,16 +107,16 @@ test('daily counts reset at Budapest midnight, while the OAuth token keeps its e
   const app = runtime();
   const params = { countries: ['DE'], queries: ['ps5'] };
   app.setTime('2026-07-14T21:59:59Z');
-  assert.equal(app.post('search', params).data.daily_api_calls, 2);
-  assert.equal(app.post('search', params).data.daily_api_calls, 3);
+  assert.equal(app.post('search', params).data.daily_api_calls, 4);
+  assert.equal(app.post('search', params).data.daily_api_calls, 7);
   app.setTime('2026-07-14T22:00:00Z');
   const data = app.post('search', params).data;
-  assert.equal(data.daily_api_calls, 1);
-  assert.equal(data.daily_browse_calls, 1);
+  assert.equal(data.daily_api_calls, 3);
+  assert.equal(data.daily_browse_calls, 3);
   assert.ok(app.props.has('CDF_CALLS_2026-07-14'));
   assert.ok(app.props.has('CDF_CALLS_2026-07-15'));
   app.setTime('2026-07-14T23:59:59Z');
-  assert.equal(app.post('search', params).data.api_calls, 2);
+  assert.equal(app.post('search', params).data.api_calls, 4);
 });
 
 test('OAuth configuration errors and transient 429 handling never surface the upstream body', () => {
@@ -128,7 +128,7 @@ test('OAuth configuration errors and transient 429 handling never surface the up
     ? response(429, { description: 'fixture-cert-id' }) : response(200, fixture('token')) });
   const output = app.post('search', { countries: ['DE'], queries: ['ps5'] });
   assert.equal(output.data.status, 'success');
-  assert.equal(output.data.api_calls, 3);
+  assert.equal(output.data.api_calls, 5);
   assert.deepEqual(app.sleeps, [1000]);
   assert.doesNotMatch(JSON.stringify(output) + app.log.join(' '), /fixture-cert-id/);
 });

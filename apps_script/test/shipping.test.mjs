@@ -55,8 +55,8 @@ test('getItem prices and destinations are cached, but failed requests are retrie
     });
   });
   const first = app.search(['DE'], ['ps5']);
-  assert.equal(first.api_calls, 6);
-  assert.equal(first.daily_browse_calls, 5);
+  assert.equal(first.api_calls, 8);
+  assert.equal(first.daily_browse_calls, 7);
   assert.equal(first.get_item_calls, 4);
   assert.deepEqual(first.shipping_check, { initial_unknown: 4, yes: 1, no: 1, unknown: 2, failed: 1 });
   assert.equal(first.listings[0].shipping_cost, '12.50');
@@ -71,7 +71,7 @@ test('getItem prices and destinations are cached, but failed requests are retrie
   const second = app.search(['DE'], ['ps5']);
   assert.deepEqual(calls, ['v1|3|0']);
   assert.equal(second.get_item_calls, 1);
-  assert.equal(second.api_calls, 2);
+  assert.equal(second.api_calls, 4);
   assert.equal(second.listings[0].total_price, '52.50');
 });
 
@@ -81,9 +81,9 @@ test('shipping check uses at most 100 getItem calls, then picks up unchecked ite
   }), { FETCH_BATCH_SIZE: '8' });
   const first = app.search(['DE'], ['ps5']);
   assert.equal(first.get_item_calls, 100);
-  assert.equal(first.api_calls, 102);
+  assert.equal(first.api_calls, 104);
   assert.equal(first.shipping_check.unknown, 2);
-  assert.deepEqual(app.batches.map(batch => batch.length), [1, ...Array(12).fill(8), 4]);
+  assert.deepEqual(app.batches.map(batch => batch.length), [3, ...Array(12).fill(8), 4]);
   assert.equal(app.search(['DE'], ['ps5']).get_item_calls, 2);
   const cached = app.search(['DE'], ['ps5']);
   assert.equal(cached.get_item_calls, 0);
