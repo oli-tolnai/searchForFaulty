@@ -40,7 +40,7 @@ class _AlertEditorState extends State<_AlertEditor> {
   late final models = {...?widget.rule?.models};
   late final groups = {
     ...?widget.rule?.groups,
-    if (widget.rule == null) ...deviceGroups,
+    if (widget.rule == null) ...['consoles', 'controllers'],
   };
   late final selectedCountries = {...?widget.rule?.countries};
   late var buying = widget.rule?.buying ?? 'both';
@@ -132,10 +132,9 @@ class _AlertEditorState extends State<_AlertEditor> {
             Wrap(
               spacing: 8,
               children: [
-                for (final (id, label) in [
-                  ('consoles', 'Konzolok'),
-                  ('controllers', 'Kontrollerek'),
-                ])
+                for (final (id, label) in deviceGroupLabels.entries.map(
+                  (entry) => (entry.key, entry.value),
+                ))
                   FilterChip(
                     label: Text(label),
                     selected: groups.contains(id),

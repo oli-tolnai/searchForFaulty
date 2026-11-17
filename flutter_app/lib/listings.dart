@@ -12,24 +12,31 @@ enum HiddenGroup {
   notController('Nem kontroller (alkatrész vagy tartozék)', 'not_controller'),
   thirdParty('Harmadik féltől származó kontroller', 'third_party'),
   mainboard('Alaplap', 'mainboard'),
-  noShipping('Nem szállít Magyarországra', null);
+  part('Nem telefon (alkatrész)', 'part'),
+  locked('iCloud-zárolt (csak alkatrésznek)', 'icloud_locked'),
+  notGpu('Nem videokártya', 'not_gpu'),
+  noShipping('Valószínűleg nem szállít Magyarországra', null);
 
   const HiddenGroup(this.title, this.type);
   final String title;
   final String? type;
 
   bool contains(Listing item) =>
-      type == null ? item.shipsToHu == 'no' : item.type == type;
+      type == null ? item.shipsToHu != 'yes' : item.type == type;
 }
 
 bool inMainResults(Listing item, {required bool mainboards}) =>
-    item.shipsToHu != 'no' &&
+    item.shipsToHu == 'yes' &&
     ([
           'console',
           'console_bundle',
           'controller',
           'controller_bundle',
           'needs_review',
+          'phone',
+          'phone_bundle',
+          'gpu',
+          'gpu_bundle',
         ].contains(item.type) ||
         (mainboards && item.type == 'mainboard'));
 
@@ -52,11 +59,59 @@ const controllerModels = [
   'Xbox Elite (sorozat nem ismert)',
   'Xbox kontroller (generáció nem ismert)',
 ];
-const modelsByDeviceGroup = {
+const switchModels = [
+  'Switch V1',
+  'Switch V2',
+  'Switch Lite',
+  'Switch OLED',
+  'Switch 2',
+  'Switch (változat nem ismert)',
+];
+const steamDeckModels = [
+  'Steam Deck LCD',
+  'Steam Deck OLED',
+  'Steam Deck (változat nem ismert)',
+];
+final iphoneModels = [
+  for (final n in [11, 12, 13, 14, 15, 16, 17]) ...[
+    'iPhone $n',
+    'iPhone $n Pro',
+    'iPhone $n Pro Max',
+    if ([12, 13].contains(n)) 'iPhone $n mini',
+    if (n >= 14) 'iPhone $n Plus',
+    if (n == 16) 'iPhone 16e',
+    if (n == 17) 'iPhone 17 Air',
+  ],
+];
+const gpuModels = [
+  'RTX 20',
+  'RTX 30',
+  'RTX 40',
+  'RTX 50',
+  'RX 5000',
+  'RX 6000',
+  'RX 7000',
+  'RX 9000',
+];
+final modelsByDeviceGroup = {
   'consoles': consoleModels,
   'controllers': controllerModels,
+  'switch': switchModels,
+  'steam_deck': steamDeckModels,
+  'iphone': iphoneModels,
+  'gpu': gpuModels,
 };
-const allDeviceModels = [...consoleModels, ...controllerModels];
+final allDeviceModels = modelsByDeviceGroup.values
+    .expand((models) => models)
+    .toList();
+const deviceGroupLabels = {
+  'consoles': 'Konzolok',
+  'controllers': 'Kontrollerek',
+  'switch': 'Switch',
+  'steam_deck': 'Steam Deck',
+  'iphone': 'iPhone',
+  'gpu': 'Videokártya',
+};
 
 const countries = {
   'AT': 'Ausztria',

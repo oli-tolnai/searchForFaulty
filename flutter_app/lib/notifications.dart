@@ -51,8 +51,9 @@ class AlertRule {
       groups = fields.json['device_groups'] == null
           ? modelsByDeviceGroup.keys.where((group) {
               final models = fields.required<List<Object?>>('models');
-              return models.isEmpty ||
-                  models.any(modelsByDeviceGroup[group]!.contains);
+              return models.isEmpty
+                  ? ['consoles', 'controllers'].contains(group)
+                  : models.any(modelsByDeviceGroup[group]!.contains);
             }).toList()
           : fields.list(
               'device_groups',

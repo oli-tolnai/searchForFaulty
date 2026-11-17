@@ -161,8 +161,22 @@ const itemTypes = [
   'third_party',
   'unsupported_model',
   'needs_review',
+  'phone',
+  'phone_bundle',
+  'part',
+  'icloud_locked',
+  'gpu',
+  'gpu_bundle',
+  'not_gpu',
 ];
-const deviceGroups = ['consoles', 'controllers'];
+const deviceGroups = [
+  'consoles',
+  'controllers',
+  'switch',
+  'steam_deck',
+  'iphone',
+  'gpu',
+];
 const controllerItemTypes = [
   'controller',
   'controller_bundle',
@@ -185,6 +199,13 @@ class Listing {
       deviceGroup = fields.json['device_group'] == null
           ? 'consoles'
           : fields.choice('device_group', deviceGroups),
+      icloudStatus = fields.json['icloud_status'] == null
+          ? 'unknown'
+          : fields.choice('icloud_status', [
+              'unknown',
+              'locked',
+              'free_by_seller',
+            ]),
       isScuf = fields.json['is_scuf'] == null
           ? false
           : fields.required<bool>('is_scuf'),
@@ -200,7 +221,12 @@ class Listing {
       currency = fields.nullable<String>('currency'),
       shipping = fields.amount('shipping_cost'),
       shippingCurrency = fields.nullable<String>('shipping_currency'),
-      shipsToHu = fields.choice('ships_to_hu', ['yes', 'no', 'unknown']),
+      shipsToHu = fields.choice('ships_to_hu', [
+        'yes',
+        'no',
+        'unknown',
+        'probably_no',
+      ]),
       isNew = fields.json.containsKey('is_new')
           ? fields.required<bool>('is_new')
           : false,
@@ -230,7 +256,7 @@ class Listing {
   }
 
   final String source, id, title, model, type, status, faultSource, shipsToHu;
-  final String deviceGroup;
+  final String deviceGroup, icloudStatus;
   final Uri url;
   final Uri? image;
   final bool banned, possiblyNotFaulty, isNew, isScuf;
@@ -259,6 +285,7 @@ class Listing {
     'item_type': type,
     'device_group': deviceGroup,
     'is_scuf': isScuf,
+    'icloud_status': deviceGroup == 'iphone' ? icloudStatus : null,
     'is_banned': banned,
     'possibly_not_faulty': possiblyNotFaulty,
     'buying_options': options,
@@ -366,8 +393,17 @@ class SearchResult {
       typeCounts = Map.unmodifiable({
         for (final type in itemTypes)
           type:
-              controllerItemTypes.contains(type) &&
-                  !fields.required<Json>('item_type_counts').containsKey(type)
+              !fields.required<Json>('item_type_counts').containsKey(type) &&
+                  [
+                    ...controllerItemTypes,
+                    'phone',
+                    'phone_bundle',
+                    'part',
+                    'icloud_locked',
+                    'gpu',
+                    'gpu_bundle',
+                    'not_gpu',
+                  ].contains(type)
               ? 0 // Offline snapshots from before controller support.
               : Fields(fields.required<Json>('item_type_counts')).count(type),
       }),
@@ -441,6 +477,52 @@ class ListingDetails {
   ListingDetails._(Fields fields)
     : condition = fields.nullable<String>('condition_description'),
       summary = fields.nullable<String>('short_description'),
-      description = fields.nullable<String>('description_text');
-  final String? condition, summary, description;
+      description = fields.nullable<String>('description_text'),
+      shipsToHu = fields.json.containsKey('ships_to_hu')
+          ? fields.choice('ships_to_hu', ['yes', 'no', 'unknown'])
+          : null,
+      shipping = fields.json.containsKey('shipping_cost')
+          ? fields.amount('shipping_cost')
+          : null,
+      shippingCurrency = fields.json.containsKey('shipping_currency')
+          ? fields.nullable<String>('shipping_currency')
+          : null,
+      icloudStatus = fields.json['icloud_status'] == null
+          ? null
+          : fields.choice('icloud_status', [
+              'unknown',
+              'locked',
+              'free_by_seller',
+            ]);
+  final String? condition,
+      summary,
+      description,
+      shipsToHu,
+      shipping,
+      shippingCurrency,
+      icloudStatus;
+
+  Listing update(Listing item) {
+    final data = item.toJson();
+    if (shipsToHu != null) {
+      data['ships_to_hu'] = shipsToHu;
+      data['shipping_cost'] = shipping;
+      data['shipping_currency'] = shippingCurrency;
+      data['total_price'] =
+          item.effectivePrice != null &&
+              shipping != null &&
+              item.currency == shippingCurrency
+          ? (double.parse(item.effectivePrice!) + double.parse(shipping!))
+                .toStringAsFixed(2)
+          : null;
+    }
+    if (item.deviceGroup == 'iphone' && icloudStatus != null) {
+      data['icloud_status'] = icloudStatus;
+      if (icloudStatus == 'locked' &&
+          ['phone', 'phone_bundle', 'needs_review'].contains(item.type)) {
+        data['item_type'] = 'icloud_locked';
+      }
+    }
+    return Listing.fromJson(data);
+  }
 }

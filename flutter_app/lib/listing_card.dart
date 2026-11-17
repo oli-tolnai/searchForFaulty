@@ -97,7 +97,7 @@ class _ListingCardState extends State<ListingCard> {
 
   @override
   Widget build(BuildContext context) {
-    final item = widget.item;
+    final item = details?.update(widget.item) ?? widget.item;
     final colors = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final remaining = item.end?.difference(widget.now);
@@ -171,7 +171,11 @@ class _ListingCardState extends State<ListingCard> {
                           : const Color(0xff84caff),
                     ),
                     if (item.type == 'console_bundle' ||
-                        item.type == 'controller_bundle')
+                        [
+                          'controller_bundle',
+                          'phone_bundle',
+                          'gpu_bundle',
+                        ].contains(item.type))
                       tag('Csomag', colors.secondary),
                     if (item.isScuf) tag('Scuf', colors.secondary),
                     if (item.model == 'DualSense (Egyedi)')
@@ -190,12 +194,22 @@ class _ListingCardState extends State<ListingCard> {
                       tag(HiddenGroup.notController.title, colors.tertiary),
                     if (HiddenGroup.thirdParty.contains(item))
                       tag(HiddenGroup.thirdParty.title, colors.tertiary),
-                    if (item.shipsToHu == 'no')
+                    if (item.shipsToHu != 'yes')
                       tag(HiddenGroup.noShipping.title, colors.tertiary),
-                    if (item.shipsToHu == 'unknown')
+                    if (item.type == 'icloud_locked')
+                      tag(HiddenGroup.locked.title, colors.error),
+                    if (item.type == 'not_gpu')
+                      tag(HiddenGroup.notGpu.title, colors.tertiary),
+                    if (item.type == 'part')
+                      tag(HiddenGroup.part.title, colors.tertiary),
+                    if (item.deviceGroup == 'iphone' &&
+                        item.icloudStatus == 'free_by_seller')
+                      tag('iCloud-mentes (az eladó szerint)', Colors.green),
+                    if (item.deviceGroup == 'iphone' &&
+                        item.icloudStatus == 'unknown')
                       tag(
-                        'Nem ellenőrizhető, szállít-e Magyarországra',
-                        colors.tertiary,
+                        'Az iCloud-zár állapota nem ismert – vásárlás előtt kérdezd meg az eladót',
+                        Colors.amber,
                       ),
                     if (item.banned) tag('Tiltott (banned)', colors.error),
                     if (item.possiblyNotFaulty)

@@ -185,7 +185,7 @@ void main() {
     );
     expect(find.text('Látható konzol'), findsOneWidget);
     expect(find.text('Elrejtett belföldi konzol'), findsNothing);
-    await tester.tap(find.text('0 · Nem szállít Magyarországra'));
+    await tester.tap(find.text('0 · Valószínűleg nem szállít Magyarországra'));
     await tester.pumpAndSettle();
     expect(find.text('Elrejtett belföldi konzol'), findsNothing);
     await tester.tap(find.byType(BackButton));
@@ -222,27 +222,26 @@ void main() {
         loadDetails: (_) async => ListingDetails.fromJson(details),
       ),
     );
-    expect(find.text('Bizonytalan szállítás'), findsOneWidget);
-    expect(
-      find.text('Nem ellenőrizhető, szállít-e Magyarországra'),
-      findsOneWidget,
-    );
-    for (final (group, item) in [
-      ('Nem szállít Magyarországra', 'Belföldi konzol'),
-      ('Nem támogatott modell', 'Régi modell'),
-      ('Nem konzol', 'Üres doboz'),
-      ('Alaplap', 'Donor alaplap'),
+    expect(find.text('Bizonytalan szállítás'), findsNothing);
+    for (final (count, group, item) in [
+      (2, 'Valószínűleg nem szállít Magyarországra', 'Belföldi konzol'),
+      (1, 'Nem támogatott modell', 'Régi modell'),
+      (1, 'Nem konzol', 'Üres doboz'),
+      (1, 'Alaplap', 'Donor alaplap'),
     ]) {
       expect(find.text(item), findsNothing);
-      await tester.tap(find.text('1 · $group'));
+      await tester.tap(find.text('$count · $group'));
       await tester.pumpAndSettle();
       expect(find.widgetWithText(AppBar, group), findsOneWidget);
       expect(find.text(item), findsOneWidget);
-      expect(find.text('Bizonytalan szállítás'), findsNothing);
+      expect(
+        find.text('Bizonytalan szállítás'),
+        count == 2 ? findsOneWidget : findsNothing,
+      );
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
     }
-    expect(find.text('Bizonytalan szállítás'), findsOneWidget);
+    expect(find.text('Bizonytalan szállítás'), findsNothing);
   });
 
   testWidgets(

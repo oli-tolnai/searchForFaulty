@@ -49,8 +49,9 @@ class _SearchScreenState extends State<SearchScreen>
   MoneyDisplay? inputDisplay;
   String localCurrency = 'EUR';
   final models = <String>{};
-  final selectedDeviceGroups = deviceGroups.toSet();
+  final selectedDeviceGroups = {'consoles', 'controllers'};
   final unavailable = <String>{};
+  final updatedListings = <String, Listing>{};
   late SearchResult? result = widget.initial;
   late bool cached = widget.initial != null;
   BuyingFilter buying = BuyingFilter.both;
@@ -130,7 +131,8 @@ class _SearchScreenState extends State<SearchScreen>
     selectedDeviceGroups
       ..clear()
       ..addAll(
-        (filters['device_groups'] as List?)?.cast<String>() ?? deviceGroups,
+        (filters['device_groups'] as List?)?.cast<String>() ??
+            const ['consoles', 'controllers'],
       );
     models
       ..clear()
@@ -226,6 +228,7 @@ class _SearchScreenState extends State<SearchScreen>
       if (!mounted) return;
       setState(() {
         result = searched;
+        updatedListings.clear();
         generation++;
         unavailable.clear();
         cached = false;
@@ -306,6 +309,7 @@ class _SearchScreenState extends State<SearchScreen>
     final data = result;
     final active =
         data?.allListings
+            .map((item) => updatedListings[item.id] ?? item)
             .where(
               (item) =>
                   visibleListing(item, now) &&
@@ -332,10 +336,7 @@ class _SearchScreenState extends State<SearchScreen>
       order,
       now,
     );
-    final known = visible
-        .where((item) => !inUnknownShippingBlock(item))
-        .toList();
-    final unknown = visible.where(inUnknownShippingBlock).toList();
+    final known = visible;
     return Scaffold(
       bottomNavigationBar: navigation(),
       appBar: AppBar(
@@ -389,7 +390,9 @@ class _SearchScreenState extends State<SearchScreen>
                               children: [
                                 LinearProgressIndicator(),
                                 SizedBox(height: 8),
-                                Text('Keresés folyamatban… kb. 10 másodperc'),
+                                Text(
+                                  'Keresés folyamatban… több eszközcsoporttal tovább tarthat.',
+                                ),
                               ],
                             ),
                           ),
@@ -427,17 +430,7 @@ class _SearchScreenState extends State<SearchScreen>
                   ),
                 ),
                 ...resultRows(known, columns, inset, now),
-                if (unknown.isNotEmpty)
-                  SliverPadding(
-                    padding: EdgeInsets.fromLTRB(inset, 14, inset, 10),
-                    sliver: SliverToBoxAdapter(
-                      child: Text(
-                        'Ismeretlen szállítási díj – a hirdetésben ellenőrizd',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                    ),
-                  ),
-                ...resultRows(unknown, columns, inset, now),
+
                 const SliverToBoxAdapter(child: SizedBox(height: 24)),
               ],
             );
@@ -461,10 +454,9 @@ class _SearchScreenState extends State<SearchScreen>
           Wrap(
             spacing: 8,
             children: [
-              for (final (group, label) in [
-                ('consoles', 'Konzolok'),
-                ('controllers', 'Kontrollerek'),
-              ])
+              for (final (group, label) in deviceGroupLabels.entries.map(
+                (entry) => (entry.key, entry.value),
+              ))
                 FilterChip(
                   label: Text(label),
                   selected: selectedDeviceGroups.contains(group),
@@ -879,11 +871,43 @@ class _SearchScreenState extends State<SearchScreen>
     );
   }
 
+  Future<ListingDetails> loadAndUpdateDetails(String id) async {
+    final details = await widget.loadDetails(id);
+    final original = result?.allListings
+        .where((item) => item.id == id)
+        .firstOrNull;
+    if (mounted && original != null) {
+      setState(
+        () => updatedListings[id] = details.update(
+          updatedListings[id] ?? original,
+        ),
+      );
+      final data = result!.toCacheJson();
+      for (final key in ['listings', 'unknown_shipping']) {
+        data[key] = (data[key] as List).map((raw) {
+          final row = object(raw);
+          return updatedListings[row['source_listing_id']]?.toJson() ?? row;
+        }).toList();
+      }
+      try {
+        await widget.saveResult?.call(SearchResult.fromJson(data));
+      } on Exception {
+        if (mounted) {
+          setState(
+            () => cacheError =
+                'A frissített tételt nem sikerült helyben menteni.',
+          );
+        }
+      }
+    }
+    return details;
+  }
+
   Widget listingCard(Listing item, DateTime now) => ListingCard(
     key: ValueKey((generation, item.id)),
     item: item,
     now: now,
-    loadDetails: widget.loadDetails,
+    loadDetails: loadAndUpdateDetails,
     unavailable: unavailable.contains(item.id),
     onUnavailable: () => setState(() => unavailable.add(item.id)),
     favorite: widget.shared?.isFavorite(item) ?? false,
@@ -995,7 +1019,9 @@ class _SearchScreenState extends State<SearchScreen>
                           padding: const EdgeInsets.only(bottom: 12),
                           child: ListingCard(
                             key: ValueKey(listingKey(favorite.item)),
-                            item: favorite.item,
+                            item:
+                                updatedListings[favorite.item.id] ??
+                                favorite.item,
                             now: now,
                             favorite: true,
                             watchThreshold: shared
@@ -1011,7 +1037,7 @@ class _SearchScreenState extends State<SearchScreen>
                             onHide: shared.isHidden(favorite.item)
                                 ? null
                                 : () => hide(favorite.item),
-                            loadDetails: widget.loadDetails,
+                            loadDetails: loadAndUpdateDetails,
                             unavailable: unavailable.contains(favorite.item.id),
                             onUnavailable: () => setState(
                               () => unavailable.add(favorite.item.id),
