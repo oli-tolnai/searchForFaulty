@@ -2,7 +2,7 @@ const STATE_COLUMNS = {
   favorites: ['source', 'source_listing_id', 'saved_at', 'title', 'url', 'image_url', 'console_model',
     'item_type', 'buying_options', 'price', 'current_bid', 'currency', 'shipping_cost', 'item_country',
     'end_time', 'status', 'last_checked_at', 'last_check_error', 'revision', 'deleted', 'last_check_error_at',
-    'shipping_currency', 'ships_to_hu', 'bid_count', 'is_banned', 'possibly_not_faulty', 'listed_at'],
+    'shipping_currency', 'ships_to_hu', 'bid_count', 'is_banned', 'possibly_not_faulty', 'listed_at', 'device_group', 'is_scuf'],
   hidden: ['source', 'source_listing_id', 'hidden_at', 'title', 'revision', 'deleted'],
   seen: ['source', 'source_listing_id', 'first_seen_at'],
   settings: ['key', 'value', 'revision'],
@@ -15,8 +15,7 @@ const STATE_COLUMNS = {
   meta: ['key', 'value'],
 };
 const STATE_TABLES = ['favorites', 'hidden', 'settings', 'watches', 'alerts'];
-const FILTER_MODELS = ['PS5 (Fat)', 'PS5 Slim', 'PS5 Pro', 'PS5 (változat nem ismert)', 'Xbox Series X', 'Xbox Series S'];
-const FILTER_FIELDS = ['models', 'max_price', 'max_total', 'buying', 'ending', 'boards', 'order'];
+const FILTER_FIELDS = ['models', 'device_groups', 'max_price', 'max_total', 'buying', 'ending', 'boards', 'order'];
 
 function withStateLock(action) {
   const lock = LockService.getScriptLock();
@@ -44,6 +43,10 @@ function openStateSheet() {
     const available = sheet.getMaxColumns();
     if (columns.length > available) sheet.insertColumnsAfter(available, columns.length - available);
     if (!sheet.getLastRow()) sheet.getRange(1, 1, 1, columns.length).setValues([columns]);
+    else if (name === 'favorites') {
+      const headers = sheet.getRange(1, 1, 1, columns.length);
+      if (headers.getValues()[0][columns.length - 1] !== 'is_scuf') headers.setValues([columns]);
+    }
   }
   return book;
 }
@@ -98,9 +101,11 @@ function rowKey(row) {
 
 function readState(book) {
   const meta = Object.fromEntries(readRows(book, 'meta').map(row => [row.key, row.value]));
-  if (meta.pending_meta && meta.pending_updates) {
+  const updates = meta.pending_chunks ? JSON.parse(Array.from({ length: meta.pending_chunks },
+    (_, index) => meta['pending_updates_' + index].text).join('')) : meta.pending_updates;
+  if (meta.pending_meta && updates) {
     // Complete a reserved batch before serving any state reads or writes.
-    finishStateWrite(book, { meta: meta.pending_meta, updates: meta.pending_updates });
+    finishStateWrite(book, { meta: meta.pending_meta, updates });
     return meta.pending_meta;
   }
   return { revision: meta.revision || 0, op_ids: meta.op_ids || [] };
@@ -119,7 +124,12 @@ function finishStateWrite(book, batch) {
 
 function commitStateWrite(book, meta, updates) {
   const batch = { meta, updates };
-  writeRows(book, 'meta', [{ key: 'pending_meta', value: meta }, { key: 'pending_updates', value: updates }]);
+  const encoded = JSON.stringify(updates);
+  // Keep the journal within the Sheets per-cell character limit, including escaping.
+  const chunks = encoded.match(/[\s\S]{1,10000}/gu);
+  writeRows(book, 'meta', [{ key: 'pending_meta', value: meta },
+    { key: 'pending_chunks', value: chunks.length },
+    ...chunks.map((text, index) => ({ key: 'pending_updates_' + index, value: { text } }))]);
   SpreadsheetApp.flush();
   finishStateWrite(book, batch);
 }
@@ -143,8 +153,12 @@ function invalidState() {
 function filterSettings(value) {
   if (!record(value)) invalidState();
   requireKeys(value, FILTER_FIELDS);
-  if (!Array.isArray(value.models) || value.models.length > FILTER_MODELS.length ||
-      value.models.some(model => !FILTER_MODELS.includes(model)) ||
+  const models = configuredModels();
+  const groups = value.device_groups;
+  if (!Array.isArray(value.models) || value.models.length > models.length ||
+      value.models.some(model => !models.includes(model)) ||
+      (groups !== undefined && (!Array.isArray(groups) || !groups.length || groups.length > Object.keys(DEVICE_GROUPS).length ||
+        groups.some(group => !Object.prototype.hasOwnProperty.call(DEVICE_GROUPS, group)))) ||
       !['both', 'auction', 'fixed'].includes(value.buying) || typeof value.ending !== 'boolean' ||
       typeof value.boards !== 'boolean' || !['total', 'cheap', 'expensive', 'newest', 'ending'].includes(value.order) ||
       [value.max_price, value.max_total].some(price => price !== null &&
@@ -165,11 +179,14 @@ function favoriteListing(listing, secrets) {
   const fields = STATE_COLUMNS.favorites.filter(key => !['revision', 'deleted', 'saved_at', 'last_check_error',
     'last_check_error_at', 'source', 'source_listing_id'].includes(key));
   const safe = Object.fromEntries(fields.map(key => [key, listing[key] ?? null]));
+  safe.device_group = listing.device_group === undefined ? 'consoles' : listing.device_group;
+  safe.is_scuf = listing.is_scuf === undefined ? false : listing.is_scuf;
   const link = value => typeof value === 'string' && value.length <= 2048 &&
     /^https:\/\/(?:[a-z0-9-]+\.)*(?:ebay\.(?:de|com|fr|it|es|nl|at|ie|be|co\.uk)|ebayimg\.com)\//i.test(value);
   if (!link(safe.url) || (safe.image_url !== null && !link(safe.image_url)) ||
       !nonempty(safe.title) || safe.title.length > 500 || !nonempty(safe.console_model) || safe.console_model.length > 100 ||
       !ITEM_TYPES.includes(safe.item_type) || !EU_COUNTRIES.includes(safe.item_country) ||
+      !Object.keys(DEVICE_GROUPS).includes(safe.device_group) || typeof safe.is_scuf !== 'boolean' ||
       !['ACTIVE', 'ENDED', 'UNKNOWN'].includes(safe.status) ||
       !['yes', 'no', 'unknown'].includes(safe.ships_to_hu) ||
       !Array.isArray(safe.buying_options) || !safe.buying_options.length ||

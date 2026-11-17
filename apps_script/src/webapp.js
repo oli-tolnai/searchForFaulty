@@ -43,10 +43,12 @@ function runAction(action, params, secrets) {
     case 'ping':
       requireKeys(params, []);
       return { version: API_VERSION, server_time: new Date().toISOString() };
-    case 'search':
-      requireKeys(params, ['queries', 'countries']);
+    case 'search': {
+      requireKeys(params, ['queries', 'countries', 'device_groups']);
+      const groups = searchValues(params.device_groups, Object.keys(DEVICE_GROUPS));
       return markSearchSeen(searchEbay(searchValues(params.countries, EU_COUNTRIES),
-        searchValues(params.queries, QUERIES), secrets));
+        searchValues(params.queries, configuredQueries(groups)), secrets));
+    }
     case 'state_get':
       return stateGet(params);
     case 'state_apply':

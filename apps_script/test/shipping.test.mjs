@@ -75,19 +75,19 @@ test('getItem prices and destinations are cached, but failed requests are retrie
   assert.equal(second.listings[0].total_price, '52.50');
 });
 
-test('shipping check uses at most 60 getItem calls, then picks up unchecked items on the next run', () => {
-  const app = searchWithShipping(62, request => response(200, {
+test('shipping check uses at most 100 getItem calls, then picks up unchecked items on the next run', () => {
+  const app = searchWithShipping(102, request => response(200, {
     itemId: itemId(request), shipToLocations: regions(['HU']),
   }), { FETCH_BATCH_SIZE: '8' });
   const first = app.search(['DE'], ['ps5']);
-  assert.equal(first.get_item_calls, 60);
-  assert.equal(first.api_calls, 62);
+  assert.equal(first.get_item_calls, 100);
+  assert.equal(first.api_calls, 102);
   assert.equal(first.shipping_check.unknown, 2);
-  assert.deepEqual(app.batches.map(batch => batch.length), [1, 8, 8, 8, 8, 8, 8, 8, 4]);
+  assert.deepEqual(app.batches.map(batch => batch.length), [1, ...Array(12).fill(8), 4]);
   assert.equal(app.search(['DE'], ['ps5']).get_item_calls, 2);
   const cached = app.search(['DE'], ['ps5']);
   assert.equal(cached.get_item_calls, 0);
-  assert.equal(cached.shipping_check.yes, 62);
+  assert.equal(cached.shipping_check.yes, 102);
 });
 
 test('a known Browse shipping price needs no getItem call', () => {

@@ -4,12 +4,14 @@ const RUN_LIMIT = 59;
 const SEARCH_TIME_LIMIT_MS = 300000;
 const BUDGET_MESSAGE = 'A keresés elérte a futásonkénti híváskeretet.';
 const ITEM_TYPES = [
-  'console', 'console_bundle', 'mainboard', 'not_console', 'unsupported_model', 'needs_review',
+  'console', 'console_bundle', 'mainboard', 'not_console', 'controller', 'controller_bundle',
+  'not_controller', 'third_party', 'unsupported_model', 'needs_review',
 ];
+const ACTIVE_ITEM_TYPES = ['console', 'console_bundle', 'controller', 'controller_bundle', 'needs_review'];
 
 function makeSearchRequest(job, token) {
   const params = {
-    q: job.state.query, category_ids: '139971', limit: PAGE_SIZE, offset: PAGE_SIZE * job.page,
+    q: job.state.query, category_ids: DEVICE_GROUPS[job.state.group].category, limit: PAGE_SIZE, offset: PAGE_SIZE * job.page,
     filter: 'conditionIds:{7000},buyingOptions:{AUCTION|FIXED_PRICE},deliveryCountry:HU,itemLocationCountry:'
       + job.state.country,
   };
@@ -31,7 +33,7 @@ function applySearchPage(state, payload, checkedAt, secrets) {
       state.filteredNonEu++;
       continue;
     }
-    const listing = normalizeListing(item, checkedAt, secrets);
+    const listing = normalizeListing(item, checkedAt, secrets, state.group);
     if (listing) state.listings.push(listing);
   }
   return true;
@@ -39,13 +41,18 @@ function applySearchPage(state, payload, checkedAt, secrets) {
 
 function searchEbay(countries, queries, clientSecrets) {
   const searchedAt = new Date();
+  const groupsByQuery = new Map(Object.entries(DEVICE_GROUPS).flatMap(([group, config]) =>
+    config.queries.map(query => [query, group])));
+  const runLimit = Math.max(RUN_LIMIT, countries.length * queries.length + 5);
   const states = countries.flatMap(country => queries.map(query => ({
-    country, query, error: null, warnings: [], listings: [], filteredNonEu: 0, pagesRead: 0,
+    country, query, group: groupsByQuery.get(query), error: null, warnings: [], listings: [], filteredNonEu: 0, pagesRead: 0,
   })));
   let calls = 0;
+  let oauthCalls = 0;
   const countCall = (kind, count) => {
     dailyCounter(kind, count);
     calls += count;
+    if (kind === 'oauth') oauthCalls += count;
   };
   const batchSize = ebayFetchBatchSize();
   let credentials;
@@ -64,8 +71,8 @@ function searchEbay(countries, queries, clientSecrets) {
   const pending = token ? states.map(state => ({ state, page: 0, retry: false })) : [];
   const secrets = token ? [token, credentials.clientId, credentials.secret, ...clientSecrets] : clientSecrets;
   // First pages start in the queue before any retries or subsequent pages.
-  while (pending.length && calls < RUN_LIMIT && Date.now() - searchedAt.getTime() < SEARCH_TIME_LIMIT_MS) {
-    const batch = pending.splice(0, Math.min(batchSize, RUN_LIMIT - calls));
+  while (pending.length && calls < runLimit && Date.now() - searchedAt.getTime() < SEARCH_TIME_LIMIT_MS) {
+    const batch = pending.splice(0, Math.min(batchSize, runLimit - calls));
     const requests = batch.map(job => makeSearchRequest(job, token));
     try {
       countCall('browse', batch.length);
@@ -117,14 +124,15 @@ function searchEbay(countries, queries, clientSecrets) {
         }
       }
     }
-    if (retryQueued && calls < RUN_LIMIT) Utilities.sleep(1000);
+    if (retryQueued && calls < runLimit) Utilities.sleep(1000);
   }
-  const stopReason = calls >= RUN_LIMIT ? BUDGET_MESSAGE : 'A keresés elérte a futási időkorlátot.';
+  const stopReason = calls >= runLimit ? BUDGET_MESSAGE : 'A keresés elérte a futási időkorlátot.';
   for (const job of pending) job.state.error = stopReason;
   return collectSearchResults(states, searchedAt, new Date(), items => {
+    const browseSearchCalls = calls - oauthCalls;
     const shipping = checkHungarianShipping(items, token, batchSize, countCall,
       searchedAt.getTime() + SEARCH_TIME_LIMIT_MS, secrets);
-    return { ...shipping, api_calls: calls, ...dailyCounter() };
+    return { ...shipping, api_calls: calls, browse_search_calls: browseSearchCalls, oauth_calls: oauthCalls, ...dailyCounter() };
   });
 }
 
@@ -161,7 +169,7 @@ function collectSearchResults(states, searchedAt, now, enrich) {
   for (const state of states) {
     if (!byCountry.has(state.country)) byCountry.set(state.country, []);
     byCountry.get(state.country).push({
-      query: state.query, status: state.error ? 'error' : 'success',
+      query: state.query, device_group: state.group, status: state.error ? 'error' : 'success',
       error: state.error, warnings: state.warnings, count: state.listings.length,
       ...(state.errorCode ? { error_code: state.errorCode } : {}),
     });
@@ -173,7 +181,11 @@ function collectSearchResults(states, searchedAt, now, enrich) {
       }
       if (item.status !== 'ACTIVE' || (item.end_time && Date.parse(item.end_time) <= now.getTime())) continue;
       const key = item.source + ':' + item.source_listing_id;
-      if (!unique.has(key) || (unique.get(key).shipping_cost === null && item.shipping_cost !== null)) {
+      const previous = unique.get(key);
+      const recognized = type => ['console', 'console_bundle', 'controller', 'controller_bundle'].includes(type);
+      if (!previous || (previous.device_group === item.device_group
+        ? previous.shipping_cost === null && item.shipping_cost !== null
+        : !recognized(previous.item_type) && recognized(item.item_type))) {
         unique.set(key, item);
       }
     }

@@ -1,6 +1,6 @@
 const HU_REGIONS = new Set(['HU', 'EUROPE', 'EUROPEAN_UNION', 'WORLDWIDE']);
 const SHIPPING_CACHE_SECONDS = 21600;
-const MAX_GET_ITEM_CALLS = 60;
+const MAX_GET_ITEM_CALLS = 100;
 
 function shipsToHungary(locations) {
   const includesHu = regions => Array.isArray(regions) && regions.some(region =>
@@ -33,7 +33,7 @@ function shippingFromDetail(item) {
 function checkHungarianShipping(items, token, batchSize, countCall, deadline, secrets) {
   const cache = CacheService.getScriptCache();
   const unknown = items.filter(item => item.shipping_cost === null);
-  const eligible = unknown.filter(item => ['console', 'console_bundle', 'needs_review', 'mainboard'].includes(item.item_type));
+  const eligible = unknown.filter(item => ACTIVE_ITEM_TYPES.includes(item.item_type) || item.item_type === 'mainboard');
   const keys = eligible.map(item => 'ebay:ship-hu:' + item.source_listing_id);
   const cached = keys.length ? cache.getAll(keys) : {};
   const pending = [];

@@ -2,7 +2,6 @@ const EU_COUNTRIES = Object.freeze([
   'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE',
   'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE',
 ]);
-const QUERIES = Object.freeze(['ps5', 'xbox series']);
 
 function record(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -59,7 +58,7 @@ function unavailable(item) {
     || estimate?.estimatedAvailableQuantity === 0 || estimate?.estimatedRemainingQuantity === 0);
 }
 
-function normalizeListing(item, checkedAt, secrets = []) {
+function normalizeListing(item, checkedAt, secrets = [], group = 'consoles') {
   const itemId = nonempty(item.itemId);
   const title = nonempty(item.title);
   const url = nonempty(item.itemWebUrl);
@@ -82,7 +81,9 @@ function normalizeListing(item, checkedAt, secrets = []) {
     source: 'ebay', source_listing_id: itemId, title: redactContact(title, protectedValues),
     url: redactText(url, protectedValues),
     image_url: redactText(nonempty(item.image?.imageUrl), protectedValues),
-    ...classifyItem(title), possibly_not_faulty: possiblyNotFaulty(title),
+    device_group: group, is_scuf: false,
+    ...(group === 'controllers' ? classifyController(title) : classifyItem(title)),
+    possibly_not_faulty: possiblyNotFaulty(title),
     buying_options: options,
     price: auction ? null : amount, current_bid: auction ? amount : null,
     bid_count: auction && Number.isInteger(item.bidCount) && item.bidCount >= 0 ? item.bidCount : null,

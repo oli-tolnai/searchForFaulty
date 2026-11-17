@@ -56,7 +56,7 @@ A `backend/` (Python/FastAPI) és a `frontend/` (React) mappa **referencia-proto
   - **szállít HU-ra**, ha a `regionIncluded` tartalmazza a `HU`-t vagy egy HU-t magában foglaló régiót (pl. `WORLDWIDE`, `EUROPE`, `EUROPEAN_UNION`), és a `regionExcluded` nem zárja ki (sem `HU`, sem HU-t tartalmazó régió);
   - **nem szállít HU-ra**, ha a `regionExcluded` kizárja, vagy a `regionIncluded` nem üres, de sem a `HU`-t, sem HU-t tartalmazó régiót nem tartalmaz (pl. csak `["DE"]`);
   - **nem eldönthető**, ha a mező hiányzik vagy üres, vagy a lekérés sikertelen.
-- **Hívásszám-keret:** a napi keret 5000 Browse-hívás (mérve). Egy teljes keresés az alapbeállításokkal maradjon 60 hívás alatt (27 ország × 2 lekérdezés + lapozás). Számold a napi hívásokat.
+- **Hívásszám-keret:** a napi keret 5000 Browse-hívás (mérve). A konzolkeresés 54, a kontrollerkeresés 108 első oldalt kér le, együtt 162-t. A lapozásra és újrapróbálásra külön, korlátozott tartalék van. A szállítási próba legfeljebb 100 `getItem`-hívást indít keresésenként. Számold a napi hívásokat.
 - Ha egy API-mező vagy funkció nem úgy működik, ahogy a terv feltételezi, ne kerüld meg csendben: írd le az összefoglalóban.
 - Hivatalos dokumentáció: https://developer.ebay.com/api-docs/buy/browse/overview.html
 

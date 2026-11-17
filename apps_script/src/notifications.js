@@ -27,8 +27,9 @@ function alertOperation(op, secrets) {
   if (typeof op.id !== 'string' || !/^[a-z0-9_-]{12,80}$/i.test(op.id) ||
       redactText(op.id, secrets) !== op.id) invalidState();
   if (op.type === 'alert_remove') return { id: op.id, deleted: true };
-  if (!Array.isArray(op.models) || op.models.length > FILTER_MODELS.length ||
-      op.models.some(model => !FILTER_MODELS.includes(model)) || !notificationPrice(op.max_total_price) ||
+  const models = configuredModels();
+  if (!Array.isArray(op.models) || op.models.length > models.length ||
+      op.models.some(model => !models.includes(model)) || !notificationPrice(op.max_total_price) ||
       typeof op.include_unknown_shipping !== 'boolean' || typeof op.enabled !== 'boolean') invalidState();
   return {
     id: op.id, models: [...new Set(op.models)], max_total_price: op.max_total_price,
@@ -241,9 +242,7 @@ function notificationTitle(title) {
 
 function alertMatches(item, rule) {
   if (item.currency !== 'EUR') return false;
-  const model = item.console_model.replace(/ (?:Disc|Digital)$/, '');
-  if (rule.models.length && !rule.models.includes(model) &&
-      !(item.console_model === 'PS5 Digital' && rule.models.includes('PS5 (változat nem ismert)'))) return false;
+  if (rule.models.length && !rule.models.includes(listingModelFamily(item.console_model))) return false;
   if (item.total_price !== null) return Number(item.total_price) <= rule.max_total_price;
   const price = effectivePrice(item);
   return rule.include_unknown_shipping && item.shipping_cost === null && price !== null &&
@@ -256,12 +255,14 @@ function checkNewListingAlerts() {
       Logger.log('Az időzített keresés kimaradt: a napi eBay-hívásszám 4000 fölött van.');
       return;
     }
-    const enabled = withStateLock(book => {
+    const groups = withStateLock(book => {
       readState(book);
-      return readRows(book, 'alerts').some(row => !row.deleted && row.enabled);
+      const rules = readRows(book, 'alerts').filter(row => !row.deleted && row.enabled);
+      return Object.keys(DEVICE_GROUPS).filter(group => rules.some(rule => !rule.models.length ||
+        rule.models.some(model => DEVICE_GROUPS[group].models.includes(model))));
     });
-    if (!enabled) return;
-    const result = searchEbay(EU_COUNTRIES, QUERIES, notificationSecrets(props));
+    if (!groups.length) return;
+    const result = searchEbay(EU_COUNTRIES, configuredQueries(groups), notificationSecrets(props));
     if (result.status === 'error') return;
     const row = withStateLock(book => {
       const meta = readState(book);
@@ -269,7 +270,7 @@ function checkNewListingAlerts() {
       const hidden = new Set(readRows(book, 'hidden').filter(row => !row.deleted).map(rowKey));
       const notified = new Set(readRows(book, 'notified').map(rowKey));
       const matches = [...result.listings, ...result.unknown_shipping].filter(item =>
-        item.status === 'ACTIVE' && ['console', 'console_bundle', 'needs_review'].includes(item.item_type) &&
+        item.status === 'ACTIVE' && ACTIVE_ITEM_TYPES.includes(item.item_type) &&
         item.ships_to_hu !== 'no' && !hidden.has(rowKey(item)) && !notified.has(rowKey(item)) &&
         rules.some(rule => alertMatches(item, rule)));
       if (!matches.length) return null;
@@ -279,7 +280,7 @@ function checkNewListingAlerts() {
       const now = new Date();
       const singleEnd = matches.length === 1 && matches[0].end_time ? Date.parse(matches[0].end_time) : Infinity;
       const expiry = new Date(Math.min(now.getTime() + 6 * 3600000, singleEnd));
-      const notification = queueNotification('new_listings', 'Új konzolajánlat', message,
+      const notification = queueNotification('new_listings', 'Új eBay-ajánlat', message,
         matches.length === 1 ? matches[0].url : null,
         matches.slice(0, 5).map(item => item.source_listing_id), now, expiry);
       commitStateWrite(book, meta, {

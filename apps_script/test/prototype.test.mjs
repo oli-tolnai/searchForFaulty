@@ -139,7 +139,7 @@ test('prototype unknown shipping breakdown groups auctions and fixed prices by c
 
 test('prototype budget leaves room for every country', () => {
   const app = runtime({ browse: () => response(200, { total: 1100 }) });
-  const result = app.post('search').data;
+  const result = app.post('search', { device_groups: ['consoles'] }).data;
   const firstPages = app.calls.slice(1).map(call => new URL(call.url).searchParams)
     .filter(params => params.get('offset') === '0');
   assert.equal(firstPages.length, 54);
@@ -157,11 +157,12 @@ test('the API returns all six item types and counts each deduplicated listing on
   ].map((title, index) => ({ ...base, itemId: String(index), title }));
   const app = runtime({ browse: request => new URL(request.url).searchParams.get('q') === 'xbox series'
     ? response(503) : response(200, { total: items.length, itemSummaries: [...items, ...items] }) });
-  const result = app.post('search', { countries: ['DE'] }).data;
+  const result = app.post('search', { countries: ['DE'], device_groups: ['consoles'] }).data;
   assert.equal(result.status, 'partial');
   assert.equal(result.countries[0].status, 'partial');
   assert.deepEqual(result.countries[0].queries.map(query => query.status), ['success', 'error']);
-  assert.ok(Object.values(result.item_type_counts).every(count => count === 1));
+  assert.equal(Object.values(result.item_type_counts).filter(count => count === 1).length, 6);
+  assert.equal(Object.values(result.item_type_counts).reduce((sum, count) => sum + count, 0), 6);
   assert.deepEqual(new Set(result.listings.map(item => item.item_type)),
     new Set(['console', 'console_bundle', 'needs_review', 'mainboard', 'not_console', 'unsupported_model']));
 });

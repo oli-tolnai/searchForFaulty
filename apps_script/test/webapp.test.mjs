@@ -53,13 +53,13 @@ test('unknown actions and unapproved search inputs never make a request', () => 
   assert.equal(app.context.doGet().type, 'text/plain');
 });
 
-test('full search uses 54 unique Browse requests in batches of four and one OAuth request', () => {
+test('default search uses both categories across all 27 EU countries', () => {
   const app = runtime();
   const result = app.post('search').data;
   assert.equal(result.status, 'success');
-  assert.deepEqual(app.batches.map(batch => batch.length), [...Array(13).fill(4), 2]);
-  assert.equal(result.api_calls, 55);
-  assert.equal(result.daily_browse_calls, 54);
+  assert.deepEqual(app.batches.map(batch => batch.length), [...Array(40).fill(4), 2]);
+  assert.equal(result.api_calls, 163);
+  assert.equal(result.daily_browse_calls, 162);
   const [oauth, ...browse] = app.calls;
   assert.equal(oauth.method, 'post');
   assert.equal(oauth.headers.Authorization, 'Basic ' + Buffer.from('fixture-app-id:fixture-cert-id').toString('base64'));
@@ -67,8 +67,10 @@ test('full search uses 54 unique Browse requests in batches of four and one OAut
   assert.equal(oauth.payload.scope, 'https://api.ebay.com/oauth/api_scope');
   assert.equal(app.cache.get('ebay:application_token').ttl, 7200);
   assert.ok(browse.every(call => call.followRedirects === false && call.muteHttpExceptions));
-  assert.equal(new Set(browse.map(call => call.url)).size, 54);
-  assert.ok(browse.every(call => new URL(call.url).searchParams.get('category_ids') === '139971'));
+  assert.equal(new Set(browse.map(call => call.url)).size, 162);
+  for (const [category, expected] of [['139971', 54], ['117042', 108]]) {
+    assert.equal(browse.filter(call => new URL(call.url).searchParams.get('category_ids') === category).length, expected);
+  }
   assert.ok(browse.every(call => new URL(call.url).searchParams.get('limit') === '200'));
 });
 
@@ -82,7 +84,7 @@ test('configured batch size and duplicate allowlist inputs', () => {
 test('one persistent 429 does not stop other queries and is retried only once', () => {
   const app = runtime({ browse: request => new URL(request.url).searchParams.get('q') === 'ps5'
     ? response(429, { warnings: [{ errorId: 12519 }] }) : response(200, { total: 0 }) });
-  const { data } = app.post('search', { countries: ['DE'] });
+  const { data } = app.post('search', { countries: ['DE'], device_groups: ['consoles'] });
   assert.equal(data.status, 'partial');
   assert.equal(data.countries[0].queries[0].status, 'error');
   assert.match(data.countries[0].queries[0].error, /HTTP 429/);
@@ -95,7 +97,7 @@ test('one persistent 429 does not stop other queries and is retried only once', 
 test('transport exception in an entire batch leaves later batches running', () => {
   let batches = 0;
   const app = runtime({ batchFailure: () => ++batches === 1, properties: { FETCH_BATCH_SIZE: '1' } });
-  const output = app.post('search', { countries: ['DE'] });
+  const output = app.post('search', { countries: ['DE'], device_groups: ['consoles'] });
   assert.equal(output.data.status, 'partial');
   assert.deepEqual(output.data.countries[0].queries.map(query => query.status), ['error', 'success']);
   assert.doesNotMatch(JSON.stringify(output), /fixture-cert-id|fixture timeout/);

@@ -111,7 +111,7 @@ A diagnosztika egy friss OAuth-kérést indít. A naplóban például `HTTP 200`
 
 ## Magyarországi szállítás ellenőrzése
 
-A keresés legfeljebb 60 külön `getItem` hívást indít az ismeretlen szállítási díjú tételek ellenőrzésére. A sikeres ellenőrzés besorolása és esetleges díja legfeljebb hat óráig használható fel újra a gyorsítótárból. Az `api_calls` a részletlekéréseket is tartalmazza, a `get_item_calls` mező ezeket külön számolja. A `shipping_check` az eredetileg ismeretlen díjú tételek számát, szállítási besorolását és a sikertelen részletlekérések számát adja meg.
+A keresés legfeljebb 100 külön `getItem` hívást indít az ismeretlen szállítási díjú tételek ellenőrzésére. A sikeres ellenőrzés besorolása és esetleges díja legfeljebb hat óráig használható fel újra a gyorsítótárból. Az `api_calls` a teljes hívásszám, a `browse_search_calls`, `get_item_calls` és `oauth_calls` mezők a bontást adják. A `shipping_check` az eredetileg ismeretlen díjú tételek számát, szállítási besorolását és a sikertelen részletlekérések számát adja meg.
 
 ## Kontrollerek mérése
 
@@ -128,7 +128,7 @@ A `POST` JSON-törzse `token`, `action`, `params` és opcionális `request_id` m
 | `action` | `params` | `data` |
 |---|---|---|
 | `ping` | `{}` | `version`, `server_time` |
-| `search` | Opcionális `countries` ISO-kódokkal és `queries` a `ps5`, `xbox series` értékek közül. Mindkettő alapértéke a teljes lista. | Minden tételtípus `ships_to_hu` besorolással a `listings` és `unknown_shipping` listákban, típus- és szállítási bontás, országonkénti és lekérdezésenkénti állapot, számlálók. |
+| `search` | Opcionális `device_groups` (`consoles`, `controllers`, alapból mindkettő), `countries` ISO-kódokkal (alapból az EU 27 országa), és `queries` a kiválasztott eszközcsoportok kulcsszavaival. | A `listings` és `unknown_shipping` listák tételei `device_group` és `ships_to_hu` besorolással, típus- és szállítási bontás, országonkénti és lekérdezésenkénti állapot, számlálók. |
 | `listing_details` | `source_listing_id` az eBay Browse válaszából | `condition_description`, `short_description`, `description_text` vagy `null` a hiányzó mezőknél. Egyszerű szövegként jelenítsd meg. |
 | `notify_test` | `{}` | A sorba tett próbaértesítés `id` értéke. |
 | `notifications_pull` | `device_id` (UUID) | Az eszköz által még nem nyugtázott, érvényes `notifications` lista. |
