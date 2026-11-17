@@ -317,13 +317,21 @@ Google Sheets: kedvencek, elrejtés, már látott tételek („ÚJ” jelölés)
 
 Aukciófigyelés határárral és értesítés az app helyi értesítésével (20. pont). Utána időzített keresés és értesítés új, feltételeknek megfelelő találatról.
 
+### Hátralévő sorrend (a felhasználóval egyeztetve, 2026. november)
+
+1. **Kiegészítő keresés:** „Használt” (nem „For parts”) állapotú, de a címben hibásként jelölt hirdetések. Előbb mérés (kulcsszavak nyelvenként, lefedettség, hívásszám), utána beépítés.
+2. **EUR ↔ HUF átváltás:** minden árnál (vételár, licit, szállítás, teljes ár, összesítők) egyetlen pénznem látszik; az árra koppintva az egész app átvált a másik pénznemre, újabb koppintásra vissza. A választás szinkronizált beállítás. Árfolyam: az Európai Központi Bank napi referencia-árfolyama (az Apps Script naponta lekéri és gyorsítótárazza), az árfolyam és dátuma a Beállításokban és az összesítőben látható.
+3. **Új eszközcsoportok:** Nintendo Switch és Steam Deck, majd a kutatás alapján kiválasztott további eszközök (pl. iPhone, MacBook, videokártya). Minden csoport előtt mérés. A hívásszám miatt **adaptív országlista**: egy eszközcsoportnál azokat az országokat, amelyek az elmúlt napokban nem adtak Magyarországra szállítható találatot, ritkábban kérdezzük le.
+4. **Utolsó lépés:** Jófogás és HardverApró keresőlinkek.
+5. **Opcionális, a legvégén:** ntfy-értesítés.
+
 ### 5. fázis – kiegészítések
 
-Kiegészítő kulcsszavas keresés (állapotszűrő nélkül, csak a találatot adó országokra), EUR/HUF átváltás, magyar piacterek keresőlinkjei, `localizedAspects`-alapú modellfelismerés.
+Kiegészítő kulcsszavas keresés, EUR/HUF átváltás, `localizedAspects`-alapú modellfelismerés; a magyar piacterek keresőlinkjei a teljes sorrend végén.
 
 ### 6. fázis – új eszközök
 
-Először hibás kontrollerek (DualSense, DualSense Edge, Xbox Series, Xbox Elite Series 2), utána Nintendo Switch és Steam Deck; később esetleg Apple (2. pont). Minden új eszközcsoport előtt mérés: kategória (Taxonomy API), kulcsszavak lefedettsége, hívásszám.
+Kész: hibás kontrollerek (DualSense, DualSense Edge, Xbox Series, Xbox Elite Series 2). Következik: Nintendo Switch és Steam Deck, majd a kutatás alapján kiválasztott további eszközök. Minden új eszközcsoport előtt mérés: kategória (Taxonomy API), kulcsszavak lefedettsége, hívásszám.
 
 ## 15. Átadási és elfogadási feltételek
 
