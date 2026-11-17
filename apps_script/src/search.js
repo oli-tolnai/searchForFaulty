@@ -64,7 +64,8 @@ function searchEbay(countries, queries, clientSecrets) {
       error: null, warnings: [], listings: [], filteredNonEu: 0, filteredNotFaulty: 0, pagesRead: 0,
     }))));
   states.push(...supplementary);
-  const runLimit = Math.max(RUN_LIMIT + supplementary.length, states.length + 5);
+  const newGroupStates = states.filter(state => DEVICE_GROUPS[state.group].classify).length;
+  const runLimit = Math.max(RUN_LIMIT + supplementary.length, states.length + 5 + newGroupStates * (PAGE_LIMIT - 1));
   let calls = 0;
   let oauthCalls = 0;
   const countCall = (kind, count) => {
@@ -136,6 +137,7 @@ function searchEbay(countries, queries, clientSecrets) {
           if (page + 1 < PAGE_LIMIT) pending.push({ state, page: page + 1, retry: false });
           else {
             const warning = 'Az ország keresése elérte az ötoldalas korlátot.';
+            state.error = warning;
             state.warnings.push(warning);
             Logger.log('eBay Browse (' + state.country + '): ' + warning);
           }

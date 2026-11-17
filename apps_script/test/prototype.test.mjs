@@ -65,7 +65,7 @@ test('prototype retries 429 and paginates to five pages', () => {
     return ++attempts === 1 ? response(429) : response(200, { total: 1100 });
   } });
   const result = app.search(['DE'], ['ps5']);
-  assert.equal(result.status, 'success');
+  assert.equal(result.status, 'partial');
   assert.deepEqual(result.countries[0].queries[0].warnings, ['Az ország keresése elérte az ötoldalas korlátot.']);
   assert.deepEqual(app.sleeps, [1000]);
   assert.deepEqual(app.calls.slice(1).filter(call => new URL(call.url).searchParams.get('filter').includes('{7000}'))

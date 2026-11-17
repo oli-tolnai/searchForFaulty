@@ -63,7 +63,7 @@ function classifyIphone(title) {
   const words = deviceWords(title);
   const cloud = iphoneCloudStatus(title);
   const models = iphoneModels(title);
-  const old = /\biphone\s*(?:x[rs]?|[2-8](?:s|g)?|se)\b/.test(words);
+  const old = /\biphone\s*(?:x[rs]?|[1-8](?:gs|s|g|c)?|se)\b/.test(words);
   const mixed = /\b(?:ipad|ipod|samsung|xiaomi|huawei|noname|poco|lg)\b/.test(words);
   const bundle = multipleDevices(words) || models.length > 1;
   let model = models.length === 1 ? models[0] : models.length ? models.join(' / ') : 'iPhone (változat nem ismert)';
@@ -94,7 +94,12 @@ function classifyGpu(title) {
   if (unsupported || lowRtx || /\bgv rx[45]\d{2}/.test(words)) return result('unsupported_model', 'Nem támogatott videokártya');
   const families = new Set([...rtx.filter(match => /^(20|30|40|50)/.test(match[1])).map(match => 'RTX ' + match[1].slice(0, 2)),
     ...rx.filter(match => match[1] === '5700' || /^[679]\d{3}$/.test(match[1])).map(match => 'RX ' + match[1][0] + '000')]);
-  if (!families.size) return result('needs_review');
+  if (!families.size) {
+    if (/\b(?:rx\s*5[0-6]\d{2}|r[579]\s*\d{3}[a-z]*|firepro|radeon pro|radeon vii|ati|vintage|retro|agp|x\d{3,4}|a[hkx]?\d{4})\b/.test(words)) {
+      return result('unsupported_model', 'Nem támogatott videokártya');
+    }
+    return result('needs_review');
+  }
   const model = [...families].join(' / ');
   const multiple = multipleDevices(words.replace(/\bventus \d+x\b/g, 'ventus')) || /\+/.test(title) && rtx.length + rx.length > 1;
   return result(multiple ? 'gpu_bundle' : 'gpu', model);

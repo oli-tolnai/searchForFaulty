@@ -22,10 +22,29 @@ for (const [group, title, type, model] of [
   ['iphone', 'nur Rückseite iPhone 13 128GB', 'part', 'iPhone 13'],
   ['iphone', 'iPhone 11 und iPhone XS Konvolut', 'needs_review', 'iPhone 11'],
   ['steam_deck', 'Steam Deck OLED Ersatz Display', 'not_console', 'Steam Deck OLED'],
+  ['iphone', 'Apple iPhone 3GS 8GB A1303', 'unsupported_model', 'iPhone (régebbi modell)'],
+  ['iphone', 'Apple iPhone 5c A1507 Weiß', 'unsupported_model', 'iPhone (régebbi modell)'],
+  ['gpu', 'Sapphire Radeon R9 290 Tri-X OC 4GB', 'unsupported_model', 'Nem támogatott videokártya'],
+  ['gpu', 'SAPPHIRE R7 250X 1GB', 'unsupported_model', 'Nem támogatott videokártya'],
+  ['gpu', 'Vintage Grafikkarte ATI Sapphire X1650 PRO', 'unsupported_model', 'Nem támogatott videokártya'],
 ]) test(title, () => {
   const item = app.run(functions[group], title);
   assert.equal(item.item_type, type);
   assert.equal(item.console_model, model);
+});
+
+test('new groups can paginate beyond the old five-call reserve and a five-page truncation is partial', () => {
+  const app = runtime({ browse: request => {
+    const params = new URL(request.url).searchParams;
+    const offset = Number(params.get('offset'));
+    return response(200, { total: params.get('filter').endsWith('itemLocationCountry:DE') ? 1200 : 401,
+      itemSummaries: [{ ...fixture('search').itemSummaries[1], title: 'iPhone 13', itemId: 'v1|' + (1000 + offset) + '|0' }] });
+  } });
+  const result = app.post('search', { countries: ['DE','FR'], device_groups: ['iphone'] }).data;
+  assert.equal(result.status, 'partial');
+  assert.equal(result.browse_search_calls, 7 * (5 + 3));
+  assert.ok(result.countries.find(row => row.country === 'FR').queries.every(query => query.status === 'success'));
+  assert.ok(result.countries.find(row => row.country === 'DE').queries.every(query => query.error.includes('ötoldalas')));
 });
 
 for (const [text, status] of [
