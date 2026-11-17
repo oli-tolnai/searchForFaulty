@@ -45,3 +45,13 @@ A cím és a token az eszköz biztonságos tárolójában marad. Az utolsó telj
 A két eszközön ugyanazt a webapp-címet használd. A szív ikon menti a kedvencet, az **Elrejtés** eltávolítja a tételt a találatokból. Öt másodpercig visszavonhatod az elrejtést, később az **Elrejtett** oldalon állíthatod vissza. A szűrők, a rendezés, a kedvencek és az elrejtések szinkronizálódnak. A helyben sorba tett módosítások és az utolsó szinkron állapota a **Beállítások** oldalon látszik.
 
 A kedvencek frissítése a lap megnyitásakor és a keresés után indulhat, legfeljebb 15 percenként. A lejárt kedvencek a lista végén maradnak. Az **ÚJ** címkét a hirdetés megnyitása vagy a következő keresés törli az aktuális eszközön.
+
+## Helyi értesítések Xiaomi telefonon
+
+1. Telepítsd a friss APK-t, és nyisd meg az alkalmazást.
+2. Az első indításkor az **Értesítések engedélyezése → Tovább** után válaszd az Android **Engedélyezés** gombját. Ha korábban kihagytad, nyisd meg az app **Beállítások → Alkalmazás rendszerbeállításai → Értesítések** menüjét, és ott engedélyezd őket.
+3. A telefon **Beállítások → Alkalmazások → Engedélyek → Automatikus indítás** vagy **Háttérbeli automatikus indítás** menüjében engedélyezd a **Console Deal Finder** alkalmazást.
+4. A **Beállítások → Alkalmazások → Alkalmazások kezelése → Console Deal Finder → Akkumulátorkímélő** menüben válaszd a **Nincs korlátozás** lehetőséget. Az appból az **Alkalmazás rendszerbeállításai** gombbal közvetlenül megnyithatod az alkalmazás adatlapját. A menük elnevezése MIUI- és HyperOS-verziónként eltérhet.
+5. Az alkalmazás **Beállítások** lapján kapcsold be az **Értesítések** kapcsolót, majd válaszd a **Próbaértesítés** gombot. Itt látható az utolsó sikeres értesítés-lekérés időpontja is.
+
+Az Android hálózat mellett nagyjából 15 percenként ad lehetőséget a háttérben történő lekérésére. Az ütemezés késhet. Windowson az alkalmazás indításkor és futás közben ötpercenként ellenőrzi a sort. [A WorkManager időzítéséről](https://developer.android.com/develop/background-work/background-tasks/persistent/getting-started/define-work)

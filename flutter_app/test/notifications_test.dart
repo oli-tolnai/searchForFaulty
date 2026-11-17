@@ -131,8 +131,11 @@ void main() {
         },
       ),
     );
-    await tap(tester, find.text('Próbaértesítés küldése'));
+    await tap(tester, find.text('Próbaértesítés'));
     expect(requests, 1);
-    expect(find.text('A próbaértesítést elküldtük.'), findsOneWidget);
+    expect(
+      find.text('A próbaértesítés megjelent az eszközön.'),
+      findsOneWidget,
+    );
   });
 }

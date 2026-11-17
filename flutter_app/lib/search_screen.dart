@@ -20,6 +20,8 @@ class SearchScreen extends StatefulWidget {
     this.openSettings,
     this.shared,
     this.sanitize,
+    this.watchNavigation,
+    this.openWatchesInitially = false,
     this.clock = DateTime.now,
   });
   final SearchResult? initial;
@@ -29,6 +31,8 @@ class SearchScreen extends StatefulWidget {
   final VoidCallback? openSettings;
   final SharedState? shared;
   final String Function(String)? sanitize;
+  final Listenable? watchNavigation;
+  final bool openWatchesInitially;
   final DateTime Function() clock;
 
   @override
@@ -60,6 +64,8 @@ class _SearchScreenState extends State<SearchScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     widget.shared?.addListener(sharedChanged);
+    widget.watchNavigation?.addListener(openWatches);
+    if (widget.openWatchesInitially) section = 3;
     restoreFilters();
     scheduleRefresh();
   }
@@ -68,11 +74,20 @@ class _SearchScreenState extends State<SearchScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     widget.shared?.removeListener(sharedChanged);
+    widget.watchNavigation?.removeListener(openWatches);
     timer?.cancel();
     title.dispose();
     price.dispose();
     total.dispose();
     super.dispose();
+  }
+
+  void openWatches() {
+    setState(() {
+      selectedGroup = null;
+      section = 3;
+    });
+    unawaited(widget.shared?.sync());
   }
 
   @override

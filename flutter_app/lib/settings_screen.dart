@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 
 import 'api/webapp.dart';
@@ -11,6 +13,10 @@ class SettingsScreen extends StatefulWidget {
     this.initialError,
     this.shared,
     this.sendTestNotification,
+    this.notificationsEnabled = true,
+    this.changeNotifications,
+    this.readLastNotificationPull,
+    this.openSystemSettings,
     required this.save,
   });
   final WebappSettings? initial;
@@ -18,6 +24,10 @@ class SettingsScreen extends StatefulWidget {
   final SharedState? shared;
   final Future<void> Function(WebappSettings settings) save;
   final Future<void> Function(WebappSettings settings)? sendTestNotification;
+  final bool notificationsEnabled;
+  final Future<bool> Function(bool)? changeNotifications;
+  final Future<DateTime?> Function()? readLastNotificationPull;
+  final Future<void> Function()? openSystemSettings;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -31,9 +41,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late String? feedback = widget.initialError;
   bool success = false;
   bool busy = false;
+  late bool notificationsEnabled = widget.notificationsEnabled;
+  DateTime? lastNotificationPull;
+  Timer? refreshNotifications;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(readNotificationTime());
+    if (widget.readLastNotificationPull != null) {
+      refreshNotifications = Timer.periodic(
+        const Duration(seconds: 15),
+        (_) => unawaited(readNotificationTime()),
+      );
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant SettingsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.notificationsEnabled != oldWidget.notificationsEnabled) {
+      notificationsEnabled = widget.notificationsEnabled;
+    }
+  }
+
+  Future<void> readNotificationTime() async {
+    try {
+      final value = await widget.readLastNotificationPull?.call();
+      if (mounted && value != lastNotificationPull) {
+        setState(() => lastNotificationPull = value);
+      }
+    } on Exception {
+      // Keep the last displayed timestamp if local storage is temporarily unavailable.
+    }
+  }
 
   @override
   void dispose() {
+    refreshNotifications?.cancel();
     address.dispose();
     token.dispose();
     super.dispose();
@@ -77,15 +122,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
     try {
       final settings = WebappSettings(address.text, token.text);
-      if (widget.sendTestNotification case final send?) {
-        await send(settings);
-      } else {
-        await WebappClient(settings).notifyTest();
-      }
+      await widget.sendTestNotification!(settings);
+      await readNotificationTime();
       if (mounted) {
         setState(() {
           success = true;
-          feedback = 'A próbaértesítést elküldtük.';
+          feedback = 'A próbaértesítés megjelent az eszközön.';
         });
       }
     } on AppFailure catch (error) {
@@ -96,6 +138,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     } finally {
       if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> toggleNotifications(bool enabled) async {
+    setState(() {
+      busy = true;
+      feedback = null;
+      success = false;
+    });
+    try {
+      final value = await widget.changeNotifications!(enabled);
+      if (mounted) setState(() => notificationsEnabled = value);
+      await readNotificationTime();
+    } on AppFailure catch (error) {
+      if (mounted) setState(() => feedback = error.message);
+    } on Exception {
+      if (mounted) {
+        setState(
+          () => feedback = 'Az értesítési beállítást nem sikerült módosítani.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  Future<void> openAndroidSettings() async {
+    try {
+      await widget.openSystemSettings!();
+    } on Exception {
+      if (mounted) {
+        setState(() {
+          success = false;
+          feedback = 'A rendszerbeállítások nem nyithatók meg.';
+        });
+      }
     }
   }
 
@@ -199,18 +277,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               icon: const Icon(Icons.check),
                               label: const Text('Mentés'),
                             ),
-                            OutlinedButton.icon(
-                              onPressed: busy ? null : testNotification,
-                              icon: const Icon(Icons.notifications_outlined),
-                              label: const Text('Próbaértesítés küldése'),
-                            ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'Az értesítésekhez iratkozz fel az ntfy appban arra a csatornára, '
-                          'amelynek neve az Apps Script Script Properties beállításaiban található.',
-                        ),
+                        if (widget.changeNotifications != null) ...[
+                          const Divider(height: 32),
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('Értesítések'),
+                            value: notificationsEnabled,
+                            onChanged: busy ? null : toggleNotifications,
+                          ),
+                          Text(
+                            'Utolsó sikeres értesítés-lekérés: ${lastNotificationPull == null ? 'Még nem történt' : dateLabel(lastNotificationPull!)}',
+                          ),
+                        ],
+                        if (widget.sendTestNotification != null)
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: OutlinedButton.icon(
+                              onPressed: busy || !notificationsEnabled
+                                  ? null
+                                  : testNotification,
+                              icon: const Icon(Icons.notifications_outlined),
+                              label: const Text('Próbaértesítés'),
+                            ),
+                          ),
+                        if (widget.openSystemSettings != null) ...[
+                          const SizedBox(height: 12),
+                          const Text(
+                            'Xiaomi telefonon kapcsold be az Automatikus indítást, az akkumulátor-beállításnál pedig válaszd a Nincs korlátozás lehetőséget.',
+                          ),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton(
+                              onPressed: openAndroidSettings,
+                              child: const Text(
+                                'Alkalmazás rendszerbeállításai',
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

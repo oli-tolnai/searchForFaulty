@@ -1,5 +1,54 @@
 typedef Json = Map<String, Object?>;
 
+final notificationUuid = RegExp(
+  r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$',
+);
+
+Uri? notificationListingLink(String? value) {
+  if (value == null) return null;
+  final uri = Uri.tryParse(value);
+  final host = RegExp(
+    r'^(?:[a-z0-9-]+\.)*ebay\.(?:de|com|fr|it|es|nl|at|ie|be|co\.uk)$',
+  );
+  return uri != null &&
+          uri.scheme == 'https' &&
+          uri.userInfo.isEmpty &&
+          uri.port == 443 &&
+          host.hasMatch(uri.host)
+      ? uri
+      : null;
+}
+
+class QueuedNotification {
+  QueuedNotification.fromJson(Object? value) : this._(Fields(value));
+
+  QueuedNotification._(Fields fields)
+    : id = fields.required<String>('id'),
+      kind = fields.choice('kind', ['auction_closing', 'new_listings']),
+      title = fields.required<String>('title'),
+      body = fields.required<String>('body'),
+      expiresAt = fields.date('expires_at'),
+      url = notificationListingLink(fields.nullable<String>('url')) {
+    if (!notificationUuid.hasMatch(id) ||
+        (fields.json['url'] != null && url == null) ||
+        !expiresAt.isAfter(fields.date('created_at')) ||
+        title.trim().isEmpty ||
+        body.trim().isEmpty) {
+      invalidResponse();
+    }
+    fields.list(
+      'source_listing_ids',
+      (id) => id is String && RegExp(r'^v1\|\d{1,40}\|\d{1,40}$').hasMatch(id)
+          ? id
+          : invalidResponse(),
+    );
+  }
+
+  final String id, kind, title, body;
+  final Uri? url;
+  final DateTime expiresAt;
+}
+
 Never invalidResponse() => throw const FormatException('Érvénytelen válasz.');
 
 Json object(Object? value) => value is Json ? value : invalidResponse();

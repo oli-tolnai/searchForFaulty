@@ -2,6 +2,17 @@ import 'package:flutter_app/api/models.dart';
 
 final testTime = DateTime.utc(2026, 11, 15, 12);
 
+Json queuedAuction(DateTime now) => {
+  'id': '2fd77dea-3f65-4dea-a6f2-5c403173d27c',
+  'created_at': now.toUtc().toIso8601String(),
+  'kind': 'auction_closing',
+  'title': 'Aukció zárul',
+  'body': 'Ma 19:30-kor zárul: PS5 Slim – 120 €',
+  'url': 'https://www.ebay.de/itm/123',
+  'source_listing_ids': ['v1|123|0'],
+  'expires_at': now.toUtc().add(const Duration(hours: 1)).toIso8601String(),
+};
+
 Json listing({
   String id = 'v1|123|0',
   String title = 'Tesztkonzol',

@@ -93,9 +93,27 @@ class WebappClient {
   Future<Json> refreshFavorites() =>
       _call('favorites_refresh', {}, searchTimeout, object);
 
-  Future<void> notifyTest() => _call('notify_test', {}, pingTimeout, (value) {
-    if (!Fields(value).required<bool>('sent')) invalidResponse();
+  Future<String> notifyTest() => _call('notify_test', {}, pingTimeout, (value) {
+    final id = Fields(value).required<String>('id');
+    return notificationUuid.hasMatch(id) ? id : invalidResponse();
   });
+
+  Future<List<QueuedNotification>> pullNotifications(String deviceId) => _call(
+    'notifications_pull',
+    {'device_id': deviceId},
+    pingTimeout,
+    (value) => Fields(value).list('notifications', QueuedNotification.fromJson),
+  );
+
+  Future<void> acknowledgeNotifications(String deviceId, List<String> ids) =>
+      _call(
+        'notifications_ack',
+        {'device_id': deviceId, 'ids': ids},
+        pingTimeout,
+        (value) {
+          if (!Fields(value).required<bool>('acknowledged')) invalidResponse();
+        },
+      );
 
   Future<T> _call<T>(
     String action,
