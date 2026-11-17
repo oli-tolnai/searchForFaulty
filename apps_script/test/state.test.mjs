@@ -22,7 +22,7 @@ test('initializes named spreadsheet with headers and returns changes by revision
   assert.equal(app.sheets.size, 0);
   const initial = app.post('state_get', { since_revision: 0 }).data;
   assert.equal(app.props.get('SHEET_ID'), 'fixture-sheet');
-  assert.deepEqual([...app.sheets.keys()], ['favorites', 'hidden', 'seen', 'settings', 'watches', 'alerts', 'notified', 'meta']);
+  assert.deepEqual([...app.sheets.keys()], ['favorites', 'hidden', 'seen', 'settings', 'watches', 'alerts', 'notified', 'notifications', 'meta']);
   assert.equal(app.sheets.get('favorites').rows[0][0], 'source');
   assert.deepEqual(initial, { revision: 0, favorites: [], hidden: [], settings: [], watches: [], alerts: [] });
   const first = change(0, 'hide', { title: '=HYPERLINK("malicious")' });

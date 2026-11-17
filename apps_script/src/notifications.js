@@ -67,15 +67,14 @@ function publishNotification(title, message, priority, tags, click) {
   throw new AppError('ntfy_failed', 'Az értesítés küldése sikertelen (HTTP ' + status + provider + ').');
 }
 
-function testNotification() {
-  return publishNotification('Console Deal Finder', 'Próbaértesítés a Console Deal Finder alkalmazásból.', 'default', 'bell');
-}
-
-function diagnoseNtfy() {
+function forwardToNtfy(row) {
+  if (PropertiesService.getScriptProperties().getProperty('NTFY_ENABLED') !== 'true') return;
+  const auction = row.kind === 'auction_closing';
   try {
-    Logger.log('Az ntfy elfogadta a próbaértesítést (HTTP ' + testNotification() + ').');
+    publishNotification(row.title, row.body, auction ? 'high' : 'default',
+      auction ? 'alarm_clock' : row.source_listing_ids.length ? 'video_game' : 'bell', row.url);
   } catch (error) {
-    Logger.log(error instanceof AppError ? error.message : 'Az ntfy diagnosztikája sikertelen.');
+    Logger.log(error instanceof AppError ? error.message : 'Az opcionális ntfy-küldés sikertelen.');
   }
 }
 
@@ -168,38 +167,32 @@ function watchResult(watch, response, now, secrets) {
 }
 
 function saveWatchChecks(updates) {
-  return withStateLock(book => {
+  const queued = withStateLock(book => {
     const meta = readState(book);
     const rows = new Map(readRows(book, 'watches').map(row => [rowKey(row), row]));
     const watches = [];
+    const notifications = [];
+    const now = new Date();
     for (const { watch, change } of updates) {
       const row = rows.get(rowKey(watch));
-      if (!row || (row.revision !== watch.revision && !change.notified_at)) continue;
-      const safeChange = change.notified_at
-        ? { notified_at: change.notified_at, status: row.deleted || row.status === 'ended' ? row.status : 'notified' }
-        : change;
-      watches.push({ ...row, ...safeChange, revision: ++meta.revision });
+      if (!row || row.revision !== watch.revision) continue;
+      const current = { ...row, ...change, revision: ++meta.revision };
+      if (watchIsDue(current, now)) {
+        const end = new Date(current.end_time);
+        const time = Utilities.formatDate(end, NOTIFICATION_ZONE, 'HH:mm');
+        const body = 'Ma ' + time + '-kor zárul: ' + notificationTitle(current.title) +
+          ' – ' + current.last_bid + ' € (határ: ' + current.threshold + ' €)';
+        notifications.push(queueNotification('auction_closing', 'Aukció zárul', body,
+          current.url, [current.source_listing_id], now, end));
+        current.status = 'notified';
+        current.notified_at = now.toISOString();
+      }
+      watches.push(current);
     }
-    if (watches.length) commitStateWrite(book, meta, { watches });
-    return watches;
+    if (watches.length) commitStateWrite(book, meta, notifications.length ? { watches, notifications } : { watches });
+    return notifications;
   });
-}
-
-function sendDueWatches(watches) {
-  for (const watch of watches) {
-    const now = new Date();
-    if (!watchIsDue(watch, now)) continue;
-    const time = Utilities.formatDate(new Date(watch.end_time), NOTIFICATION_ZONE, 'HH:mm');
-    try {
-      publishNotification('Aukció zárul', 'Ma ' + time + '-kor zárul: ' +
-        notificationTitle(watch.title) + ' – ' + watch.last_bid + ' € (határ: ' + watch.threshold + ' €)',
-      'high', 'alarm_clock', watch.url);
-      saveWatchChecks([{ watch, change: { notified_at: now.toISOString() } }]);
-    } catch (error) {
-      if (!(error instanceof AppError) || !error.code.startsWith('ntfy_')) throw error;
-      Logger.log(error.message);
-    }
-  }
+  queued.forEach(forwardToNtfy);
 }
 
 function checkAuctionWatches() {
@@ -237,7 +230,7 @@ function checkAuctionWatches() {
       const updates = batch.map((watch, index) => ({
         watch, change: watchResult(watch, responses[index], checkedAt, secrets),
       })).filter(update => update.change);
-      if (updates.length) sendDueWatches(saveWatchChecks(updates));
+      if (updates.length) saveWatchChecks(updates);
     }
   });
 }
@@ -270,36 +263,33 @@ function checkNewListingAlerts() {
     if (!enabled) return;
     const result = searchEbay(EU_COUNTRIES, QUERIES, notificationSecrets(props));
     if (result.status === 'error') return;
-    const matches = withStateLock(book => {
-      readState(book);
+    const row = withStateLock(book => {
+      const meta = readState(book);
       const rules = readRows(book, 'alerts').filter(row => !row.deleted && row.enabled);
       const hidden = new Set(readRows(book, 'hidden').filter(row => !row.deleted).map(rowKey));
       const notified = new Set(readRows(book, 'notified').map(rowKey));
-      return [...result.listings, ...result.unknown_shipping].filter(item =>
+      const matches = [...result.listings, ...result.unknown_shipping].filter(item =>
         item.status === 'ACTIVE' && ['console', 'console_bundle', 'needs_review'].includes(item.item_type) &&
         item.ships_to_hu !== 'no' && !hidden.has(rowKey(item)) && !notified.has(rowKey(item)) &&
         rules.some(rule => alertMatches(item, rule)));
+      if (!matches.length) return null;
+      const lines = matches.slice(0, 5).map(item => '• ' + notificationTitle(item.title) +
+        (item.total_price === null ? ' – szállítási díj nem ismert' : ' – ' + item.total_price + ' €'));
+      const message = matches.length + ' új találat megfelel az értesítési szabályoknak.\n' + lines.join('\n');
+      const now = new Date();
+      const singleEnd = matches.length === 1 && matches[0].end_time ? Date.parse(matches[0].end_time) : Infinity;
+      const expiry = new Date(Math.min(now.getTime() + 6 * 3600000, singleEnd));
+      const notification = queueNotification('new_listings', 'Új konzolajánlat', message,
+        matches.length === 1 ? matches[0].url : null,
+        matches.slice(0, 5).map(item => item.source_listing_id), now, expiry);
+      commitStateWrite(book, meta, {
+        notifications: [notification],
+        notified: matches.map(item => ({
+          source: item.source, source_listing_id: item.source_listing_id, notified_at: now.toISOString(),
+        })),
+      });
+      return notification;
     });
-    if (!matches.length) return;
-    const lines = matches.slice(0, 5).map(item => '• ' + notificationTitle(item.title) +
-      (item.total_price === null ? ' – szállítási díj nem ismert' : ' – ' + item.total_price + ' €'));
-    const message = matches.length + ' új találat megfelel az értesítési szabályoknak.\n' + lines.join('\n');
-    try {
-      publishNotification('Új konzolajánlat', message,
-        'default', 'video_game', matches.length === 1 ? matches[0].url : null);
-    } catch (error) {
-      if (!(error instanceof AppError) || !error.code.startsWith('ntfy_')) throw error;
-      Logger.log(error.message);
-      return;
-    }
-    withStateLock(book => {
-      const rows = readRows(book, 'notified');
-      const notifiedAt = new Date().toISOString();
-      for (const item of matches) {
-        rows.push({ source: item.source, source_listing_id: item.source_listing_id, notified_at: notifiedAt });
-      }
-      writeRows(book, 'notified', rows);
-      SpreadsheetApp.flush();
-    });
+    if (row) forwardToNtfy(row);
   });
 }

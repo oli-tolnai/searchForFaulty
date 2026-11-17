@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
@@ -132,6 +132,7 @@ export function runtime({
       }),
     },
     Utilities: {
+      getUuid: randomUUID,
       Charset: { UTF_8: 'utf8' },
       DigestAlgorithm: { SHA_256: 'sha256' },
       computeDigest(algorithm, value, encoding) {

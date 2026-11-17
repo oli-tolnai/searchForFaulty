@@ -34,7 +34,8 @@ function requireKeys(params, allowed) {
 }
 
 function runAction(action, params, secrets) {
-  if (!['ping', 'search', 'listing_details', 'state_get', 'state_apply', 'favorites_refresh', 'notify_test'].includes(action)) {
+  if (!['ping', 'search', 'listing_details', 'state_get', 'state_apply', 'favorites_refresh',
+    'notify_test', 'notifications_pull', 'notifications_ack'].includes(action)) {
     throw new AppError('unknown_action', 'Ismeretlen művelet.');
   }
   if (!record(params)) throw new AppError('invalid_params', 'A params mezőnek objektumnak kell lennie.');
@@ -54,8 +55,11 @@ function runAction(action, params, secrets) {
       return refreshFavorites(params, secrets);
     case 'notify_test':
       requireKeys(params, []);
-      testNotification();
-      return { sent: true };
+      return { id: queueTestNotification() };
+    case 'notifications_pull':
+      return notificationsPull(params);
+    case 'notifications_ack':
+      return notificationsAck(params);
     case 'listing_details': {
       requireKeys(params, ['source_listing_id']);
       const id = params.source_listing_id;

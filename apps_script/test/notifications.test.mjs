@@ -11,6 +11,9 @@ const op = (i, type, values) => ({ op_id: 'fixture-op-id-' + i, type, ...values 
 const state = app => app.post('state_get', { since_revision: 0 }).data;
 const apply = (app, ops) => assert.equal(app.post('state_apply', { ops }).ok, true);
 const ntfy = app => app.calls.filter(call => new URL(call.url).hostname === 'ntfy.sh');
+const device = '10000000-0000-4000-8000-000000000001';
+const otherDevice = '10000000-0000-4000-8000-000000000002';
+const pull = (app, deviceId = device) => app.post('notifications_pull', { device_id: deviceId }).data.notifications;
 
 function listing(app, i, end = close) {
   return app.run('normalizeListing', {
@@ -46,7 +49,7 @@ test('watch decisions use local day, inclusive lead and strictly below the EUR t
 
 test('empty watches skip eBay; fetched bids, 404 and expiry update state, and a watch notifies once', () => {
   const app = runtime({
-    properties: { NTFY_TOPIC: topic, FETCH_BATCH_SIZE: '2' },
+    properties: { NTFY_TOPIC: topic, NTFY_ENABLED: 'true', FETCH_BATCH_SIZE: '2' },
     details: () => response(200, { topic }),
     shipping: request => {
       const itemId = decodeURIComponent(new URL(request.url).pathname.split('/').pop());
@@ -75,15 +78,23 @@ test('empty watches skip eBay; fetched bids, 404 and expiry update state, and a 
   assert.equal(ntfy(app)[0].headers['X-Priority'], 'high');
   assert.equal(ntfy(app)[0].headers.Click, watches[0].url);
   assert.match(ntfy(app)[0].payload, /Ma 14:15-kor zárul.*75 €.*100 €/);
-  assert.doesNotMatch(JSON.stringify(app.log) + JSON.stringify(watches) + ntfy(app)[0].payload, /private-(?:seller|fixture-topic)/);
+  const queued = pull(app);
+  assert.equal(queued.length, 1);
+  assert.equal(queued[0].kind, 'auction_closing');
+  assert.equal(queued[0].body, ntfy(app)[0].payload);
+  assert.equal(queued[0].url, watches[0].url);
+  assert.deepEqual(queued[0].source_listing_ids, [id(1)]);
+  assert.doesNotMatch(JSON.stringify([app.log, watches, queued]), /private-(?:seller|fixture-topic)/);
   apply(app, [op(11, 'watch_update', { ...identity(1), threshold: 150, lead_minutes: 30 })]);
   apply(app, [op(12, 'watch_remove', identity(1)), { ...watch(app, 1), op_id: 'fixture-op-add-again' }]);
   app.run('checkAuctionWatches');
   assert.equal(ntfy(app).length, 1);
+  assert.equal(pull(app).length, 1);
   assert.equal(state(app).watches[0].status, 'notified');
   app.setTime('2026-11-14T13:16:00Z');
   app.run('checkAuctionWatches');
   assert.equal(state(app).watches[0].status, 'ended');
+  assert.deepEqual(pull(app), []);
 });
 
 test('install and removal are idempotent and keep unrelated triggers', () => {
@@ -113,7 +124,7 @@ test('install and removal are idempotent and keep unrelated triggers', () => {
 
 test('scheduled search keeps seen intact, honors rules and sends one summary with up to five titles', () => {
   const app = runtime({
-    properties: { NTFY_TOPIC: topic },
+    properties: { NTFY_TOPIC: topic, NTFY_ENABLED: 'true' },
     details: () => response(200),
     browse: request => {
       const url = new URL(request.url);
@@ -144,6 +155,8 @@ test('scheduled search keeps seen intact, honors rules and sends one summary wit
   assert.equal(sent.headers.Click, undefined);
   assert.match(sent.payload, /^6 új találat/);
   assert.equal(sent.payload.split('\n').length, 6);
+  assert.equal(pull(app)[0].kind, 'new_listings');
+  assert.equal(pull(app)[0].body, sent.payload);
   assert.equal(app.sheets.get('notified').rows.length, 7);
   app.run('checkNewListingAlerts');
   assert.equal(ntfy(app).length, 1);
@@ -162,10 +175,10 @@ test('scheduled search keeps seen intact, honors rules and sends one summary wit
   assert.equal(state(app).alerts[0].deleted, true);
 });
 
-test('authenticated ntfy test uses the expected headers and protects the channel even on a fetch exception', () => {
+test('optional ntfy uses the expected headers; failures leave the queued test available', () => {
   let success = true;
   const app = runtime({
-    properties: { NTFY_TOPIC: topic },
+    properties: { NTFY_TOPIC: topic, NTFY_ENABLED: 'true' },
     details: request => {
       if (!success) throw new Error('Cannot reach ' + request.url);
       return response(200, { topic });
@@ -173,26 +186,50 @@ test('authenticated ntfy test uses the expected headers and protects the channel
   });
   assert.equal(app.post('notify_test', {}, { token: 'wrong' }).ok, false);
   assert.equal(ntfy(app).length, 0);
-  assert.deepEqual(app.post('notify_test').data, { sent: true });
+  assert.equal(app.post('notify_test').ok, true);
   assert.equal(ntfy(app)[0].method, 'post');
   assert.equal(ntfy(app)[0].url, 'https://ntfy.sh/' + topic);
   assert.deepEqual(Object.keys(ntfy(app)[0].headers).sort(), ['Tags', 'Title', 'X-Priority']);
   assert.equal(ntfy(app)[0].headers['X-Priority'], 'default');
   success = false;
-  const failure = app.post('notify_test');
-  assert.equal(failure.error.code, 'ntfy_failed');
-  assert.ok(!JSON.stringify([failure, app.log]).includes(topic));
+  assert.equal(app.post('notify_test').ok, true);
+  assert.equal(pull(app).length, 2);
+  assert.ok(!JSON.stringify([pull(app), app.log]).includes(topic));
 });
 
 test('ntfy diagnostics expose only safe HTTP and provider error codes', () => {
   const app = runtime({
-    properties: { NTFY_TOPIC: topic },
+    properties: { NTFY_TOPIC: topic, NTFY_ENABLED: 'true' },
     details: () => response(429, { code: 42901, error: 'Private URL includes ' + topic }),
   });
   const result = app.post('notify_test');
-  assert.equal(result.error.code, 'ntfy_failed');
-  assert.match(result.error.message, /HTTP 429, ntfy 42901/);
-  app.run('diagnoseNtfy');
+  assert.equal(result.ok, true);
   assert.match(app.log.at(-1), /HTTP 429, ntfy 42901/);
   assert.ok(!JSON.stringify([result, app.log]).includes(topic));
+});
+
+test('test notification queues locally by default; devices acknowledge independently and expired rows disappear', () => {
+  const app = runtime({ properties: { NTFY_TOPIC: topic } });
+  assert.equal(app.post('notify_test', {}, { token: 'wrong' }).ok, false);
+  assert.equal(app.post('notifications_pull', { device_id: device }, { token: 'wrong' }).ok, false);
+  assert.equal(app.sheets.size, 0);
+  const test = app.post('notify_test').data;
+  assert.equal(ntfy(app).length, 0);
+  const notifications = pull(app);
+  assert.equal(notifications.length, 1);
+  assert.equal(notifications[0].id, test.id);
+  assert.equal(notifications[0].title, 'Próbaértesítés');
+  assert.equal(notifications[0].url, null);
+  assert.deepEqual(notifications[0].source_listing_ids, []);
+  assert.equal('delivered_devices' in notifications[0], false);
+  assert.deepEqual(pull(app, otherDevice), notifications);
+  assert.equal(app.post('notifications_ack', { device_id: 'invalid', ids: [test.id] }).ok, false);
+  for (let attempt = 0; attempt < 2; attempt++) {
+    assert.deepEqual(app.post('notifications_ack', { device_id: device, ids: [test.id] }).data, { acknowledged: true });
+  }
+  assert.deepEqual(pull(app), []);
+  assert.deepEqual(pull(app, otherDevice), notifications);
+  app.setTime('2026-11-15T12:00:00Z');
+  assert.deepEqual(pull(app, otherDevice), []);
+  assert.equal(app.sheets.get('notifications').rows.length, 1);
 });

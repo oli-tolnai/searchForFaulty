@@ -10,6 +10,8 @@ const STATE_COLUMNS = {
     'status', 'last_bid', 'last_checked_at', 'end_time', 'notified_at', 'revision', 'deleted'],
   alerts: ['id', 'models', 'max_total_price', 'include_unknown_shipping', 'enabled', 'revision', 'deleted'],
   notified: ['source', 'source_listing_id', 'notified_at'],
+  notifications: ['id', 'created_at', 'kind', 'title', 'body', 'url',
+    'source_listing_ids', 'delivered_devices', 'expires_at'],
   meta: ['key', 'value'],
 };
 const STATE_TABLES = ['favorites', 'hidden', 'settings', 'watches', 'alerts'];
@@ -70,7 +72,9 @@ function readRows(book, table) {
     return Object.fromEntries(columns.map((key, index) => {
       let value = cells[index];
       if (value === '') value = null;
-      if (value != null && ['buying_options', 'models', 'value'].includes(key)) value = JSON.parse(value);
+      if (value != null && ['buying_options', 'models', 'value', 'source_listing_ids', 'delivered_devices'].includes(key)) {
+        value = JSON.parse(value);
+      }
       return [key, value];
     }));
   });
