@@ -82,7 +82,8 @@ function normalizeListing(item, checkedAt, secrets = [], group = 'consoles') {
     url: redactText(url, protectedValues),
     image_url: redactText(nonempty(item.image?.imageUrl), protectedValues),
     device_group: group, is_scuf: false,
-    ...(group === 'controllers' ? classifyController(title) : classifyItem(title)),
+    ...(DEVICE_GROUPS[group]?.classify ? DEVICE_GROUPS[group].classify(title)
+      : group === 'controllers' ? classifyController(title) : classifyItem(title)),
     possibly_not_faulty: possiblyNotFaulty(title),
     buying_options: options,
     price: auction ? null : amount, current_bid: auction ? amount : null,

@@ -1,7 +1,7 @@
 function alertDefaults(row) {
   const models = row.models || [];
   const inferredGroups = Object.keys(DEVICE_GROUPS).filter(group =>
-    !models.length || models.some(model => DEVICE_GROUPS[group].models.includes(model)));
+    (!models.length ? ['consoles', 'controllers'].includes(group) : models.some(model => DEVICE_GROUPS[group].models.includes(model))));
   return {
     name: 'Értesítési szabály', device_groups: inferredGroups, buying_options: 'both',
     max_price: null, max_total_price: null, known_shipping_only: !row.include_unknown_shipping,
@@ -39,9 +39,9 @@ function alertValues(input, secrets = []) {
 function alertMatches(item, original, now = new Date()) {
   const rule = alertDefaults(original);
   const group = item.device_group || 'consoles';
-  if (!rule.enabled || item.status !== 'ACTIVE' || !ACTIVE_ITEM_TYPES.includes(item.item_type) || item.ships_to_hu === 'no' ||
+  if (!rule.enabled || item.status !== 'ACTIVE' || !ACTIVE_ITEM_TYPES.includes(item.item_type) || item.ships_to_hu !== 'yes' ||
       !rule.device_groups.includes(group) || item.currency !== 'EUR') return false;
-  if (rule.models.length && !rule.models.includes(listingModelFamily(item.console_model))) return false;
+  if (rule.models.length && !item.console_model.split(' / ').some(model => rule.models.includes(listingModelFamily(model)))) return false;
   if (rule.countries.length && !rule.countries.includes(item.item_country)) return false;
   if (rule.exclude_possibly_not_faulty && item.possibly_not_faulty) return false;
   if (rule.exclude_banned && item.is_banned) return false;

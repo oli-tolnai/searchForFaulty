@@ -26,7 +26,7 @@ function isDiagnosticFaultTitle(title, keywords) {
 }
 
 function diagnosticUsedPolicies(token, secrets, count) {
-  const filter = 'categoryIds:{' + Object.values(DEVICE_GROUPS).map(group => group.category).join('|') + '}';
+  const filter = 'categoryIds:{' + Object.keys(USED_FAULT_MODELS).map(key => DEVICE_GROUPS[key].category).join('|') + '}';
   count('metadata', 1);
   const response = fetchEbay(EBAY_ROOT + '/sell/metadata/v1/marketplace/EBAY_DE/get_item_condition_policies?filter=' +
     encodeURIComponent(filter), { method: 'get', headers: browseHeaders(token) });
@@ -37,7 +37,7 @@ function diagnosticUsedPolicies(token, secrets, count) {
       response.getResponseCode() + ').');
   }
   const result = new Map();
-  for (const [group, config] of Object.entries(DEVICE_GROUPS)) {
+  for (const [group, config] of Object.keys(USED_FAULT_MODELS).map(key => [key, DEVICE_GROUPS[key]])) {
     const policy = payload.itemConditionPolicies.find(entry => String(entry.categoryId) === config.category);
     const conditions = Array.isArray(policy?.itemConditions) ? policy.itemConditions.filter(condition =>
       USED_CONDITION_IDS.includes(String(condition.conditionId))) : [];

@@ -32,7 +32,10 @@ function listingDetails(itemId, clientSecrets) {
   const cache = CacheService.getScriptCache();
   const key = 'ebay:details:' + itemId;
   const cached = cache.get(key);
-  if (cached) return JSON.parse(cached);
+  if (cached) {
+    const saved = JSON.parse(cached);
+    if (saved.ships_to_hu !== undefined) return saved;
+  }
   const credentials = ebayCredentials();
   const token = applicationToken(credentials, dailyCounter);
   const url = EBAY_ROOT + '/buy/browse/v1/item/' + encodeURIComponent(itemId);
@@ -62,7 +65,14 @@ function listingDetails(itemId, clientSecrets) {
     throw new AppError('listing_not_found', 'A hirdetés már nem érhető el.');
   }
 
+  const shippingInfo = shippingFromDetail(item);
+  cache.put('ebay:ship-hu:' + itemId, JSON.stringify(shippingInfo), SHIPPING_CACHE_SECONDS);
+  const phoneText = [item.title, item.conditionDescription, plainDescription(item.description)].filter(Boolean).join(' ');
+  const cloudStatus = iphoneCloudStatus(phoneText);
+  cache.put('ebay:icloud:' + itemId, cloudStatus, SHIPPING_CACHE_SECONDS);
   const details = {
+    ...shippingInfo,
+    icloud_status: cloudStatus,
     condition_description: safeDescription(item.conditionDescription, secrets),
     short_description: safeDescription(item.shortDescription, secrets),
     description_text: safeDescription(item.description, secrets),

@@ -62,7 +62,7 @@ for (const [title, type, model] of [
   });
 }
 
-test('controller-only search uses four keywords, deduplicates hits and checks shipping only for eligible types', () => {
+test('controller-only search uses four keywords, deduplicates hits without automatic shipping checks', () => {
   const base = fixture('search').itemSummaries[2];
   const titles = ['DualSense Stick Drift', '2x DualSense defekt', 'Wireless Controller defekt',
     'DualSense Stick Modul', 'PDP Victrix Xbox Series Controller', 'Xbox One Controller'];
@@ -86,11 +86,11 @@ test('controller-only search uses four keywords, deduplicates hits and checks sh
   assert.deepEqual(result.countries[0].queries.map(query => query.query),
     ['ps5 controller', 'xbox series controller', 'xbox wireless controller', 'xbox elite controller',
       'ps5 controller defekt', 'xbox controller defekt']);
-  assert.equal(result.api_calls, 10);
-  assert.equal(result.get_item_calls, 3);
+  assert.equal(result.api_calls, 7);
+  assert.equal(result.get_item_calls, 0);
   assert.equal(result.unknown_shipping.length, titles.length);
   assert.ok(result.unknown_shipping.every(item => item.device_group === 'controllers'));
-  assert.equal(result.unknown_shipping.filter(item => item.ships_to_hu === 'no').length, 3);
+  assert.equal(result.unknown_shipping.filter(item => item.ships_to_hu === 'probably_no').length, titles.length);
   for (const type of ['controller', 'controller_bundle', 'needs_review', 'not_controller', 'third_party', 'unsupported_model']) {
     assert.equal(result.item_type_counts[type], 1);
   }

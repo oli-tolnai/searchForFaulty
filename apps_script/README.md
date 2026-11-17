@@ -111,7 +111,7 @@ A diagnosztika egy friss OAuth-kérést indít. A naplóban például `HTTP 200`
 
 ## Magyarországi szállítás ellenőrzése
 
-A keresés legfeljebb 100 külön `getItem` hívást indít az ismeretlen szállítási díjú tételek ellenőrzésére. A sikeres ellenőrzés besorolása és esetleges díja legfeljebb hat óráig használható fel újra a gyorsítótárból. Az `api_calls` a teljes hívásszám, a `browse_search_calls`, `get_item_calls` és `oauth_calls` mezők a bontást adják. A `shipping_check` az eredetileg ismeretlen díjú tételek számát, szállítási besorolását és a sikertelen részletlekérések számát adja meg.
+A keresés nem indít `getItem`-hívást szállításellenőrzéshez. Ismert HU-díjú tétel `yes`; ismeretlen díjnál a hat órán belüli ellenőrzött `yes`/`no` cache alkalmazható, enélkül `probably_no`. A kliens ezeket a „Valószínűleg nem szállít Magyarországra” csoportban mutatja. A `listing_details` ellenőrzi a `shipToLocations` mezőt és az esetleges HU-díjat, majd hat órára cache-eli. Az `api_calls`, `browse_search_calls`, `get_item_calls` (keresésnél 0) és `oauth_calls` adja a bontást.
 
 ## Kontrollerek mérése
 
@@ -147,7 +147,7 @@ A mérés a Taxonomy API-val választ kategóriákat, majd a Switch, Steam Deck,
 
 A **Végrehajtási naplóban** megtalálod a kategóriajavaslatokat, a kulcsszavak lefedettségét és egyedi hozzájárulását, a címbesorolás példáit, az iCloud-/aktiválásizár-említéseket, a szállítási mintát, a minimális teljes releváns lefedettségű kulcsszókészletet és a hívásbecslést. A releváns halmaz itt csak a címből egyértelműen felismert támogatott modelleket jelenti; a bizonytalan címeket külön számolja. A besorolás diagnosztikai becslés. A zár említése nem igazolt zároltság, az említés hiánya nem igazolt zármentesség.
 
-A szállítási minta az ismeretlen díjú, felismert tételekből váltakozva vesz DE/FR/IT példákat, legfeljebb tízet csoportonként. Ez nem véletlen, reprezentatív minta. Az eleve ismert díjak száma is a felismert támogatott tételekre vonatkozik. A 27 országos hívásbecslés a három mért ország egyszerű kivetítése; az országok eltérő kínálata és a gyorsítótár miatt a tényleges költség eltérhet. A getItem-becslés a jelenlegi, keresésenként közös 100-as korlátot feltételezi.
+A szállítási minta az ismeretlen díjú, felismert tételekből váltakozva vesz DE/FR/IT példákat, legfeljebb tízet csoportonként. Ez nem véletlen, reprezentatív minta. Az eleve ismert díjak száma is a felismert támogatott tételekre vonatkozik. A 27 országos hívásbecslés a három mért ország egyszerű kivetítése; az országok eltérő kínálata és a gyorsítótár miatt a tényleges költség eltérhet. A diagnosztika történeti getItem-becslése még a korábbi, keresésenként közös 100-as korlátot feltételezi; az alkalmazás keresése azóta nem indít automatikus szállítási próbát.
 
 **Ezt küldd vissza:** a teljes naplót, különösen az összesítést és a végén kiírt egyetlen JSON-sort. A napló megadja a célfájl nevét: `apps_script/test/fixtures/new_device_titles_live_<dátum>.json`. A JSON kizárólag kitakart példacímeket, országot, eszközcsoportot és diagnosztikai besorolást tartalmaz; a `diagnostic` mező még nem végleges tesztelvárás. Ha a Google a hosszú JSON-sort csonkolja, másold be helyette az összes `FIXTURE_PART_1`, `FIXTURE_PART_2`, … sort is; ezekből minden példacím visszaállítható, majd rögzíthető a fixture-ben. Ne másolj be Script Properties értékeket vagy nyers eBay-választ.
 
@@ -160,8 +160,8 @@ A `POST` JSON-törzse `token`, `action`, `params` és opcionális `request_id` m
 | `action` | `params` | `data` |
 |---|---|---|
 | `ping` | `{}` | `version`, `server_time` |
-| `search` | Opcionális `device_groups` (`consoles`, `controllers`, alapból mindkettő), `countries` ISO-kódokkal (alapból az EU 27 országa), és `queries` a kiválasztott eszközcsoportok kulcsszavaival. | A `listings` és `unknown_shipping` listák tételei `device_group` és `ships_to_hu` besorolással, típus- és szállítási bontás, országonkénti és lekérdezésenkénti állapot, számlálók. |
-| `listing_details` | `source_listing_id` az eBay Browse válaszából | `condition_description`, `short_description`, `description_text` vagy `null` a hiányzó mezőknél. Egyszerű szövegként jelenítsd meg. |
+| `search` | Opcionális `device_groups` (`consoles`, `controllers`, `switch`, `steam_deck`, `iphone`, `gpu`, alapból mind a hat), `countries` ISO-kódokkal (alapból az EU 27 országa), és `queries` a kiválasztott eszközcsoportok kulcsszavaival. | A `listings` és `unknown_shipping` listák tételei `device_group` és `ships_to_hu` besorolással, típus- és szállítási bontás, országonkénti és lekérdezésenkénti állapot, számlálók. |
+| `listing_details` | `source_listing_id` az eBay Browse válaszából | `condition_description`, `short_description`, `description_text` vagy `null`; továbbá `ships_to_hu`, `shipping_cost`, `shipping_currency`, `icloud_status`. Egyszerű szövegként jelenítsd meg; a szállítás/zár alapján a kliens frissíti a tételt. |
 | `notify_test` | `{}` | A sorba tett próbaértesítés `id` értéke. |
 | `notifications_pull` | `device_id` (UUID) | Az eszköz által még nem nyugtázott, érvényes `notifications` lista. |
 | `notifications_ack` | `device_id` és az értesítésazonosítókat felsoroló `ids` lista | `acknowledged: true`. |
@@ -169,3 +169,9 @@ A `POST` JSON-törzse `token`, `action`, `params` és opcionális `request_id` m
 A `search` esetében az `ok: true` azt jelenti, hogy a keresés állapota kiolvasható a `data` mezőből. A kliens ott ellenőrizze a `status` értékét. A `partial` a keresés hiányosságát, az `error` minden első oldal sikertelenségét jelzi. A pénzösszegek decimális sztringek. A napi számláló a projekten keresztül megkísérelt eBay-hívásokat számolja, budapesti idő szerint.
 
 A Content Service a válaszhoz külön Google URL-t ad. A kliens a POST átirányítását kézzel kezelje, majd a `script.googleusercontent.com` címet GET-tel, az eredeti törzs és token nélkül nyissa meg. [Content Service átirányítás](https://developers.google.com/apps-script/guides/content#redirects)
+
+## Az új eszközcsoportok bekapcsolása
+
+A Flutter keresőjében és az értesítési szabályokban külön választható a Switch, Steam Deck, iPhone és videokártya. Első indításkor a korábbi Konzolok/Kontrollerek kijelölés marad; az újakat külön kapcsold be. A 11–17-es iPhone-ok zárjelölése nem azonos a SIM-zárral. A zárolt készülékek, a nem videokártya tételek és a valószínűleg nem Magyarországra szállítók külön rejtett nézetből megnyithatók. Az ismeretlen díjak korábbi külön blokkja megszűnt.
+
+Az új csoportok kiegészítő használtállapotú keresése még nincs bekapcsolva, csak az üres konfigurációja készült el. A 291 éles cím külön ellenőrzött tesztelvárásai és a bizonytalan esetek döntései: [besorolási feljegyzés](../docs/uj_eszkozcsoportok_besorolas.md).

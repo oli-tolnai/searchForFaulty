@@ -2,7 +2,7 @@ const STATE_COLUMNS = {
   favorites: ['source', 'source_listing_id', 'saved_at', 'title', 'url', 'image_url', 'console_model',
     'item_type', 'buying_options', 'price', 'current_bid', 'currency', 'shipping_cost', 'item_country',
     'end_time', 'status', 'last_checked_at', 'last_check_error', 'revision', 'deleted', 'last_check_error_at',
-    'shipping_currency', 'ships_to_hu', 'bid_count', 'is_banned', 'possibly_not_faulty', 'listed_at', 'device_group', 'is_scuf', 'fault_source'],
+    'shipping_currency', 'ships_to_hu', 'bid_count', 'is_banned', 'possibly_not_faulty', 'listed_at', 'device_group', 'is_scuf', 'fault_source', 'icloud_status'],
   hidden: ['source', 'source_listing_id', 'hidden_at', 'title', 'revision', 'deleted'],
   seen: ['source', 'source_listing_id', 'first_seen_at'],
   settings: ['key', 'value', 'revision'],
@@ -191,6 +191,7 @@ function favoriteListing(listing, secrets) {
   safe.device_group = listing.device_group === undefined ? 'consoles' : listing.device_group;
   safe.is_scuf = listing.is_scuf === undefined ? false : listing.is_scuf;
   safe.fault_source = listing.fault_source || 'condition';
+  safe.icloud_status = listing.icloud_status ?? null;
   const link = value => typeof value === 'string' && value.length <= 2048 &&
     /^https:\/\/(?:[a-z0-9-]+\.)*(?:ebay\.(?:de|com|fr|it|es|nl|at|ie|be|co\.uk)|ebayimg\.com)\//i.test(value);
   if (!link(safe.url) || (safe.image_url !== null && !link(safe.image_url)) ||
@@ -199,7 +200,8 @@ function favoriteListing(listing, secrets) {
       !Object.keys(DEVICE_GROUPS).includes(safe.device_group) || typeof safe.is_scuf !== 'boolean' ||
       !['condition', 'title', 'text'].includes(safe.fault_source) ||
       !['ACTIVE', 'ENDED', 'UNKNOWN'].includes(safe.status) ||
-      !['yes', 'no', 'unknown'].includes(safe.ships_to_hu) ||
+      !['yes', 'no', 'unknown', 'probably_no'].includes(safe.ships_to_hu) ||
+      ![null, 'locked', 'free_by_seller', 'unknown'].includes(safe.icloud_status) ||
       !Array.isArray(safe.buying_options) || !safe.buying_options.length ||
       safe.buying_options.some(option => !['AUCTION', 'FIXED_PRICE', 'BEST_OFFER', 'CLASSIFIED_AD'].includes(option)) ||
       !timestamp(safe.last_checked_at) ||

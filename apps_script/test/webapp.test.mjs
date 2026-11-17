@@ -53,13 +53,13 @@ test('unknown actions and unapproved search inputs never make a request', () => 
   assert.equal(app.context.doGet().type, 'text/plain');
 });
 
-test('default search uses both categories across all 27 EU countries', () => {
+test('default search uses all six groups across all 27 EU countries', () => {
   const app = runtime();
   const result = app.post('search').data;
   assert.equal(result.status, 'success');
-  assert.deepEqual(app.batches.map(batch => batch.length), Array(42).fill(4));
-  assert.equal(result.api_calls, 169);
-  assert.equal(result.daily_browse_calls, 168);
+  assert.deepEqual(app.batches.map(batch => batch.length), [...Array(116).fill(4), 1]);
+  assert.equal(result.api_calls, 466);
+  assert.equal(result.daily_browse_calls, 465);
   const [oauth, ...browse] = app.calls;
   assert.equal(oauth.method, 'post');
   assert.equal(oauth.headers.Authorization, 'Basic ' + Buffer.from('fixture-app-id:fixture-cert-id').toString('base64'));
@@ -67,8 +67,8 @@ test('default search uses both categories across all 27 EU countries', () => {
   assert.equal(oauth.payload.scope, 'https://api.ebay.com/oauth/api_scope');
   assert.equal(app.cache.get('ebay:application_token').ttl, 7200);
   assert.ok(browse.every(call => call.followRedirects === false && call.muteHttpExceptions));
-  assert.equal(new Set(browse.map(call => call.url)).size, 168);
-  for (const [category, expected] of [['139971', 56], ['117042', 112]]) {
+  assert.equal(new Set(browse.map(call => call.url)).size, 465);
+  for (const [category, expected] of [['139971', 110], ['117042', 112], ['9355', 189], ['27386', 54]]) {
     assert.equal(browse.filter(call => new URL(call.url).searchParams.get('category_ids') === category).length, expected);
   }
   assert.ok(browse.every(call => new URL(call.url).searchParams.get('limit') === '200'));
@@ -234,7 +234,7 @@ test('getItem strips HTML, redacts sensitive fields, clips text and caches only 
   } });
   const params = { source_listing_id: itemId };
   const first = app.post('listing_details', params).data;
-  assert.deepEqual(Object.keys(first).sort(), ['condition_description', 'description_text', 'short_description']);
+  assert.deepEqual(Object.keys(first).sort(), ['condition_description', 'description_text', 'icloud_status', 'shipping_cost', 'shipping_currency', 'ships_to_hu', 'short_description']);
   assert.equal(first.condition_description, 'Használt & hibás');
   assert.equal(first.short_description, 'Az eladó [KITAKARVA] — [KITAKARVA]');
   assert.ok(first.description_text.startsWith('Egy\nkettő 🎮\nHárom'));

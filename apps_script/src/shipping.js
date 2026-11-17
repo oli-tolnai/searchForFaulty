@@ -1,6 +1,5 @@
 const HU_REGIONS = new Set(['HU', 'EUROPE', 'EUROPEAN_UNION', 'WORLDWIDE']);
 const SHIPPING_CACHE_SECONDS = 21600;
-const MAX_GET_ITEM_CALLS = 100;
 
 function shipsToHungary(locations) {
   const includesHu = regions => Array.isArray(regions) && regions.some(region =>
@@ -30,66 +29,33 @@ function shippingFromDetail(item) {
   return { ships_to_hu: shipsToHu, shipping_cost: cost, shipping_currency: currency };
 }
 
-function checkHungarianShipping(items, token, batchSize, countCall, deadline, secrets) {
+function applyCachedHungarianShipping(items) {
   const cache = CacheService.getScriptCache();
+  const cloudKeys = items.filter(item => item.device_group === 'iphone').map(item => 'ebay:icloud:' + item.source_listing_id);
+  const cloud = cloudKeys.length ? cache.getAll(cloudKeys) : {};
+  for (const item of items.filter(item => item.device_group === 'iphone')) {
+    const saved = cloud['ebay:icloud:' + item.source_listing_id];
+    if (saved === 'locked') {
+      item.icloud_status = 'locked';
+      if (['phone', 'phone_bundle', 'needs_review'].includes(item.item_type)) item.item_type = 'icloud_locked';
+    } else if (saved === 'free_by_seller' && item.icloud_status !== 'locked') item.icloud_status = saved;
+  }
   const unknown = items.filter(item => item.shipping_cost === null);
-  const eligible = unknown.filter(item => ACTIVE_ITEM_TYPES.includes(item.item_type) || item.item_type === 'mainboard');
-  const keys = eligible.map(item => 'ebay:ship-hu:' + item.source_listing_id);
+  const keys = unknown.map(item => 'ebay:ship-hu:' + item.source_listing_id);
   const cached = keys.length ? cache.getAll(keys) : {};
-  const pending = [];
-  const apply = (item, shipping) => {
-    Object.assign(item, shipping);
+  const outcomes = { yes: 0, no: 0, unknown: 0, probably_no: 0 };
+  for (const [index, item] of unknown.entries()) {
+    let saved;
+    try { saved = cached[keys[index]] ? JSON.parse(cached[keys[index]]) : null; } catch { saved = null; }
+    if (saved && ['yes', 'no'].includes(saved.ships_to_hu)) {
+      const [cost, currency] = saved.ships_to_hu === 'no' ? [null, null]
+        : money({ value: saved.shipping_cost, currency: saved.shipping_currency });
+      Object.assign(item, { ships_to_hu: saved.ships_to_hu, shipping_cost: cost, shipping_currency: currency });
+    } else item.ships_to_hu = 'probably_no';
     const price = effectivePrice(item);
-    if (price !== null && item.shipping_cost !== null && item.currency === item.shipping_currency) {
-      item.total_price = addMoney(price, item.shipping_cost);
-    }
-  };
-  for (const [index, item] of eligible.entries()) {
-    const key = keys[index];
-    if (cached[key]) apply(item, JSON.parse(cached[key]));
-    else pending.push({ item, key });
+    item.total_price = price !== null && item.shipping_cost !== null && item.currency === item.shipping_currency
+      ? addMoney(price, item.shipping_cost) : null;
+    outcomes[item.ships_to_hu]++;
   }
-  let calls = 0;
-  let failed = 0;
-  const toCheck = pending.slice(0, MAX_GET_ITEM_CALLS);
-  for (let offset = 0; offset < toCheck.length && Date.now() < deadline; offset += batchSize) {
-    const batch = toCheck.slice(offset, offset + batchSize);
-    try {
-      countCall('browse', batch.length);
-    } catch (error) {
-      if (!(error instanceof AppError)) throw error;
-      Logger.log('Szállítás ellenőrzése: ' + error.message);
-      break;
-    }
-    calls += batch.length;
-    let responses;
-    try {
-      responses = UrlFetchApp.fetchAll(batch.map(({ item }) => fetchOptions({
-        url: EBAY_ROOT + '/buy/browse/v1/item/' + encodeURIComponent(item.source_listing_id),
-        method: 'get', headers: browseHeaders(token),
-      })));
-    } catch {
-      failed += batch.length;
-      continue;
-    }
-    const updates = {};
-    for (const [index, { item, key }] of batch.entries()) {
-      const response = responses[index];
-      const data = response ? responseObject(response) : {};
-      if (data.warnings !== undefined) {
-        Logger.log('eBay getItem: ' + JSON.stringify(safeWarning(data.warnings, [...secrets, ...sellerIdentities(data.seller)])));
-      }
-      if (response?.getResponseCode() !== 200 || data.itemId !== item.source_listing_id) {
-        failed++;
-        continue;
-      }
-      const shipping = shippingFromDetail(data);
-      apply(item, shipping);
-      updates[key] = JSON.stringify(shipping);
-    }
-    if (Object.keys(updates).length) cache.putAll(updates, SHIPPING_CACHE_SECONDS);
-  }
-  const outcomes = { yes: 0, no: 0, unknown: 0 };
-  for (const item of unknown) outcomes[item.ships_to_hu]++;
-  return { get_item_calls: calls, shipping_check: { initial_unknown: unknown.length, ...outcomes, failed } };
+  return { get_item_calls: 0, shipping_check: { initial_unknown: unknown.length, ...outcomes, failed: 0 } };
 }

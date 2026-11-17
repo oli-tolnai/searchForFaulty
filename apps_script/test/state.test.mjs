@@ -115,7 +115,7 @@ test('unsupported models and accessories skip the shipping probe', () => {
     })),
   }) });
   const result = app.post('search', { countries: ['DE'], queries: ['ps5'] }).data;
-  assert.equal(result.get_item_calls, 1);
+  assert.equal(result.get_item_calls, 0);
   assert.equal(result.unknown_shipping.length, 3);
-  assert.ok(result.unknown_shipping.every(item => item.ships_to_hu === 'unknown'));
+  assert.ok(result.unknown_shipping.every(item => item.ships_to_hu === 'probably_no'));
 });

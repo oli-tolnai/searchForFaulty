@@ -10,7 +10,7 @@ test('new device diagnostic classifies title fixtures without changing live grou
     assert.equal(actual.supported, supported, title);
     assert.equal(actual.lock_mentioned, locked, title);
   }
-  assert.equal(app.post('search', { device_groups: ['switch'] }).ok, false);
+  assert.equal(app.post('search', { device_groups: ['unsupported-device'] }).ok, false);
   assert.equal(app.calls.length, 0);
 });
 

@@ -161,6 +161,7 @@ test('scheduled search keeps seen intact, honors rules and sends one summary wit
   app.run('checkNewListingAlerts');
   assert.equal(ntfy(app).length, 1);
   apply(app, [op(3, 'alert_update', { ...options, include_unknown_shipping: true })]);
+  app.cache.set('ebay:ship-hu:' + id(9), { value: JSON.stringify({ ships_to_hu: 'yes', shipping_cost: null, shipping_currency: null }), expires: Infinity });
   app.run('checkNewListingAlerts');
   assert.equal(ntfy(app).length, 2);
   assert.equal(ntfy(app)[1].headers.Click, 'https://www.ebay.de/itm/10009');

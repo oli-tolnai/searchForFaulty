@@ -79,7 +79,7 @@ test('French controller supplement runs without console requests and preserves t
   assert.equal(favorite.fault_source, 'title');
 });
 
-test('supplementary shipping uses the same getItem cache and main data wins even without a shipping quote', () => {
+test('supplementary shipping uses no automatic getItem calls and main data wins even without a shipping quote', () => {
   const base = fixture('search').itemSummaries[2];
   const app = runtime({
     browse: request => {
@@ -92,7 +92,7 @@ test('supplementary shipping uses the same getItem cache and main data wins even
     shipping: () => response(200, { itemId: 'v1|129|0', shipToLocations: { regionIncluded: [{ regionId: 'HU' }] } }),
   });
   const data = app.post('search', { countries: ['DE'], device_groups: ['consoles'] }).data;
-  assert.equal(data.get_item_calls, 1);
+  assert.equal(data.get_item_calls, 0);
   assert.equal(data.unknown_shipping[0].fault_source, 'condition');
   assert.equal(app.post('search', { countries: ['DE'], device_groups: ['consoles'] }).data.get_item_calls, 0);
 });

@@ -6,8 +6,9 @@ const BUDGET_MESSAGE = 'A keresés elérte a futásonkénti híváskeretet.';
 const ITEM_TYPES = [
   'console', 'console_bundle', 'mainboard', 'not_console', 'controller', 'controller_bundle',
   'not_controller', 'third_party', 'unsupported_model', 'needs_review',
+  'phone', 'phone_bundle', 'part', 'icloud_locked', 'gpu', 'gpu_bundle', 'not_gpu',
 ];
-const ACTIVE_ITEM_TYPES = ['console', 'console_bundle', 'controller', 'controller_bundle', 'needs_review'];
+const ACTIVE_ITEM_TYPES = ['console', 'console_bundle', 'controller', 'controller_bundle', 'needs_review', 'phone', 'phone_bundle', 'gpu', 'gpu_bundle'];
 
 function makeSearchRequest(job, token) {
   const params = {
@@ -147,8 +148,7 @@ function searchEbay(countries, queries, clientSecrets) {
   for (const job of pending) job.state.error = stopReason;
   return collectSearchResults(states, searchedAt, new Date(), items => {
     const browseSearchCalls = calls - oauthCalls;
-    const shipping = checkHungarianShipping(items, token, batchSize, countCall,
-      searchedAt.getTime() + SEARCH_TIME_LIMIT_MS, secrets);
+    const shipping = applyCachedHungarianShipping(items);
     return { ...shipping, api_calls: calls, browse_search_calls: browseSearchCalls, oauth_calls: oauthCalls, ...dailyCounter() };
   });
 }
@@ -201,7 +201,7 @@ function collectSearchResults(states, searchedAt, now, enrich) {
       if (item.status !== 'ACTIVE' || (item.end_time && Date.parse(item.end_time) <= now.getTime())) continue;
       const key = item.source + ':' + item.source_listing_id;
       const previous = unique.get(key);
-      const recognized = type => ['console', 'console_bundle', 'controller', 'controller_bundle'].includes(type);
+      const recognized = type => ACTIVE_ITEM_TYPES.includes(type) && type !== 'needs_review';
       if (!previous || (previous.fault_source !== item.fault_source
         ? item.fault_source === 'condition'
         : previous.device_group === item.device_group

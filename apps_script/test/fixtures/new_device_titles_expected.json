@@ -1,0 +1,3071 @@
+[
+  {
+    "source_index": 0,
+    "device_group": "switch",
+    "title": "Nintendo Switch V1 Tablet defekt",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch V1",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 1,
+    "device_group": "switch",
+    "title": "Nintendo Switch V1 defekt/Bastler",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch V1",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 2,
+    "device_group": "switch",
+    "title": "Nintendo Switch HAC-001 Tablet Schwarz 32GB Wi-Fi USB-C Klinke Headset 720p",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch V1",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 3,
+    "device_group": "switch",
+    "title": "Nintendo Switch V1 Jahr 2017",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch V1",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 4,
+    "device_group": "switch",
+    "title": "Nintendo Switch Konsole HAC-001 Schwarz nur Display Bildschirm FÜR TEILE",
+    "expected": {
+      "item_type": "not_console",
+      "console_model": "Switch V1",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 5,
+    "device_group": "switch",
+    "title": "Nintendo Switch Konsole HAC-001 Schwarz Nur Bildschirm Display Für Teile",
+    "expected": {
+      "item_type": "not_console",
+      "console_model": "Switch V1",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 6,
+    "device_group": "switch",
+    "title": "Nintendo Switch Konsole HAC-001 Schwarz Nur Bildschirm Display Für Teile",
+    "expected": {
+      "item_type": "not_console",
+      "console_model": "Switch V1",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 7,
+    "device_group": "switch",
+    "title": "Nintendo Switch Konsole HAC-001 Schwarz nur Display Bildschirm FÜR TEILE",
+    "expected": {
+      "item_type": "not_console",
+      "console_model": "Switch V1",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 8,
+    "device_group": "switch",
+    "title": "Konsole Nintendo Switch Ohne Joypads MOD HAC-001 ( -01)",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch V2",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 9,
+    "device_group": "switch",
+    "title": "Nintendo SWITCH HAC- 001 (-01) KONSOLE OHNE Joypad",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch V2",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 10,
+    "device_group": "switch",
+    "title": "Nintendo Switch Konsole ( nur Tablet) MOD HAC-001 ( -01) Defekt für Bastler",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch V2",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 11,
+    "device_group": "switch",
+    "title": "ORIGINAL NINTENDO SWITCH GAMEPAD Tablet HAC-001 (-01) ERSATZ KONSOLE TEILDEFEKT",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch V2",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 12,
+    "device_group": "switch",
+    "title": "Nintendo Switch Tablet HAC-001(-01) V2 schwarz",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch V2",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 13,
+    "device_group": "switch",
+    "title": "Nintendo Switch V2 HAC-001(-01) | Defekt | Startet nicht | Ersatzteile",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch V2",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 14,
+    "device_group": "switch",
+    "title": "Nintendo Switch V2 HAC-001(-01) | Defekt | Startet nicht | Ersatzteile",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch V2",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 15,
+    "device_group": "switch",
+    "title": "Nintendo Switch (Modell HAC-001-01) in OVP – Nur Offline-Betrieb / Gebannt",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch V2",
+      "is_banned": true
+    }
+  },
+  {
+    "source_index": 16,
+    "device_group": "switch",
+    "title": "Nintendo Switch Lite HDH-001 Turquoise DEFEKT! # AU 314325",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch Lite",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 17,
+    "device_group": "switch",
+    "title": "Nintendo Switch Lite HDH-001 Turquoise DEFEKT! # AU 314323",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch Lite",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 18,
+    "device_group": "switch",
+    "title": "Nintendo Switch Lite Dialga Palkia Edition Pokémon TEILDEFEKT R-Taste",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch Lite",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 19,
+    "device_group": "switch",
+    "title": "Nintendo Switch Lite • 32GB Spielkonsole Türkis • Defekt BSOD • Bastler",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch Lite",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 20,
+    "device_group": "switch",
+    "title": "Nintendo Switch Lite Handheld-Konsole ungetestet für Nintendo Switch, Gelb",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch Lite",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 21,
+    "device_group": "switch",
+    "title": "Nintendo Switch Lite Handheld-System 32 GB Rosa mit Kopfhöreranschluss",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch Lite",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 22,
+    "device_group": "switch",
+    "title": "Nintendo Switch Lite 32GB Handheld-Spielekonsole - Gelb",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch Lite",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 23,
+    "device_group": "switch",
+    "title": "Konsole Nintendo Switch Lite Gelb 32 GB - Defekt: Stick-Drift",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch Lite",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 24,
+    "device_group": "switch",
+    "title": "Nintendo Switch OLED HEG-001 White DEFEKT! # AU 314386",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch OLED",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 25,
+    "device_group": "switch",
+    "title": "Nintendo Switch OLED HEG-001 White DEFEKT! # AU 314369",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch OLED",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 26,
+    "device_group": "switch",
+    "title": "Switch OLED Kühler Leitung Kühlkörper",
+    "expected": {
+      "item_type": "not_console",
+      "console_model": "Switch OLED",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 27,
+    "device_group": "switch",
+    "title": "Nintendo Switch Oled Original Ersatzteile",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch OLED",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 28,
+    "device_group": "switch",
+    "title": "LEERKARTON Konsole - Nintendo Switch OLED",
+    "expected": {
+      "item_type": "not_console",
+      "console_model": "Switch OLED",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 29,
+    "device_group": "switch",
+    "title": "Nintendo Switch OLED HS Für Ersatzteile",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch OLED",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 30,
+    "device_group": "switch",
+    "title": "Nintendo Switch OLED",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch OLED",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 31,
+    "device_group": "switch",
+    "title": "DEFEKT Nintendo Switch 2 Konsole ohne Zubehör Schwarz OVP",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch 2",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 32,
+    "device_group": "switch",
+    "title": "DEFEKT Nintendo Switch 2 Konsole ohne Zubehör Schwarz OVP",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch 2",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 33,
+    "device_group": "switch",
+    "title": "GESPERRT Nintendo Switch 2 256 GB Schwarz",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch 2",
+      "is_banned": true
+    }
+  },
+  {
+    "source_index": 34,
+    "device_group": "switch",
+    "title": "GESPERRT Nintendo Switch 2 256 GB Schwarz",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch 2",
+      "is_banned": true
+    }
+  },
+  {
+    "source_index": 35,
+    "device_group": "switch",
+    "title": "GESPERRT Nintendo Switch 2 256 GB Schwarz",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch 2",
+      "is_banned": true
+    }
+  },
+  {
+    "source_index": 36,
+    "device_group": "switch",
+    "title": "Nintendo Switch 2 Konsole Schwarz mit OVP, Tasche/Case und 3 Spielen",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch 2",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 37,
+    "device_group": "switch",
+    "title": "Nintendo Switch OLED Mainboard Defekt",
+    "expected": {
+      "item_type": "not_console",
+      "console_model": "Switch OLED",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 38,
+    "device_group": "switch",
+    "title": "Nintendo Switch 2019 32GB - linker Joy-Con Stick gebrochen, G3 mit OVP",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch V2",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 39,
+    "device_group": "switch",
+    "title": "Original Nintendo Switch Joy-Con - Controller - Rechts - Rot - Defekt",
+    "expected": {
+      "item_type": "not_console",
+      "console_model": "Switch (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 40,
+    "device_group": "switch",
+    "title": "Nintendo Switch DEFEKT – Softwaresperre – 2 defekte Joy-Cons – Zubehör",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch (változat nem ismert)",
+      "is_banned": true
+    }
+  },
+  {
+    "source_index": 41,
+    "device_group": "switch",
+    "title": "Dock Station für Nintendo Switch 1 TV Dock - Schwarz - Defekt",
+    "expected": {
+      "item_type": "not_console",
+      "console_model": "Switch (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 42,
+    "device_group": "switch",
+    "title": "Nintendo Switch Bildschirm Display Defekt nur für Teile oder Reparatur",
+    "expected": {
+      "item_type": "not_console",
+      "console_model": "Switch (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 43,
+    "device_group": "switch",
+    "title": "Original Nintendo Switch Joy-Con - Links - Rot - Defekt",
+    "expected": {
+      "item_type": "not_console",
+      "console_model": "Switch (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 44,
+    "device_group": "switch",
+    "title": "Nintendo Switch Heimkonsole 32 GB Grau mit Joy-Con Controllern in OVP",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 45,
+    "device_group": "switch",
+    "title": "Nintendo Switch Lite 2x DEFEKT/Ersatzteilespender",
+    "expected": {
+      "item_type": "console_bundle",
+      "console_model": "Switch Lite",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 46,
+    "device_group": "switch",
+    "title": "2x Retro Gaming Gravis Controller U.S. Patent IBM, Quick Joy",
+    "expected": {
+      "item_type": "not_console",
+      "console_model": "Switch (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 47,
+    "device_group": "switch",
+    "title": "Konvolut 5 Switch Konsolen nur für Teile oder Reparatur im Zustand \"",
+    "expected": {
+      "item_type": "console_bundle",
+      "console_model": "Switch (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 48,
+    "device_group": "switch",
+    "title": "Nintendo Switch Sports Set Konsole + Zubehör – Defekt / Ungeprüfte Retoure#124",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 49,
+    "device_group": "switch",
+    "title": "Nintendo Switch defekt – ohne Zubehör – für Bastler/Ersatzteile",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 50,
+    "device_group": "switch",
+    "title": "Nintendo Switch Konsole defekt Ersatzteilspender HAD-CPU-01 kein Lebenszeichen",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch V2",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 51,
+    "device_group": "switch",
+    "title": "Nintendo Switch",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 52,
+    "device_group": "switch",
+    "title": "Nintendo Switch Konsole Console Needs Repair",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 53,
+    "device_group": "switch",
+    "title": "Nintendo Switch Konsole / Tablet / Bildschirm OHNE Zubehör (DEFEKT) ⚡BLITZBEREIT",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 54,
+    "device_group": "switch",
+    "title": "Nintendo Switch Konsole – mit Station – DEFEKT - blauer Bildschirm ⚡BLITZBEREIT⚡",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 55,
+    "device_group": "switch",
+    "title": "Nintendo Switch Konsole + Dock – defekt – Bastler",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Switch (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 56,
+    "device_group": "steam_deck",
+    "title": "Steam Deck - kaputter Lautsprecher - 256GB OVP",
+    "expected": {
+      "item_type": "console",
+      "console_model": "Steam Deck (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 57,
+    "device_group": "iphone",
+    "title": "Apple iPhone 11 256GB Schwarz iOS Face ID Bluetooth Slate Design Beschreibung!",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 58,
+    "device_group": "iphone",
+    "title": "iPhone 11 Schwarz 128 GB – Display & Gehäuse Top - mit Platinenschaden",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 59,
+    "device_group": "iphone",
+    "title": "Apple iPhone 11 A2221 (CDMA + GSM) - 64GB - gelb(Ohne Simlock) (Dual-SIM)defekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 60,
+    "device_group": "iphone",
+    "title": "iPhone 11, 64GB - Ersatzteile / Ersatzteilspender Schwarz",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 61,
+    "device_group": "iphone",
+    "title": "APPLE iphone ???11???? in Ersatzverpackung",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 62,
+    "device_group": "iphone",
+    "title": "iPhone 11 64GB Schwarz – Akku 77% – OVP – Kamera defekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 63,
+    "device_group": "iphone",
+    "title": "Apple iPhone 11 64GB Schwarz ohne Simlock Mit iCloud Sperre",
+    "expected": {
+      "item_type": "icloud_locked",
+      "console_model": "iPhone 11",
+      "is_banned": false,
+      "icloud_status": "locked"
+    }
+  },
+  {
+    "source_index": 64,
+    "device_group": "iphone",
+    "title": "Apple iPhone 11 A2221 - 64GB - Schwarz (Ohne Simlock) defekt - (Bootloop)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 65,
+    "device_group": "iphone",
+    "title": "iphone 11 pro 256 gb nachtgrün",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 66,
+    "device_group": "iphone",
+    "title": "Apple Iphone 11 Pro 64GB Gold Icloud Gesperrt an Bastler Ohne Simlock",
+    "expected": {
+      "item_type": "icloud_locked",
+      "console_model": "iPhone 11 Pro",
+      "is_banned": false,
+      "icloud_status": "locked"
+    }
+  },
+  {
+    "source_index": 67,
+    "device_group": "iphone",
+    "title": "Apple iPhone 11 Pro 256 GB – sehr guter Zustand – Netzwerk/WLAN defekt – Bastler",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 68,
+    "device_group": "iphone",
+    "title": "Apple iPhone 11 Pro A2215 (CDMA + GSM) - 64GB - Nachtgrün",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 69,
+    "device_group": "iphone",
+    "title": "Apple iPhone 11 Pro - Silber (Ohne Simlock) (Dual-SIM)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 70,
+    "device_group": "iphone",
+    "title": "Apple iPhone 11 Pro A2215 (CDMA + GSM) - Nachtgrün",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 71,
+    "device_group": "iphone",
+    "title": "iPhone 11 Pro, Bastlergerät + OV + Zubehörpaket: Hülle Displayfolie Kopfhörer RG",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 72,
+    "device_group": "iphone",
+    "title": "Apple iPhone 11 Pro A2215 (CDMA | GSM) - 64GB - Silber (Ohne Simlock)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 73,
+    "device_group": "iphone",
+    "title": "Apple iPhone 11 Pro Max 64GB Grau mit Dreifach-Kamera, Ersatzteil/defekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 74,
+    "device_group": "iphone",
+    "title": "Apple iPhone 11 Pro Max 256 GB Gold",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 75,
+    "device_group": "iphone",
+    "title": "Apple iPhone 11 Pro Max A2218 - 64GB - Space Grau (Ohne Simlock) (Dual-SIM)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 76,
+    "device_group": "iphone",
+    "title": "iPhone 11 Pro Max",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 77,
+    "device_group": "iphone",
+    "title": "Apple iPhone 11 Pro Max Grau 64 GB defekt – 100 % iCloud-frei - TOTALSCHADEN",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11 Pro Max",
+      "is_banned": false,
+      "icloud_status": "free_by_seller"
+    }
+  },
+  {
+    "source_index": 78,
+    "device_group": "iphone",
+    "title": "Apple iPhone 11 Pro Max – Grün – Defekt – Totalschaden",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 79,
+    "device_group": "iphone",
+    "title": "Apple iPhone 11 Pro Max - 512GB - Green Icload Sperre Displayschaden",
+    "expected": {
+      "item_type": "icloud_locked",
+      "console_model": "iPhone 11 Pro Max",
+      "is_banned": false,
+      "icloud_status": "locked"
+    }
+  },
+  {
+    "source_index": 80,
+    "device_group": "iphone",
+    "title": "iphone 11 pro max 256gb Leuchtet Entsperrt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 81,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 64GB Black DEFEKT! # AU 289900",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 82,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 64GB Black DEFEKT! # AU 133366",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 83,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 64GB Blau Display Defekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 84,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 64GB Black DEFEKT! # AU 289898",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 85,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 64GB Schwarz",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 86,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 – 256 GB – Blau – DEFEKT (Kamera nach Sturz ohne Funktion)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 87,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 - 64GB Black (iPhone Sturzschaden aus Nachlass)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 88,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 iCloud Gut für Ersatzteile! Defekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 89,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 mini 64GB Lila ohne Simlock 5G Wi‑Fi BT LTE A2399",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 mini",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 90,
+    "device_group": "iphone",
+    "title": "APPLE iPhone 12 Mini 64GB Blue Blau DEFEKT Displaybruch | OVP | MwSt ausweisbar",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 mini",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 91,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 Mini 128GB, Blau, ohne Simlock icloud gesperrt",
+    "expected": {
+      "item_type": "icloud_locked",
+      "console_model": "iPhone 12 mini",
+      "is_banned": false,
+      "icloud_status": "locked"
+    }
+  },
+  {
+    "source_index": 92,
+    "device_group": "iphone",
+    "title": "iPhone 12 mini 256GB Violett Defekt Ersatzteilspender iCloud/FMI ON - Unlocked",
+    "expected": {
+      "item_type": "icloud_locked",
+      "console_model": "iPhone 12 mini",
+      "is_banned": false,
+      "icloud_status": "locked"
+    }
+  },
+  {
+    "source_index": 93,
+    "device_group": "iphone",
+    "title": "Stark Gebrauchtes iPhone 12 Mini 64GB Blau",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 mini",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 94,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 Mini blau 64 GB 1x Kamera fokussiert nicht, ohne Simlock,defekt.",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 mini",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 95,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 mini A2399 (CDMA + GSM) - 256GB - Schwarz (Ohne Simlock)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 mini",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 96,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 mini 64 GB Blau iOS Ohne Simlock – Ersatzteil/defekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 mini",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 97,
+    "device_group": "iphone",
+    "title": "iPhone 12 Pro 128 GB – sehr gepflegt – Hörmuschel defekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 98,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 pro Ersatzteile gesperrt",
+    "expected": {
+      "item_type": "icloud_locked",
+      "console_model": "iPhone 12 Pro",
+      "is_banned": false,
+      "icloud_status": "locked"
+    }
+  },
+  {
+    "source_index": 99,
+    "device_group": "iphone",
+    "title": "❤️ TOP! IPHONE 12 PRO MIT 256GB OVP PACIFIC BLUE BLAU ❤️",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 100,
+    "device_group": "iphone",
+    "title": "Defekt! No iCloud Lock! Apple iPhone 12 Pro 256GB Pazifikblau Top Zustand",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 Pro",
+      "is_banned": false,
+      "icloud_status": "free_by_seller"
+    }
+  },
+  {
+    "source_index": 101,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 Pro Pacific Blue / Pazifikblau - ↓ BITTE LESEN ↓",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 102,
+    "device_group": "iphone",
+    "title": "iPhone 12 Pro 64gb",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 103,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 Pro 512GB Graphit Defekt Teilespender",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 104,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 Pro A2407 (CDMA",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 105,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 Pro Max - 128GB - Pacific Blue (Ohne Simlock) (Dual-SIM)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 106,
+    "device_group": "iphone",
+    "title": "iPhone 12 Pro Max Pazifikblau Defekt / Bastlergerät",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 107,
+    "device_group": "iphone",
+    "title": "Defektes iPhone 12 Pro Max",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 108,
+    "device_group": "iphone",
+    "title": "iPhone 12 Pro Max 128 GB – funktioniert, Display defekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 109,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 Pro Max - 128GB - Graphit (Ohne Simlock) A2411 (GSM+CDMA)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 110,
+    "device_group": "iphone",
+    "title": "iPhone 12 Pro Max 256GB Weiß",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 111,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 Pro Max - 128GB - Gold (O2)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 112,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 Pro Max 128GB Gold 88% Gehäuse original",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 113,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 128Gb Mitternacht DEFEKT! # AU 236130",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 114,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 128GB Blau",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 115,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 - 128GB - Blau - Ohne Simlock - Display defekt / Bastler",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 116,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 - 128GB - Mitternacht (Ohne Simlock) (Dual-SIM)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 117,
+    "device_group": "iphone",
+    "title": "iPhone 13 128GB -ohne icloud",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13",
+      "is_banned": false,
+      "icloud_status": "free_by_seller"
+    }
+  },
+  {
+    "source_index": 118,
+    "device_group": "iphone",
+    "title": "iPhone 13 128GB Grün Defekt Ersatzteilspender iCloud/FMI OFF - Unlocked",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13",
+      "is_banned": false,
+      "icloud_status": "free_by_seller"
+    }
+  },
+  {
+    "source_index": 119,
+    "device_group": "iphone",
+    "title": "iPhone 13 128GB Blau Defekt Ersatzteilspender FMI OFF - Unlocked",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13",
+      "is_banned": false,
+      "icloud_status": "free_by_seller"
+    }
+  },
+  {
+    "source_index": 120,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 - 128GB - Mitternacht (Ohne Simlock) (Dual-SIM)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 121,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 mini 128 GB Schwarz Smartphone defekt/Ersatzteil, Kratzer",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 mini",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 122,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 mini 128 GB Schwarz iOS – Als Ersatzteil/defekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 mini",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 123,
+    "device_group": "iphone",
+    "title": "iPhone 13 Mini 128GB",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 mini",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 124,
+    "device_group": "iphone",
+    "title": "iPhone 13 mini – Schwarz – Defekt – Totalschaden - 128 GB",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 mini",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 125,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 mini Product Red Gehäuse /Ersatzteile/",
+    "expected": {
+      "item_type": "part",
+      "console_model": "iPhone 13 mini",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 126,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 mini 128GB - Außer Betrieb",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 mini",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 127,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 mini 128GB Rot - iCloud Free - HS Panic Full - Für Ersatzteile",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 mini",
+      "is_banned": false,
+      "icloud_status": "free_by_seller"
+    }
+  },
+  {
+    "source_index": 128,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 mini - 128GB - Blau (Gesperrt)",
+    "expected": {
+      "item_type": "icloud_locked",
+      "console_model": "iPhone 13 mini",
+      "is_banned": false,
+      "icloud_status": "locked"
+    }
+  },
+  {
+    "source_index": 129,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 Pro 128 GB Grau Smartphone Gesspert Ohne Simlock Defekt",
+    "expected": {
+      "item_type": "icloud_locked",
+      "console_model": "iPhone 13 Pro",
+      "is_banned": false,
+      "icloud_status": "locked"
+    }
+  },
+  {
+    "source_index": 130,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 Pro - 256GB - Graphit mit iCloud Sperre",
+    "expected": {
+      "item_type": "icloud_locked",
+      "console_model": "iPhone 13 Pro",
+      "is_banned": false,
+      "icloud_status": "locked"
+    }
+  },
+  {
+    "source_index": 131,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 Pro - Defekt iCloud Sperre Für Ersatzteile",
+    "expected": {
+      "item_type": "icloud_locked",
+      "console_model": "iPhone 13 Pro",
+      "is_banned": false,
+      "icloud_status": "locked"
+    }
+  },
+  {
+    "source_index": 132,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 Pro - 128GB - Sierrablau (Ohne Simlock) (Beschreibung lesen)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 133,
+    "device_group": "iphone",
+    "title": "iPhone 13 Pro, 13 Pro Max & 14 Pro Max – Geräte, Gehäuse & Ersatzteile – Bastler",
+    "expected": {
+      "item_type": "phone_bundle",
+      "console_model": "iPhone 13 Pro / iPhone 13 Pro Max / iPhone 14 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 134,
+    "device_group": "iphone",
+    "title": "iPhone 13 Pro - 256GB - Funktioniert - 100% Kapazität",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 135,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 Pro 128GB Grau iOS – Ersatzteil/defekt, bitte Beschreibung lesen",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 136,
+    "device_group": "iphone",
+    "title": "iPhone 13 Pro 128GB Gold - Defekt -",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 137,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 Pro Max - 128GB - Sierra Blue ( Locked Defekt) DE",
+    "expected": {
+      "item_type": "icloud_locked",
+      "console_model": "iPhone 13 Pro Max",
+      "is_banned": false,
+      "icloud_status": "locked"
+    }
+  },
+  {
+    "source_index": 138,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 Pro Max - 128GB - grün ! DEFEKT !",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 139,
+    "device_group": "iphone",
+    "title": "iPhone 13 Pro Max als Defekt/Ersatzteilspender BESCHREIBUNG LESEN",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 140,
+    "device_group": "iphone",
+    "title": "iPhone 13 Pro Max 512GB -defekt-",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 141,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 Pro Max - 128GB - Alpingrün (Vodafone)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 142,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 Pro Max - 128GB - Silber (Ohne Simlock) (Dual-SIM)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 143,
+    "device_group": "iphone",
+    "title": "TELEPHONE APPLE IPHONE 13 pro max 128 GO DEBLOQUE * defaut *",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 144,
+    "device_group": "iphone",
+    "title": "iphone 13 pro max 128gb defekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 145,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 512GB Rot iOS Dual SIM (SIM + eSIM) ohne Vertrag",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 146,
+    "device_group": "iphone",
+    "title": "iphone 14 128gb schwarz",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 147,
+    "device_group": "iphone",
+    "title": "iPhone 14 128GB Starlight Defekt Ersatzteilspender iCloud/FMI OFF - Unlocked",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14",
+      "is_banned": false,
+      "icloud_status": "free_by_seller"
+    }
+  },
+  {
+    "source_index": 148,
+    "device_group": "iphone",
+    "title": "iphone 14 128gb Mitternacht ohne Sperre Gehäuse Beschädigt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 149,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 128GB schwarz mit OVP - Ersatzteil / Defekt - Angebotstext lesen",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 150,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 - 128GB - Midnight (Ohne Simlock) (Dual-SIM)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 151,
+    "device_group": "iphone",
+    "title": "iPhone 14 128GB Polarstern | Defekt Bootloop | Original Display",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 152,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 - 128GB - Schwarz (MDM Sperre).Defekt...",
+    "expected": {
+      "item_type": "icloud_locked",
+      "console_model": "iPhone 14",
+      "is_banned": false,
+      "icloud_status": "locked"
+    }
+  },
+  {
+    "source_index": 153,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 Plus 128GB Kamera & Taste Defekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Plus",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 154,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 Plus 256GB Schwarz Display defekt, Hülle, Ladegerät+Kameraschutz",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Plus",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 155,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 Plus 256GB Schwarz ohne Face-ID, Hülle, Ladegerät+Kameraschutz",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Plus",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 156,
+    "device_group": "iphone",
+    "title": "iphone 14 plus 128gb",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Plus",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 157,
+    "device_group": "iphone",
+    "title": "IPhone 14 Plus",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Plus",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 158,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 Plus - 256GB - Blau",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Plus",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 159,
+    "device_group": "iphone",
+    "title": "iPhone 14 Plus 128GB Weiß",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Plus",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 160,
+    "device_group": "iphone",
+    "title": "iPhone 14 Pro - iCloud Sperre Defekt Für Ersatzteile",
+    "expected": {
+      "item_type": "icloud_locked",
+      "console_model": "iPhone 14 Pro",
+      "is_banned": false,
+      "icloud_status": "locked"
+    }
+  },
+  {
+    "source_index": 161,
+    "device_group": "iphone",
+    "title": "iPhone 14 Pro 128GB Silber Bastler iCloud Frei FMI OFF Defekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Pro",
+      "is_banned": false,
+      "icloud_status": "free_by_seller"
+    }
+  },
+  {
+    "source_index": 162,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 Pro 128GB Schwarz iOS ohne Simlock Ersatzteil/defekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 163,
+    "device_group": "iphone",
+    "title": "iPhone 14 Pro – Defekt | Geht gelegentlich aus | Für Bastler / mit viel Zubehör",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 164,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 Pro 512 GB Grau iOS Smartphone – Ersatzteil/defekt mit iCloud Sp",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 165,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 Pro 256GB Dunkellila für Bastler Ersatzteilspender",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 166,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 Pro 256GB Space Black Defekt Teilespender",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 167,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 Pro 128 GB Schwarz iOS Smartphone – Als Ersatzteil/defekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 168,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 Pro Max - Space Black (Ohne Simlock) - Teildefekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 169,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 Pro Max ICloud Sperre ohne Display Smartphone",
+    "expected": {
+      "item_type": "icloud_locked",
+      "console_model": "iPhone 14 Pro Max",
+      "is_banned": false,
+      "icloud_status": "locked"
+    }
+  },
+  {
+    "source_index": 170,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 Pro Max A2894 Weiß Gesperrt /Defekt",
+    "expected": {
+      "item_type": "icloud_locked",
+      "console_model": "iPhone 14 Pro Max",
+      "is_banned": false,
+      "icloud_status": "locked"
+    }
+  },
+  {
+    "source_index": 171,
+    "device_group": "iphone",
+    "title": "iPhone 14 Pro Max 128GB Weiß",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 172,
+    "device_group": "iphone",
+    "title": "Iphone 14 pro Max Defekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 173,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 Pro Max - 128GB - Space Black (Ohne Simlock) (Dual-SIM)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 174,
+    "device_group": "iphone",
+    "title": "iPhone 14 Pro Max 128gb Defekt",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 175,
+    "device_group": "iphone",
+    "title": "Apple iPhone 14 Pro Max 128 GB Schwarz ohne Simlock iOS MQ9P3ZD/A",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 14 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 176,
+    "device_group": "iphone",
+    "title": "Apple iPhone X 256 GB Space Grau iOS Smartphone, Rückseite/Glas beschädigt",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "iPhone (régebbi modell)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 177,
+    "device_group": "iphone",
+    "title": "Apple iPhone XS 256GB Space Grey iOS Smartphone – Ersatzteil/defekt",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "iPhone (régebbi modell)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 178,
+    "device_group": "iphone",
+    "title": "Apple iPhone 7 32GB rosegold DEFEKT! # AU 226919",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "iPhone (régebbi modell)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 179,
+    "device_group": "iphone",
+    "title": "IPhone 7 128GB Schwarz A1778 GSM Defekt",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "iPhone (régebbi modell)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 180,
+    "device_group": "iphone",
+    "title": "Apple iPhone 7 Schwarz Smartphone Aktivierungssperre",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "iPhone (régebbi modell)",
+      "is_banned": false,
+      "icloud_status": "locked"
+    }
+  },
+  {
+    "source_index": 181,
+    "device_group": "iphone",
+    "title": "Apple iPhone 8 - 256GB - Farbe gold",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "iPhone (régebbi modell)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 182,
+    "device_group": "iphone",
+    "title": "Apple iPhone XS Max - 256GB - Silber - simlockfrei - incl. gratis Spiderman App",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "iPhone (régebbi modell)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 183,
+    "device_group": "iphone",
+    "title": "Apple iPhone XS 265GB Space grau MT9H2ZD/A inkl. Zubehörpaket",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "iPhone (régebbi modell)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 184,
+    "device_group": "iphone",
+    "title": "Apple iPhone 16 - 128GB - Schwarz - Neues Austauschgerät",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 16",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 185,
+    "device_group": "iphone",
+    "title": "Apple iPhone 16 Pro Max - 256 GB - White Titanium (Ohne Simlock)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 16 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 186,
+    "device_group": "iphone",
+    "title": "Apple iPhone 15 Pro 128 GB Schwarz Smartphone (als Ersatzteil/defekt)",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 15 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 187,
+    "device_group": "iphone",
+    "title": "Apple iPhone 17 Pro 512 GB Silber – Display gebrochen - Batterie 93% - OVP",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 17 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 188,
+    "device_group": "iphone",
+    "title": "Apple iPhone 15 Pro 128GB Blau | Ohne SIM-Lock | Kamera defekt | Ersatzteil",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 15 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 189,
+    "device_group": "iphone",
+    "title": "Apple iPhone 16 Pro 256GB Titan Natur Mainboard Defekt, optischer Zustand top",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 16 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 190,
+    "device_group": "iphone",
+    "title": "iphone 15 128gb blau",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 15",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 191,
+    "device_group": "iphone",
+    "title": "Apple iPhone 16 128GB Black DEFEKT! # AU 284543",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 16",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 192,
+    "device_group": "iphone",
+    "title": "14x Apple Konvolut u.a. iPad, iPhone backcover, Rahmen, etc. Ersatzteile Bastler",
+    "expected": {
+      "item_type": "needs_review",
+      "console_model": "iPhone (változat nem ismert)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 193,
+    "device_group": "iphone",
+    "title": "iPhone 12 Lila/Violett - DEFEKT / Bastler / Ersatzteile - Display gebrochen",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 12",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 194,
+    "device_group": "iphone",
+    "title": "Apple iPhone 11 Schwarz - Defekt Display gebrochen Für Ersatzteile",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 11",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 195,
+    "device_group": "iphone",
+    "title": "Iphone 7 DEFEKT Geplatzte Batterie",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "iPhone (régebbi modell)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 196,
+    "device_group": "iphone",
+    "title": "Apple iPhone 13 Pro Graphit Rücken Akku dick DEFEKT #8099",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 13 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 197,
+    "device_group": "iphone",
+    "title": "Apple iPhone 7 Schwarz, Display gesprungen defekt",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "iPhone (régebbi modell)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 198,
+    "device_group": "iphone",
+    "title": "Original Display und Gehäuse Apple iPhone 11 Pro Max (Nachtgrün)",
+    "expected": {
+      "item_type": "part",
+      "console_model": "iPhone 11 Pro Max",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 199,
+    "device_group": "iphone",
+    "title": "Apple iPhone 7 weiß, Display o.k als defekt",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "iPhone (régebbi modell)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 200,
+    "device_group": "iphone",
+    "title": "Apple Konvolut - iPhones, iPods, iPad mini 2 - ungetestet - Ersatzteil/defekt",
+    "expected": {
+      "item_type": "needs_review",
+      "console_model": "iPhone (változat nem ismert)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 201,
+    "device_group": "iphone",
+    "title": "Smartphone Handy Tablet Konvolut Lot 10 Stück Samsung IPhone Poco Xiaomi Teildef",
+    "expected": {
+      "item_type": "needs_review",
+      "console_model": "iPhone (változat nem ismert)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 202,
+    "device_group": "iphone",
+    "title": "Apple iPhone 12 Pro / iPhone 8 Konvolut",
+    "expected": {
+      "item_type": "needs_review",
+      "console_model": "iPhone 12 Pro",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 203,
+    "device_group": "iphone",
+    "title": "Apple iPhone Konvolut 4 Geräte iPhone 12 XS Max 2x iPhone 6 mit OVP Bastler",
+    "expected": {
+      "item_type": "needs_review",
+      "console_model": "iPhone 12",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 204,
+    "device_group": "iphone",
+    "title": "Konvolut 2 Apple iPhones ein 6s 64Gb und ein 7 32Gb und ein noname",
+    "expected": {
+      "item_type": "needs_review",
+      "console_model": "iPhone (változat nem ismert)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 205,
+    "device_group": "iphone",
+    "title": "Handy Tablet Konvolut iPhone iPad Samsung LG Huawei defekt",
+    "expected": {
+      "item_type": "needs_review",
+      "console_model": "iPhone (változat nem ismert)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 206,
+    "device_group": "iphone",
+    "title": "Smartphone Konvolut. Samsung Z Flip 4, X27, Samsung Galaxy Folder 2, IPhone 5etc",
+    "expected": {
+      "item_type": "needs_review",
+      "console_model": "iPhone (változat nem ismert)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 207,
+    "device_group": "iphone",
+    "title": "9 Apple iPhones + Ersatzdisplay – defekt/ungeprüft – Bastler-Konvolut",
+    "expected": {
+      "item_type": "needs_review",
+      "console_model": "iPhone (változat nem ismert)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 208,
+    "device_group": "iphone",
+    "title": "Apple iPhone 16e 128gb Schwarz A3409 MY1G4QN/A iOS USB-C ohne Simlock",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 16e",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 209,
+    "device_group": "iphone",
+    "title": "Apple iPhone s Smartphone 128 GB Silber als Ersatzteil/defekt",
+    "expected": {
+      "item_type": "needs_review",
+      "console_model": "iPhone (változat nem ismert)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 210,
+    "device_group": "iphone",
+    "title": "Apple iPhone 16e - 128 GB - 95% Akku + Zubehörpaket",
+    "expected": {
+      "item_type": "phone",
+      "console_model": "iPhone 16e",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 211,
+    "device_group": "iphone",
+    "title": "Apple iPhone 2G A1203 8GB Original 2007 Defekt Für Bastler Sammler Rarität",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "iPhone (régebbi modell)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 212,
+    "device_group": "iphone",
+    "title": "Apple iPhone 3G Schwarz A1241",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "iPhone (régebbi modell)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 213,
+    "device_group": "iphone",
+    "title": "Defekte iPhones: iPhone 13 mini, iPhone 13 und iPhone 14",
+    "expected": {
+      "item_type": "phone_bundle",
+      "console_model": "iPhone 13 mini / iPhone 13 / iPhone 14",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 214,
+    "device_group": "iphone",
+    "title": "Apple iPhone 6S 16GB Space Grau, guter Zustand!",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "iPhone (régebbi modell)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 215,
+    "device_group": "iphone",
+    "title": "Apple iPhone 3G - 16GB - Schwarz mit OVP",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "iPhone (régebbi modell)",
+      "is_banned": false,
+      "icloud_status": "unknown"
+    }
+  },
+  {
+    "source_index": 216,
+    "device_group": "gpu",
+    "title": "Palit Rtx 2080 Super 8GB Defekt Artefakte",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 20",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 217,
+    "device_group": "gpu",
+    "title": "ASUS ROG Strix NVIDIA GeForce RTX 2080 super Grafikkarte PCIe x16 3 Lüfter USB-C",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 20",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 218,
+    "device_group": "gpu",
+    "title": "Defekt! MSI Gaming X Trio RTX2080 Super",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 20",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 219,
+    "device_group": "gpu",
+    "title": "Defekt! MSI Gaming X Trio RTX 2080 Super",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 20",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 220,
+    "device_group": "gpu",
+    "title": "NVIDIA GeForce RTX 2080 Super Grafikkarte - Defekt",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 20",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 221,
+    "device_group": "gpu",
+    "title": "NVIDIA GeForce RTX 2070 8GB Defekt",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 20",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 222,
+    "device_group": "gpu",
+    "title": "ASUS GeForce RTX 2070 8gb STRIX Edition Boost Grafikkarte Gpu",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 20",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 223,
+    "device_group": "gpu",
+    "title": "ZOTAC GAMING GeForce RTX 2080 SUPER 8GB – Defekt / Bastlerware mit OVP",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 20",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 224,
+    "device_group": "gpu",
+    "title": "GIGABYTE GeForce RTX™ 3080 Ti GAMING OC 12GB GDDR6X - DEFEKT",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 30",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 225,
+    "device_group": "gpu",
+    "title": "*Defekt* Asus Rog Strix RTX3060 OC V2 12GB GDDR6 Nvidia Geforce Gaming",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 30",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 226,
+    "device_group": "gpu",
+    "title": "Nvidia MSI Aero ITX RTX 3060 12GB GDDR6 OC Edition",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 30",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 227,
+    "device_group": "gpu",
+    "title": "ASUS DUAL-RTX3050-O6G NVIDIA Grafikkarte Defekt",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 30",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 228,
+    "device_group": "gpu",
+    "title": "RTX 3060 12 GB als Defekt kurzschluss?",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 30",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 229,
+    "device_group": "gpu",
+    "title": "10x Micron GDDR6X VRAM Chips D8BWW MT61K256M32JE-19G Pulled RTX 3080 3090",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 230,
+    "device_group": "gpu",
+    "title": "Rx 7800XT 16g + NVIDIA GeForce RTX 3060 12G",
+    "expected": {
+      "item_type": "gpu_bundle",
+      "console_model": "RTX 30 / RX 7000",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 231,
+    "device_group": "gpu",
+    "title": "NVIDIA GeForce RTX 3060 ti + RTX 3060",
+    "expected": {
+      "item_type": "gpu_bundle",
+      "console_model": "RTX 30",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 232,
+    "device_group": "gpu",
+    "title": "ASUS TUF RTX 4090 OC 24GB | Ohne GPU-Chip & VRAM | Ersatzteile.",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 233,
+    "device_group": "gpu",
+    "title": "ASUS TUF RTX 4080 SUPER OC 16GB | Ohne GPU-Chip & VRAM | Ersatzteile.",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 234,
+    "device_group": "gpu",
+    "title": "Original MSI GeForce RTX 4070 Ventus 2X White Lüftereinheit Abdeckung 1x Defekt",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 235,
+    "device_group": "gpu",
+    "title": "NUR LEERKARTON - GeForce RTX 4060 Ti",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 236,
+    "device_group": "gpu",
+    "title": "RTX 4090 Asus STRIX - Showpiece Sammlerstück Deko Originalkühler",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 237,
+    "device_group": "gpu",
+    "title": "GIGABYTE GeForce RTX 4060 WINDFORCE OC 8GB GDDR6 Scheda Grafica",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 40",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 238,
+    "device_group": "gpu",
+    "title": "(FÜR ERSATZTEILE) Gigabyte GeForce RTX 4090 Gaming OC nur Platine ohne VRAM",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 239,
+    "device_group": "gpu",
+    "title": "Kühlkörper + Original Box Grafikkarte Msi Rtx 4090 Gaming X Trio 24Gb",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 240,
+    "device_group": "gpu",
+    "title": "MSI GeForce RTX 5090 Decor (Kein PCB und VRAM)",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 241,
+    "device_group": "gpu",
+    "title": "Gigabyte GeForce RTX 5070 Ti WINDFORCE OC SFF *Bitte lesen*",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 50",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 242,
+    "device_group": "gpu",
+    "title": "RTX 5090 Aorus White - Showpiece Sammlerstück Deko Originalkühler",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 243,
+    "device_group": "gpu",
+    "title": "Manli Stellar NVIDIA GeForce RTX 5090 ohne Chip & RAM.",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 244,
+    "device_group": "gpu",
+    "title": "MSI GEFORCE RTX 5090 32GB OC GAMING TRIO Grafikkarte GDDR7 - Ohne VRAM und GPU!",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 245,
+    "device_group": "gpu",
+    "title": "MSI NVIDIA GeForce RTX 5070 Ventus 2X OC 12GB WHITE GDDR7",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 50",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 246,
+    "device_group": "gpu",
+    "title": "LEERKARTON - GRAFIKKARTE ASUS RTX 5060 PRIME DUAL 8G DDR7",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 247,
+    "device_group": "gpu",
+    "title": "ASUS TUF Gaming GeForce RTX 5090 ⚠️LEGGI DESCRIZIONE⚠️",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RTX 50",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 248,
+    "device_group": "gpu",
+    "title": "4x Grafikkarte GTX 970 Gigabyte GTX 780 PNY Radeon RX480 Nitro Power color 4890",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 249,
+    "device_group": "gpu",
+    "title": "Gigabyte GeForce GTX 970 + Sapphire Radeon RX480 Nitro Grafikkarte Defekt",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 250,
+    "device_group": "gpu",
+    "title": "3x Grafikkarte GTX 970 Gigabyte GTX 780 PNY Radeon RX480 Nitro Artefakte Gaming",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 251,
+    "device_group": "gpu",
+    "title": "Konvolut Grafikkarten Amd ATI RADEON X550 9550 5770 Nvidia GTX 460 Gs",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 252,
+    "device_group": "gpu",
+    "title": "SAPPHIRE PULSE AMD Radeon RX 5700 XT 8GB GDDR6 (Beschreibung lesen!!!)",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RX 5000",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 253,
+    "device_group": "gpu",
+    "title": "XFX Radeon RX 5700 XT Thicc II 8GB GDDR6 HS Grafikkarte für Teile",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RX 5000",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 254,
+    "device_group": "gpu",
+    "title": "XFX Radeon RX 5600 XT THICC II Pro 6GB GDDR6",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 255,
+    "device_group": "gpu",
+    "title": "SAPPHIRE AMD Radeon RX 6900 XT TOXIC 16GB GDDR6 Grafikkarte (11308-13-20G)",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RX 6000",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 256,
+    "device_group": "gpu",
+    "title": "ASUS TUF Gaming Radeon RX 6800 XT OC 16 GB – defekt / Bastlerware",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RX 6000",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 257,
+    "device_group": "gpu",
+    "title": "PowerColor Red Devil AMD Radeon RX 6900 XT Grafikkarte Triple-Fan inkl. OVP",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RX 6000",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 258,
+    "device_group": "gpu",
+    "title": "DEFEKT!!! PowerColor Red Dragon AMD Radeon RX 6800 Grafikkarte Triple-Fan 16GB",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RX 6000",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 259,
+    "device_group": "gpu",
+    "title": "AMD Radeon RX6800 16Gb - DEFEKT!! - Ersatzteilspender",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RX 6000",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 260,
+    "device_group": "gpu",
+    "title": "Gigabyte AMD Radeon RX 6800 XT Gaming Grafikkarte Defekt- wird erkannt in gpuz",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RX 6000",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 261,
+    "device_group": "gpu",
+    "title": "ASUS TUF Gaming AMD Radeon RX 6900 XT",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RX 6000",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 262,
+    "device_group": "gpu",
+    "title": "Sapphire Pulse AMD Radeon RX 6600 XT 8GB GDDR6 HS Grafikkarte für Ersatzteile",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RX 6000",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 263,
+    "device_group": "gpu",
+    "title": "XFX Speedster MERC 310 Radeon RX 7900 XTX Black Edition, 24GB GDDR6 !!!DEFEKT!!!",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RX 7000",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 264,
+    "device_group": "gpu",
+    "title": "PowerColor Hellhound RX 7900 XT 20GB OVP - läuft mit Fehlern - Bastler/Reparatur",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RX 7000",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 265,
+    "device_group": "gpu",
+    "title": "⭕ DEFEKTE Grafikkarte Acer Predator BiFrost AMD Radeon RX 7600 OC 8GB",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RX 7000",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 266,
+    "device_group": "gpu",
+    "title": "DEFEKT Sapphire Pulse Radeon RX 9060 XT Gaming OC 16 GB GDDR6 #N51",
+    "expected": {
+      "item_type": "gpu",
+      "console_model": "RX 9000",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 267,
+    "device_group": "gpu",
+    "title": "SAPPHIRE NITRO+ AMD Radeon RX 580 Grafikkarte PCIe x16 HDMI DP DVI-D",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 268,
+    "device_group": "gpu",
+    "title": "ASUS AMD Radeon RX 580 8GB GDDR6 OC - Defek!!",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 269,
+    "device_group": "gpu",
+    "title": "Gigabyte Radeon 7500 64MB DDR AGP GV-AR64D-H DVI VGA TV-Out ungeprüft",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 270,
+    "device_group": "gpu",
+    "title": "Sapphire Nitro+ Radeon RX 570 8GB",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 271,
+    "device_group": "gpu",
+    "title": "Sapphire Radeon X1600 Pro 256MB DDR2, Grafikkarte AGP, DVI, VGA, TV-Out",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 272,
+    "device_group": "gpu",
+    "title": "Gigabyte Radeon RX Vega 56 Gaming OC 8GB HBM2 Grafikkarte – DEFEKT / Bastler",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 273,
+    "device_group": "gpu",
+    "title": "Sapphire Nitro+ Radeon RX 480 8G D5 OC 8 GB GDDR5 PCI-E DEFEKT #317408",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 274,
+    "device_group": "gpu",
+    "title": "XFX Radeon HD 6950 Grafikkarte",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 275,
+    "device_group": "gpu",
+    "title": "ONLY COOLER!!! NUR KÜHLER!! HP RTX 3070 Ti - 8 Gb - NO VRAM - NO GPU!!",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 276,
+    "device_group": "gpu",
+    "title": "Nur Lüfter - ASUS TUF Gaming RTX 4090 Ohne Chip-Karte + OVP",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 277,
+    "device_group": "gpu",
+    "title": "Nur Kühler - PNY Geforce RTX 4090 XLR8 Lüfter Ohne Chip-Karte + OVP",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 278,
+    "device_group": "gpu",
+    "title": "4x - Nur Lüfter - Gainward GeForce RTX 4090 Phantom Ohne Chip-Karte",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 279,
+    "device_group": "gpu",
+    "title": "3x - Nur KÜHLER - ZOTAC GAMING GeForce RTX 4090 Ohne Chip-Karte",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 280,
+    "device_group": "gpu",
+    "title": "Nur Kühler - MSI GeForce RTX 4090 VENTUS 3X Lüfter Ohne Chip-Karte + OVP",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 281,
+    "device_group": "gpu",
+    "title": "Nur Lüfter- ASUS ROG Astral RTX 5090 White OC Edition (Ohne Board) + OVP/Karton",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 282,
+    "device_group": "gpu",
+    "title": "ASUS TUF Gaming NVIDIA GeForce RTX 4090 Triple-Fan Kühler HDMI",
+    "expected": {
+      "item_type": "not_gpu",
+      "console_model": "Videokártya (változat nem ismert)",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 283,
+    "device_group": "gpu",
+    "title": "NVIDIA RTX A2000 * PNY 6GB Edition * Workstation-GPU / Gaming Grafikkarte",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 284,
+    "device_group": "gpu",
+    "title": "Gigabyte GV-RX460WF2OC-4GD - OC Edition - Defective",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 285,
+    "device_group": "gpu",
+    "title": "Sapphire ATI HD 7870 Grafikkarte 2GB, 11199-00-20G, DEFEKT, NOT OK, LESEN #01",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 286,
+    "device_group": "gpu",
+    "title": "Asus GF 4 V8460 Ultra 128MB AGP 4600TI AGP & Aopen Aeolus Ti 4200 DEFEKT",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 287,
+    "device_group": "gpu",
+    "title": "ASUS EAH5450 SILENT/DI/512MD2(LP) (512 MB) (90-C1CP2A-J0UANAYZ) Grafikkarte",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 288,
+    "device_group": "gpu",
+    "title": "Gainward Gefordert GT X 770 Phantom",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 289,
+    "device_group": "gpu",
+    "title": "9 ältere GPUs Grafikkarten teilw. defekt gtx560ti,gt630,hd6670,... siehe Beschr.",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  },
+  {
+    "source_index": 290,
+    "device_group": "gpu",
+    "title": "ATI X1300 512Mb",
+    "expected": {
+      "item_type": "unsupported_model",
+      "console_model": "Nem támogatott videokártya",
+      "is_banned": false
+    }
+  }
+]

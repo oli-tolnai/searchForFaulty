@@ -25,74 +25,57 @@ for (const [locations, expected] of [
   });
 }
 
-function itemId(request) {
-  return decodeURIComponent(new URL(request.url).pathname.split('/').pop());
-}
-
-function searchWithShipping(count, shipping, properties = {}) {
+function searchWithShipping(count, details = () => response(503)) {
   const base = fixture('search').itemSummaries[2];
   const items = Array.from({ length: count }, (_, i) => ({ ...base, itemId: 'v1|' + i + '|0' }));
-  return runtime({ browse: () => response(200, { total: count, itemSummaries: items }), shipping, properties });
+  return runtime({ browse: () => response(200, { total: count, itemSummaries: items }), details,
+    shipping: () => assert.fail('Search must never call getItem') });
 }
 
-test('getItem prices and destinations are cached, but failed requests are retried next search', () => {
-  const calls = [];
-  const app = searchWithShipping(4, request => {
-    assert.equal(request.headers['X-EBAY-C-MARKETPLACE-ID'], 'EBAY_DE');
-    assert.equal(request.headers['X-EBAY-C-ENDUSERCTX'], 'contextualLocation=country%3DHU');
-    const id = itemId(request);
-    calls.push(id);
-    if (id === 'v1|3|0') return response(503);
-    if (id === 'v1|2|0') return response(200, { itemId: id });
-    return response(200, {
-      itemId: id, shipToLocations: regions(id === 'v1|0|0' ? ['EUROPE'] : ['DE']),
-      shippingOptions: [
-        { shippingCost: { value: '1', currency: 'EUR' }, shipToLocationUsedForEstimate: { country: 'DE' } },
-        { shippingCost: { value: '3', currency: 'EUR' }, shippingCostType: 'CALCULATED' },
-        { shippingCost: { value: '12.50', currency: 'EUR' }, shipToLocationUsedForEstimate: { country: 'HU' } },
-      ],
-      seller: { username: 'forbidden-seller' },
-    });
-  });
+test('unknown shipping never triggers getItem even above the former 100-item limit', () => {
+  const app = searchWithShipping(102);
   const first = app.search(['DE'], ['ps5']);
-  assert.equal(first.api_calls, 8);
-  assert.equal(first.daily_browse_calls, 7);
-  assert.equal(first.get_item_calls, 4);
-  assert.deepEqual(first.shipping_check, { initial_unknown: 4, yes: 1, no: 1, unknown: 2, failed: 1 });
-  assert.equal(first.listings[0].shipping_cost, '12.50');
-  assert.equal(first.listings[0].shipping_currency, 'EUR');
-  assert.equal(first.listings[0].total_price, '52.50');
-  assert.equal(first.unknown_shipping.find(item => item.source_listing_id === 'v1|1|0').ships_to_hu, 'no');
-  assert.equal(first.unknown_shipping.find(item => item.source_listing_id === 'v1|3|0').ships_to_hu, 'unknown');
-  assert.equal(app.cache.get('ebay:ship-hu:v1|2|0').ttl, 21600);
-  assert.doesNotMatch(JSON.stringify(first) + app.log.join(' ') + JSON.stringify([...app.cache]), /forbidden-seller/);
+  assert.equal(first.get_item_calls, 0);
+  assert.equal(first.api_calls, 4);
+  assert.equal(first.shipping_check.probably_no, 102);
+  assert.ok(first.unknown_shipping.every(item => item.ships_to_hu === 'probably_no'));
+  assert.ok([...app.cache.keys()].every(key => !key.startsWith('ebay:ship-hu:')));
+});
 
-  calls.length = 0;
+test('opening details caches the verified destination and price for the next search, for six hours', () => {
+  const app = searchWithShipping(1, () => response(200, {
+    itemId: 'v1|0|0', shipToLocations: regions(['EUROPE']),
+    shippingOptions: [{ shippingCostType: 'FIXED', shippingCost: { value: '12.50', currency: 'EUR' },
+      shipToLocationUsedForEstimate: { country: 'HU' } }], seller: { username: 'forbidden-seller' },
+  }));
+  assert.equal(app.search(['DE'], ['ps5']).unknown_shipping[0].ships_to_hu, 'probably_no');
+  const details = app.post('listing_details', { source_listing_id: 'v1|0|0' }).data;
+  assert.equal(details.ships_to_hu, 'yes');
+  assert.equal(details.shipping_cost, '12.50');
+  assert.equal(app.cache.get('ebay:ship-hu:v1|0|0').ttl, 21600);
   const second = app.search(['DE'], ['ps5']);
-  assert.deepEqual(calls, ['v1|3|0']);
-  assert.equal(second.get_item_calls, 1);
-  assert.equal(second.api_calls, 4);
+  assert.equal(second.get_item_calls, 0);
   assert.equal(second.listings[0].total_price, '52.50');
+  assert.equal(second.listings[0].ships_to_hu, 'yes');
+  assert.doesNotMatch(JSON.stringify(second) + JSON.stringify([...app.cache]) + app.log.join(' '), /forbidden-seller/);
+  app.setTime('2026-11-14T18:00:01Z');
+  assert.equal(app.search(['DE'], ['ps5']).unknown_shipping[0].ships_to_hu, 'probably_no');
 });
 
-test('shipping check uses at most 100 getItem calls, then picks up unchecked items on the next run', () => {
-  const app = searchWithShipping(102, request => response(200, {
-    itemId: itemId(request), shipToLocations: regions(['HU']),
-  }), { FETCH_BATCH_SIZE: '8' });
-  const first = app.search(['DE'], ['ps5']);
-  assert.equal(first.get_item_calls, 100);
-  assert.equal(first.api_calls, 104);
-  assert.equal(first.shipping_check.unknown, 2);
-  assert.deepEqual(app.batches.map(batch => batch.length), [3, ...Array(12).fill(8), 4]);
-  assert.equal(app.search(['DE'], ['ps5']).get_item_calls, 2);
-  const cached = app.search(['DE'], ['ps5']);
-  assert.equal(cached.get_item_calls, 0);
-  assert.equal(cached.shipping_check.yes, 102);
+test('legacy yes/no cache entries are reused; unknown and failed details remain unverified', () => {
+  const app = searchWithShipping(3);
+  for (const [id, ships] of [[0,'yes'],[1,'no'],[2,'unknown']]) app.cache.set('ebay:ship-hu:v1|' + id + '|0', {
+    value: JSON.stringify({ ships_to_hu: ships, shipping_cost: null, shipping_currency: null }), expires: Infinity,
+  });
+  const result = app.search(['DE'], ['ps5']);
+  assert.deepEqual(result.unknown_shipping.map(item => item.ships_to_hu), ['yes','no','probably_no']);
+  assert.equal(result.get_item_calls, 0);
+  assert.equal(app.post('listing_details', { source_listing_id: 'v1|2|0' }).ok, false);
+  assert.equal(app.search(['DE'], ['ps5']).unknown_shipping[2].ships_to_hu, 'probably_no');
 });
 
-test('a known Browse shipping price needs no getItem call', () => {
-  const item = fixture('search').itemSummaries[1];
-  const app = runtime({ browse: () => response(200, { total: 1, itemSummaries: [item] }) });
+test('known Browse shipping requires no getItem and remains yes', () => {
+  const app = runtime({ browse: () => response(200, { total: 1, itemSummaries: [fixture('search').itemSummaries[1]] }) });
   const result = app.search(['DE'], ['ps5']);
   assert.equal(result.listings[0].ships_to_hu, 'yes');
   assert.equal(result.get_item_calls, 0);

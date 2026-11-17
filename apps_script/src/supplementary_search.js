@@ -1,4 +1,5 @@
 const SUPPLEMENTARY_QUERIES = {
+  switch: {}, steam_deck: {}, iphone: {}, gpu: {},
   consoles: { DE: [{ query: 'ps5 defekt', word: 'defekt' }, { query: 'xbox series defekt', word: 'defekt' }] },
   controllers: {
     DE: [{ query: 'ps5 controller defekt', word: 'defekt' }, { query: 'xbox controller defekt', word: 'defekt' }],

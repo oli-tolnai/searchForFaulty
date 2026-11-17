@@ -74,7 +74,7 @@ test('prototype retries 429 and paginates to five pages', () => {
   assert.doesNotMatch(app.log.join(' '), /fixture-application-token/);
 });
 
-test('partial search preserves sorting, deduplication and call counts, including shipping checks', () => {
+test('partial search preserves sorting, deduplication and call counts, without automatic shipping checks', () => {
   const sample = fixture('search');
   const app = runtime({ browse: request => {
     assert.equal(request.headers['X-EBAY-C-MARKETPLACE-ID'], 'EBAY_DE');
@@ -92,9 +92,9 @@ test('partial search preserves sorting, deduplication and call counts, including
   const queries = ['ps5', 'xbox series'];
   const result = app.search(countries, queries);
   assert.equal(result.status, 'partial');
-  assert.equal(result.api_calls, 8);
-  assert.equal(result.daily_api_calls, 8);
-  assert.equal(result.daily_browse_calls, 7);
+  assert.equal(result.api_calls, 7);
+  assert.equal(result.daily_api_calls, 7);
+  assert.equal(result.daily_browse_calls, 6);
   assert.equal(result.filtered_non_eu, 4);
   assert.deepEqual(ids(result.listings), ['fixed', 'auction']);
   assert.deepEqual(ids(result.unknown_shipping), ['unknown-shipping']);
@@ -112,8 +112,8 @@ test('partial search preserves sorting, deduplication and call counts, including
   const repeated = app.search(countries, queries);
   assert.deepEqual(ids(repeated.listings), ['fixed', 'auction']);
   assert.deepEqual(ids(repeated.unknown_shipping), ['unknown-shipping']);
-  assert.equal(repeated.api_calls, 7);
-  assert.equal(repeated.daily_api_calls, 15);
+  assert.equal(repeated.api_calls, 6);
+  assert.equal(repeated.daily_api_calls, 13);
   assert.equal(app.calls.filter(call => call.url.endsWith('/oauth2/token')).length, 1);
 });
 
