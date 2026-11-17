@@ -113,6 +113,14 @@ A diagnosztika egy friss OAuth-kérést indít. A naplóban például `HTTP 200`
 
 A keresés legfeljebb 60 külön `getItem` hívást indít az ismeretlen szállítási díjú tételek ellenőrzésére. A sikeres ellenőrzés besorolása és esetleges díja legfeljebb hat óráig használható fel újra a gyorsítótárból. Az `api_calls` a részletlekéréseket is tartalmazza, a `get_item_calls` mező ezeket külön számolja. A `shipping_check` az eredetileg ismeretlen díjú tételek számát, szállítási besorolását és a sikertelen részletlekérések számát adja meg.
 
+## Kontrollerek mérése
+
+1. A forrás feltöltése után nyisd meg vagy frissítsd az Apps Script projekt szerkesztőjét.
+2. A **diagnose_controllers.gs** fájlban válaszd a **diagnoseControllers** függvényt, majd kattints a **Futtatás** gombra.
+3. A **Végrehajtási napló** tartalmazza a kategóriajavaslatokat, a kulcsszavak tételazonosító-alapú lefedettségét, a kategória nélküli eltéréseket és a címbesorolást. A végén találod a kulcsszójavaslatot és a felhasznált hívások számát.
+
+A mérés németországi tételekkel dolgozik. Keresésenként legfeljebb öt, egyenként 200 tételes oldalt kér le. A javaslatban az országonkénti szám az első oldalas kereséseket mutatja, a német mérés lapozással együtt számolt értéke külön szerepel. A futtatáshoz elegendő a forrás feltöltése.
+
 ## A kliensnek szánt API
 
 A `POST` JSON-törzse `token`, `action`, `params` és opcionális `request_id` mezőből áll. A felső mérethatár 10 240 bájt. Az egyszerű, legfeljebb 128 karakteres kérésazonosítót a válasz visszaadja. A `doGet` csak az API nevét adja vissza.
