@@ -780,6 +780,10 @@ class _SearchScreenState extends State<SearchScreen>
               ),
               Text('Keresés: ${dateLabel(data.searchedAt)}'),
               Text(priceDisplay.rateLabel),
+              if (data.filteredNotFaulty > 0)
+                Text(
+                  '${data.filteredNotFaulty} cím alapján nem hibás tétel kiszűrve',
+                ),
             ],
           ),
           const SizedBox(height: 6),

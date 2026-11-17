@@ -101,8 +101,11 @@ void main() {
     await tap(tester, find.text('Új szabály'));
     await tap(tester, find.text('PS5 Slim'));
     await tap(tester, find.text('Xbox Elite Series 2'));
-    await tester.enterText(find.byType(TextFormField), '160');
-    await tap(tester, find.text('Ismeretlen szállítás bevonása'));
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Max. teljes ár (EUR)'),
+      '160',
+    );
+    await tap(tester, find.text('Csak ismert szállítási díjjal'));
     await tap(tester, find.text('Mentés'));
     expect(shared.alerts.single.models, ['PS5 Slim', 'Xbox Elite Series 2']);
     expect(shared.alerts.single.includeUnknown, true);

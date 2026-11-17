@@ -120,6 +120,37 @@ void main() {
     expect(find.text('Egyedi'), findsOneWidget);
   });
 
+  testWidgets(
+    'title fault provenance survives caching and appears on the card',
+    (tester) async {
+      final raw = listing(title: 'PS5 Slim Konsole defekt')
+        ..['fault_source'] = 'title';
+      final original = SearchResult.fromJson(search(unknown: [raw]));
+      final restored = SearchResult.fromJson(original.toCacheJson());
+      final item = restored.unknownShipping.single;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ListView(
+              children: [
+                ListingCard(
+                  item: item,
+                  now: testTime,
+                  loadDetails: (_) async => ListingDetails.fromJson(details),
+                  onUnavailable: () {},
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      expect(
+        find.text('Használtként hirdetve – a hiba a címből derül ki'),
+        findsOneWidget,
+      );
+    },
+  );
+
   testWidgets('hidden entries stay out of both normal and grouped results', (
     tester,
   ) async {

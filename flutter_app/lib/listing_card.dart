@@ -233,6 +233,10 @@ class _ListingCardState extends State<ListingCard> {
                 ),
                 if (item.faultSource == 'text')
                   const Text('A hiba a címből vagy a leírásból derül ki.'),
+                if (item.faultSource == 'title')
+                  const Text(
+                    'Használtként hirdetve – a hiba a címből derül ki',
+                  ),
                 const Divider(height: 24),
                 if (!archive)
                   _CardValue.price(

@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
-import 'api/models.dart';
+import 'alert_editor.dart' as editor;
 import 'currency.dart';
 import 'listing_card.dart';
 import 'listings.dart';
@@ -103,97 +103,6 @@ Future<WatchTerms?> editWatchTerms(
   );
 }
 
-Future<Json?> _editAlert(BuildContext context, AlertRule? rule) {
-  final display = MoneyScope.displayOf(context);
-  final form = GlobalKey<FormState>();
-  final models = {...?rule?.models};
-  var enabled = rule?.enabled ?? true;
-  var includeUnknown = rule?.includeUnknown ?? false;
-  num maxTotal = 0;
-  return showDialog<Json>(
-    context: context,
-    builder: (context) => StatefulBuilder(
-      builder: (context, setState) => AlertDialog(
-        title: Text(
-          rule == null ? 'Új értesítési szabály' : 'Szabály szerkesztése',
-        ),
-        scrollable: true,
-        content: SizedBox(
-          width: 390,
-          child: Form(
-            key: form,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Modellek (üres kijelölésnél mindegyik)'),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    for (final model in allDeviceModels)
-                      FilterChip(
-                        label: Text(model),
-                        selected: models.contains(model),
-                        onSelected: (selected) => setState(() {
-                          if (selected) {
-                            models.add(model);
-                          } else {
-                            models.remove(model);
-                          }
-                        }),
-                      ),
-                  ],
-                ),
-                _priceField(
-                  'Max. teljes ár',
-                  display,
-                  rule?.maxTotal,
-                  (value) => maxTotal = value,
-                ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Ismeretlen szállítás bevonása'),
-                  subtitle: const Text(
-                    'Ilyenkor a vételár vagy a licit számít.',
-                  ),
-                  value: includeUnknown,
-                  onChanged: (value) => setState(() => includeUnknown = value),
-                ),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Szabály engedélyezve'),
-                  value: enabled,
-                  onChanged: (value) => setState(() => enabled = value),
-                ),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Mégse'),
-          ),
-          FilledButton(
-            onPressed: () {
-              if (!form.currentState!.validate()) return;
-              form.currentState!.save();
-              Navigator.pop(context, {
-                'models': models.toList(),
-                'max_total_price': maxTotal,
-                'include_unknown_shipping': includeUnknown,
-                'enabled': enabled,
-              });
-            },
-            child: const Text('Mentés'),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
 class WatchScreen extends StatelessWidget {
   const WatchScreen({
     super.key,
@@ -206,7 +115,7 @@ class WatchScreen extends StatelessWidget {
   final Widget? navigation;
 
   Future<void> editRule(BuildContext context, AlertRule? rule) async {
-    final values = await _editAlert(context, rule);
+    final values = await editor.editAlert(context, rule);
     if (values != null && context.mounted) await shared.saveAlert(rule, values);
   }
 
@@ -312,19 +221,29 @@ class WatchScreen extends StatelessWidget {
                 for (final rule in rules)
                   Card(
                     child: ListTile(
-                      title: Text(
-                        rule.models.isEmpty
-                            ? 'Minden modell'
-                            : rule.models.join(', '),
-                      ),
+                      title: Text(rule.name),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          PriceText(
-                            rule.maxTotal.toString(),
-                            'EUR',
-                            prefix: 'Legfeljebb ',
+                          Text(
+                            rule.models.isEmpty
+                                ? 'Minden modell'
+                                : rule.models.join(', '),
                           ),
+                          if (rule.maxPrice != null)
+                            PriceText(
+                              rule.maxPrice.toString(),
+                              'EUR',
+                              prefix: 'Vételár legfeljebb ',
+                            ),
+                          if (rule.maxTotal != null)
+                            PriceText(
+                              rule.maxTotal.toString(),
+                              'EUR',
+                              prefix: 'Teljes ár legfeljebb ',
+                            ),
+                          if (rule.maxPrice == null && rule.maxTotal == null)
+                            const Text('Nincs árhatár'),
                           Text(
                             '${rule.enabled ? 'Engedélyezve' : 'Kikapcsolva'} · '
                             '${rule.includeUnknown ? 'Ismeretlen szállítással is' : 'Ismert szállítással'}',

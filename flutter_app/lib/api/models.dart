@@ -211,7 +211,11 @@ class Listing {
       condition = fields.nullable<String>('condition'),
       status = fields.choice('status', ['ACTIVE', 'ENDED', 'UNKNOWN']),
       checkedAt = fields.date('last_checked_at'),
-      faultSource = fields.choice('fault_source', ['condition', 'text']) {
+      faultSource = fields.choice('fault_source', [
+        'condition',
+        'text',
+        'title',
+      ]) {
     if (id.isEmpty ||
         (controllerItemTypes.contains(type) && deviceGroup != 'controllers') ||
         title.trim().isEmpty ||
@@ -368,6 +372,9 @@ class SearchResult {
               : Fields(fields.required<Json>('item_type_counts')).count(type),
       }),
       filteredNonEu = fields.count('filtered_non_eu'),
+      filteredNotFaulty = fields.json.containsKey('filtered_not_faulty')
+          ? fields.count('filtered_not_faulty')
+          : 0,
       apiCalls = fields.count('api_calls'),
       getItemCalls = fields.count('get_item_calls'),
       firstSync = fields.json.containsKey('first_sync')
@@ -388,6 +395,7 @@ class SearchResult {
   final List<CountryStatus> countries;
   final Map<String, int> typeCounts;
   final int filteredNonEu,
+      filteredNotFaulty,
       apiCalls,
       getItemCalls,
       dailyApiCalls,
@@ -407,6 +415,7 @@ class SearchResult {
     'countries': <Object?>[],
     'item_type_counts': typeCounts,
     'filtered_non_eu': filteredNonEu,
+    'filtered_not_faulty': filteredNotFaulty,
     'api_calls': apiCalls,
     'get_item_calls': getItemCalls,
     'first_sync': firstSync,

@@ -38,7 +38,7 @@ class SavedFavorite {
       ...row,
       'total_price': total,
       'condition': null,
-      'fault_source': 'condition',
+      'fault_source': row['fault_source'] ?? 'condition',
       'is_new': false,
     });
   }
