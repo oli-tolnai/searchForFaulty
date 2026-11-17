@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:material_ui/material_ui.dart';
 
 import 'api/webapp.dart';
+import 'currency.dart';
 import 'listings.dart';
 import 'sync.dart';
 
@@ -213,6 +214,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ? 'Szinkronizálásra vár'
                           : 'Szinkronizálva: ${dateLabel(shared.lastSync!)}',
                     ),
+                  ),
+                  ListenableBuilder(
+                    listenable: shared,
+                    builder: (context, _) {
+                      final display = MoneyDisplay(
+                        shared.currency,
+                        shared.exchangeRate,
+                      );
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(display.rateLabel),
+                          OutlinedButton(
+                            onPressed: display.rate == null
+                                ? null
+                                : () => unawaited(
+                                    shared.setCurrency(
+                                      display.huf ? 'EUR' : 'HUF',
+                                    ),
+                                  ),
+                            child: Text(
+                              display.huf ? 'Árak euróban' : 'Árak forintban',
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
                 ],

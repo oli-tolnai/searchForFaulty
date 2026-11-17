@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'api/models.dart';
 import 'api/webapp.dart';
+import 'currency.dart';
 import 'listing_card.dart';
 import 'listings.dart';
 import 'sync.dart';
@@ -44,6 +45,9 @@ class _SearchScreenState extends State<SearchScreen>
   final title = TextEditingController();
   final price = TextEditingController();
   final total = TextEditingController();
+  double? maxPriceEuro, maxTotalEuro;
+  MoneyDisplay? inputDisplay;
+  String localCurrency = 'EUR';
   final models = <String>{};
   final selectedDeviceGroups = deviceGroups.toSet();
   final unavailable = <String>{};
@@ -118,7 +122,10 @@ class _SearchScreenState extends State<SearchScreen>
 
   void restoreFilters() {
     final filters = widget.shared?.filters;
-    if (filters == null || jsonEncode(filters) == appliedFilters) return;
+    if (filters == null || jsonEncode(filters) == appliedFilters) {
+      refreshPriceInputs();
+      return;
+    }
     appliedFilters = jsonEncode(filters);
     selectedDeviceGroups
       ..clear()
@@ -128,8 +135,9 @@ class _SearchScreenState extends State<SearchScreen>
     models
       ..clear()
       ..addAll((filters['models'] as List).cast<String>());
-    price.text = filters['max_price']?.toString() ?? '';
-    total.text = filters['max_total']?.toString() ?? '';
+    maxPriceEuro = (filters['max_price'] as num?)?.toDouble();
+    maxTotalEuro = (filters['max_total'] as num?)?.toDouble();
+    refreshPriceInputs(force: true);
     buying = BuyingFilter.values.byName(filters['buying'] as String);
     ending = filters['ending'] as bool;
     boards = filters['boards'] as bool;
@@ -141,8 +149,8 @@ class _SearchScreenState extends State<SearchScreen>
     final filters = <String, Object?>{
       'models': models.toList(),
       'device_groups': selectedDeviceGroups.toList(),
-      'max_price': limit(price),
-      'max_total': limit(total),
+      'max_price': maxPriceEuro,
+      'max_total': maxTotalEuro,
       'buying': buying.name,
       'ending': ending,
       'boards': boards,
@@ -221,7 +229,11 @@ class _SearchScreenState extends State<SearchScreen>
         generation++;
         unavailable.clear();
         cached = false;
+        refreshPriceInputs();
       });
+      if (searched.exchangeRate case final rate?) {
+        widget.shared?.acceptExchangeRate(rate);
+      }
       scheduleRefresh();
       unawaited(syncAfterSearch());
     } on AppFailure catch (failure) {
@@ -237,18 +249,51 @@ class _SearchScreenState extends State<SearchScreen>
     await shared?.refresh();
   }
 
-  double? limit(TextEditingController controller) {
-    final value = double.tryParse(controller.text.trim().replaceAll(',', '.'));
-    return value != null && value.isFinite && value >= 0 ? value : null;
+  MoneyDisplay get priceDisplay => MoneyDisplay(
+    widget.shared?.currency ?? localCurrency,
+    widget.shared?.exchangeRate ?? result?.exchangeRate,
+  );
+
+  void refreshPriceInputs({bool force = false}) {
+    final display = priceDisplay;
+    final previous = inputDisplay;
+    if (!force &&
+        previous?.huf == display.huf &&
+        (!display.huf || previous?.rate?.eurHuf == display.rate?.eurHuf)) {
+      return;
+    }
+    inputDisplay = display;
+    price.text = display.euroInput(maxPriceEuro);
+    total.text = display.euroInput(maxTotalEuro);
+  }
+
+  void toggleCurrency() {
+    if (priceDisplay.rate == null) return;
+    final next = priceDisplay.huf ? 'EUR' : 'HUF';
+    if (widget.shared case final shared?) {
+      unawaited(shared.setCurrency(next));
+    } else {
+      setState(() {
+        localCurrency = next;
+        refreshPriceInputs();
+      });
+    }
   }
 
   String? amountError(TextEditingController controller) =>
-      controller.text.trim().isNotEmpty && limit(controller) == null
+      controller.text.trim().isNotEmpty &&
+          priceDisplay.inputToEuro(controller.text) == null
       ? 'Adj meg egy pozitív számot vagy nullát.'
       : null;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => MoneyScope(
+    display: priceDisplay,
+    toggle: toggleCurrency,
+    child: buildSearch(context),
+  );
+
+  Widget buildSearch(BuildContext context) {
     final now = widget.clock();
     if (section == 3 && widget.shared != null) {
       return WatchScreen(
@@ -276,8 +321,8 @@ class _SearchScreenState extends State<SearchScreen>
       active,
       ListingFilters(
         models: models.where(availableModels.contains).toSet(),
-        maxPrice: limit(price),
-        maxTotal: limit(total),
+        maxPrice: maxPriceEuro,
+        maxTotal: maxTotalEuro,
         buying: buying,
         endingSoon: ending,
         mainboards: boards,
@@ -589,10 +634,17 @@ class _SearchScreenState extends State<SearchScreen>
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         decoration: InputDecoration(
           labelText: label,
-          suffixText: 'EUR',
+          suffixText: priceDisplay.unit,
           errorText: amountError(controller),
         ),
-        onChanged: (_) => changeFilters(() {}),
+        onChanged: (value) => changeFilters(() {
+          final euro = priceDisplay.inputToEuro(value);
+          if (controller == price) {
+            maxPriceEuro = euro;
+          } else {
+            maxTotalEuro = euro;
+          }
+        }),
       );
 
   Widget dropdown<T>(
@@ -727,6 +779,7 @@ class _SearchScreenState extends State<SearchScreen>
                 'API-hívások: ${data.apiCalls} futásban · ${data.dailyApiCalls} ${cached ? 'akkor aznap' : 'ma'}',
               ),
               Text('Keresés: ${dateLabel(data.searchedAt)}'),
+              Text(priceDisplay.rateLabel),
             ],
           ),
           const SizedBox(height: 6),
@@ -847,7 +900,7 @@ class _SearchScreenState extends State<SearchScreen>
   Future<void> watchAuction(Listing item) async {
     final shared = widget.shared!;
     final watch = shared.watchFor(item);
-    final terms = await editWatchTerms(context, watch);
+    final terms = await editWatchTerms(context, watch, currency: priceDisplay);
     if (terms == null || !mounted) return;
     if (watch == null) {
       await shared.addWatch(item, terms.threshold, terms.lead);

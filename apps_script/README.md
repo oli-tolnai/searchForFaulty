@@ -121,6 +121,16 @@ A keresés legfeljebb 100 külön `getItem` hívást indít az ismeretlen száll
 
 A mérés németországi tételekkel dolgozik. Keresésenként legfeljebb öt, egyenként 200 tételes oldalt kér le. A javaslatban az országonkénti szám az első oldalas kereséseket mutatja, a német mérés lapozással együtt számolt értéke külön szerepel. A futtatáshoz elegendő a forrás feltöltése.
 
+## Használt állapotú, cím szerint hibás tételek mérése
+
+A forrás feltöltése után a szerkesztőben nyisd meg a **diagnose_used_faulty.gs** fájlt, válaszd a **diagnoseUsedFaulty** függvényt, és kattints a **Futtatás** gombra. A **Végrehajtási naplóban** láthatók az ellenőrzött állapotazonosítók, a keresésenkénti példák és a DE, FR, IT, NL országokra számolt javaslatok. A diagnosztikához elég a forrás feltöltése. Az éles kereső továbbra is a 7000-es állapotot használja.
+
+A mérés a német piactér [Metadata API-jával](https://developer.ebay.com/develop/guides/sell/listing-metadata-guide) ellenőrzi az állapotokat. Csak az alkalmazástokennel ténylegesen visszakapott azonosítókat méri. Az eBay egyes felújított állapotokhoz felhasználói tokent igényel. A keresésenkénti ötoldalas korlát és a teljes futás időkorlátja részleges mintát eredményezhet, amit a napló jelöl.
+
+## EUR és HUF
+
+A keresés és a `state_get` válasz az `exchange_rate` mezőben adja az árfolyamot (`eur_huf`, `date`, `source`, `stale`). Az app és a meglévő időzítő budapesti idő szerint 16:30-tól kérhet új jegyzést. Közzétételi időszakonként legfeljebb egy [ECB XML-lekérés](https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml) történik. Hiba esetén a korábbi árfolyam marad elérhető, ha van. A Beállításokban és a keresési összesítőben megjelenik a jegyzés dátuma. Az árszűrők és az értesítési határok EUR-ban szinkronizálódnak.
+
 ## A kliensnek szánt API
 
 A `POST` JSON-törzse `token`, `action`, `params` és opcionális `request_id` mezőből áll. A felső mérethatár 10 240 bájt. Az egyszerű, legfeljebb 128 karakteres kérésazonosítót a válasz visszaadja. A `doGet` csak az API nevét adja vissza.

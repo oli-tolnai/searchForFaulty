@@ -46,11 +46,12 @@ function runAction(action, params, secrets) {
     case 'search': {
       requireKeys(params, ['queries', 'countries', 'device_groups']);
       const groups = searchValues(params.device_groups, Object.keys(DEVICE_GROUPS));
-      return markSearchSeen(searchEbay(searchValues(params.countries, EU_COUNTRIES),
+      const result = markSearchSeen(searchEbay(searchValues(params.countries, EU_COUNTRIES),
         searchValues(params.queries, configuredQueries(groups)), secrets));
+      return { ...result, exchange_rate: ecbExchangeRate() };
     }
     case 'state_get':
-      return stateGet(params);
+      return { ...stateGet(params), exchange_rate: ecbExchangeRate() };
     case 'state_apply':
       return stateApply(params, secrets);
     case 'favorites_refresh':

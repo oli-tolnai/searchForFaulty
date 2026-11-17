@@ -92,15 +92,6 @@ String countryName(String? code) => countries[code] ?? code ?? 'Nem ismert';
 final _dateFormat = DateFormat('yyyy. MM. dd. HH:mm');
 String dateLabel(DateTime time) => _dateFormat.format(time.toLocal());
 
-String money(String? value, String? currency) {
-  if (value == null || currency == null) return 'Nem ismert';
-  return NumberFormat.currency(
-    locale: 'hu',
-    name: currency,
-    symbol: currency,
-  ).format(double.parse(value));
-}
-
 String countdown(Duration remaining) {
   final seconds = (remaining.inMilliseconds / 1000).ceil().clamp(0, 1 << 32);
   final days = seconds ~/ 86400;

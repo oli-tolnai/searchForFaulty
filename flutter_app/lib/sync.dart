@@ -104,6 +104,11 @@ class SharedState extends ChangeNotifier {
   Iterable<Json> get hidden =>
       _view('hidden').values.where((row) => row['deleted'] == false);
   Json? get filters => _view('settings')['filters']?['value'] as Json?;
+  String get currency =>
+      (_view('settings')['currency']?['value'] as Json?)?['currency']
+          as String? ??
+      'EUR';
+  ExchangeRate? exchangeRate;
   bool isFavorite(Listing item) =>
       _view('favorites')[listingKey(item)]?['deleted'] == false;
   bool isHidden(Listing item) =>
@@ -182,6 +187,17 @@ class SharedState extends ChangeNotifier {
   Future<void> setFilters(Json value) =>
       _add({'type': 'setting_set', 'key': 'filters', 'value': value});
 
+  Future<void> setCurrency(String value) => _add({
+    'type': 'setting_set',
+    'key': 'currency',
+    'value': {'currency': value},
+  });
+
+  void acceptExchangeRate(ExchangeRate rate) {
+    exchangeRate = rate;
+    changedLocally();
+  }
+
   void dismissNew(Listing item) {
     if (_dismissedNew.add(listingKey(item))) changedLocally();
   }
@@ -240,7 +256,8 @@ class SharedState extends ChangeNotifier {
             'hidden_at': op['local_at'],
           };
         case ('settings', 'setting_set'):
-          rows['filters'] = {'key': 'filters', 'value': op['value']};
+          final key = op['key'] as String;
+          rows[key] = {'key': key, 'value': op['value']};
         case ('watches', 'watch_add'):
           final listing = object(op['listing']);
           final previous = rows[stateKey(op)];
@@ -345,6 +362,9 @@ class SharedState extends ChangeNotifier {
   void _merge(Json payload) {
     final fields = Fields(payload);
     final revision = fields.count('revision');
+    final incomingRate = payload['exchange_rate'] == null
+        ? null
+        : ExchangeRate.fromJson(payload['exchange_rate']);
     final delta = {
       for (final table in _tables.keys)
         table:
@@ -360,8 +380,12 @@ class SharedState extends ChangeNotifier {
         final rowFields = Fields(row);
         rowFields.count('revision');
         if (entry.key == 'settings') {
-          if (rowFields.required<String>('key') != 'filters') invalidResponse();
+          final key = rowFields.choice('key', ['filters', 'currency']);
           final filter = Fields(rowFields.required<Json>('value'));
+          if (key == 'currency') {
+            filter.choice('currency', ['EUR', 'HUF']);
+            continue;
+          }
           filter.list(
             'models',
             (value) =>
@@ -423,11 +447,13 @@ class SharedState extends ChangeNotifier {
       }
     }
     _revision = revision;
+    exchangeRate = incomingRate ?? exchangeRate;
   }
 
   Future<void> _persist() {
     final snapshot = <String, Object?>{
       'revision': _revision,
+      'exchange_rate': exchangeRate?.toJson(),
       for (final entry in _tables.entries)
         entry.key: entry.value.values.toList(),
       'pending': _queue.toList(),

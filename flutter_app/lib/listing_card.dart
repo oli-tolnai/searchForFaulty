@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'api/models.dart';
 import 'api/webapp.dart';
+import 'currency.dart';
 import 'listings.dart';
 
 Uri translationLink(String text) => Uri.https('translate.google.com', '/', {
@@ -150,7 +151,15 @@ class _ListingCardState extends State<ListingCard> {
                   children: [
                     if (widget.newLabel) tag('ÚJ', colors.primary),
                     if (widget.watchThreshold case final threshold?)
-                      tag('Figyelve · $threshold €', colors.primary),
+                      PriceText(
+                        threshold.toString(),
+                        'EUR',
+                        prefix: 'Figyelve · ',
+                        style: TextStyle(
+                          color: colors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     if (widget.savedStatus == 'ENDED')
                       tag('Lejárt / nem elérhető', colors.error),
                     if (widget.savedStatus == 'UNKNOWN' && !stale)
@@ -226,21 +235,24 @@ class _ListingCardState extends State<ListingCard> {
                   const Text('A hiba a címből vagy a leírásból derül ki.'),
                 const Divider(height: 24),
                 if (!archive)
-                  _CardValue(
+                  _CardValue.price(
                     item.auction ? 'Aktuális licit' : 'Vételár',
-                    money(item.effectivePrice, item.currency),
+                    item.effectivePrice,
+                    item.currency,
                   ),
                 if (!archive && item.auction && item.bidCount != null)
                   _CardValue('Licitek száma', '${item.bidCount}'),
                 if (!archive)
-                  _CardValue(
+                  _CardValue.price(
                     'Szállítás Magyarországra',
-                    money(item.shipping, item.shippingCurrency),
+                    item.shipping,
+                    item.shippingCurrency,
                   ),
                 if (!archive && item.total != null)
-                  _CardValue(
+                  _CardValue.price(
                     'Teljes ár',
-                    money(item.total, item.currency),
+                    item.total,
+                    item.currency,
                     emphasize: true,
                   ),
                 if (!archive && item.auction && remaining != null) ...[
@@ -361,29 +373,45 @@ class _ListingCardState extends State<ListingCard> {
 }
 
 class _CardValue extends StatelessWidget {
-  const _CardValue(this.label, this.value, {this.emphasize = false});
-  final String label, value;
+  const _CardValue(this.label, this.value, {this.emphasize = false})
+    : currency = null,
+      isPrice = false;
+  const _CardValue.price(
+    this.label,
+    this.value,
+    this.currency, {
+    this.emphasize = false,
+  }) : isPrice = true;
+  final String label;
+  final String? value, currency;
+  final bool isPrice;
   final bool emphasize;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 3),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(child: Text(label)),
-        const SizedBox(width: 10),
-        Flexible(
-          child: Text(
-            value,
-            textAlign: TextAlign.end,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: emphasize ? Theme.of(context).colorScheme.primary : null,
-            ),
+  Widget build(BuildContext context) {
+    final style = TextStyle(
+      fontWeight: FontWeight.w600,
+      color: emphasize ? Theme.of(context).colorScheme.primary : null,
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: Text(label)),
+          const SizedBox(width: 10),
+          Flexible(
+            child: isPrice
+                ? PriceText(
+                    value,
+                    currency,
+                    style: style,
+                    textAlign: TextAlign.end,
+                  )
+                : Text(value!, style: style, textAlign: TextAlign.end),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }

@@ -19,7 +19,7 @@ const missingRoute = request => {
 export function runtime({
   browse = () => response(200, { total: 0 }),
   oauth = () => response(200, fixture('token')), details = missingRoute, properties = {},
-  batchFailure = () => false, shipping = () => response(503),
+  batchFailure = () => false, shipping = () => response(503), exchange = () => response(503),
 } = {}) {
   let now = Date.parse('2026-11-14T12:00:00Z');
   let locked = false;
@@ -29,6 +29,7 @@ export function runtime({
   }));
   const cache = new Map();
   const calls = [];
+  const exchangeCalls = [];
   const batches = [];
   const sleeps = [];
   const log = [];
@@ -81,6 +82,10 @@ export function runtime({
       fetch(url, options) {
         assert.equal(locked, false);
         const request = { url, ...options };
+        if (url.startsWith('https://www.ecb.europa.eu/')) {
+          exchangeCalls.push(request);
+          return exchange(request);
+        }
         calls.push(request);
         return url.endsWith('/oauth2/token') ? oauth(request) : details(request);
       },
@@ -174,7 +179,7 @@ export function runtime({
     return JSON.parse(output.content);
   }
   return {
-    calls, batches, sleeps, log, cache, props, digests, run, postRaw, context, sheets,
+    calls, exchangeCalls, batches, sleeps, log, cache, props, digests, run, postRaw, context, sheets,
     post: (action, params, rest) => postRaw(JSON.stringify({
       action, params, token: 'test-client-token', request_id: 'request-1', ...rest,
     })),

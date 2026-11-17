@@ -70,7 +70,7 @@ void main() {
 
     expect(shared.watches.single.threshold, 101.5);
     expect(shared.watches.single.lead, 120);
-    expect(find.text('Figyelve · 101.5 €'), findsOneWidget);
+    expect(find.text('Figyelve · 101,5 €'), findsOneWidget);
     await tap(tester, find.widgetWithText(NavigationDestination, 'Figyelés'));
     expect(find.text('Aktív'), findsOneWidget);
     await tap(tester, find.byTooltip('Figyelés szerkesztése'));

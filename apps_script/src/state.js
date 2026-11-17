@@ -230,9 +230,11 @@ function stateApply(params, secrets) {
           title: op.type === 'hide' ? redactContact(op.title, secrets) : null, deleted: op.type === 'unhide' };
         break;
       case 'setting_set':
-        if (op.key !== 'filters') invalidState();
         table = 'settings';
-        row = { key: op.key, value: filterSettings(op.value) };
+        if (op.key === 'filters') row = { key: op.key, value: filterSettings(op.value) };
+        else if (op.key === 'currency' && record(op.value) && ['EUR', 'HUF'].includes(op.value.currency)) {
+          row = { key: op.key, value: { currency: op.value.currency } };
+        } else invalidState();
         break;
       case 'watch_add':
       case 'watch_update':

@@ -251,6 +251,7 @@ function alertMatches(item, rule) {
 
 function checkNewListingAlerts() {
   runNotifications('alerts', props => {
+    ecbExchangeRate();
     if (dailyCounter().daily_api_calls > 4000) {
       Logger.log('Az időzített keresés kimaradt: a napi eBay-hívásszám 4000 fölött van.');
       return;

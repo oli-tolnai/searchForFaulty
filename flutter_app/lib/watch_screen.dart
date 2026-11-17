@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import 'api/models.dart';
+import 'currency.dart';
 import 'listing_card.dart';
 import 'listings.dart';
 import 'notifications.dart';
@@ -8,22 +9,32 @@ import 'sync.dart';
 
 typedef WatchTerms = ({num threshold, int lead});
 
-num? _price(String? text) {
-  final value = num.tryParse((text ?? '').trim().replaceAll(',', '.'));
-  return value != null && value.isFinite && value >= 0 ? value : null;
+Widget _priceField(
+  String label,
+  MoneyDisplay display,
+  num? initial,
+  ValueChanged<num> save,
+) {
+  final shown = display.euroInput(initial);
+  return TextFormField(
+    initialValue: shown,
+    decoration: InputDecoration(labelText: '$label (${display.unit})'),
+    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+    validator: (input) => display.inputToEuro(input) == null
+        ? 'Adj meg érvényes összeget.'
+        : null,
+    onSaved: (input) => save(
+      input == shown && initial != null ? initial : display.inputToEuro(input)!,
+    ),
+  );
 }
 
-Widget _priceField(String label, num? initial, ValueChanged<num> save) =>
-    TextFormField(
-      initialValue: initial?.toString(),
-      decoration: InputDecoration(labelText: label),
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      validator: (input) =>
-          _price(input) == null ? 'Adj meg érvényes összeget.' : null,
-      onSaved: (input) => save(_price(input)!),
-    );
-
-Future<WatchTerms?> editWatchTerms(BuildContext context, AuctionWatch? watch) {
+Future<WatchTerms?> editWatchTerms(
+  BuildContext context,
+  AuctionWatch? watch, {
+  MoneyDisplay? currency,
+}) {
+  final display = currency ?? MoneyScope.displayOf(context);
   final form = GlobalKey<FormState>();
   num threshold = 0;
   var lead = watch?.lead ?? 120;
@@ -44,7 +55,8 @@ Future<WatchTerms?> editWatchTerms(BuildContext context, AuctionWatch? watch) {
           mainAxisSize: MainAxisSize.min,
           children: [
             _priceField(
-              'Határár (EUR)',
+              'Határár',
+              display,
               watch?.threshold,
               (value) => threshold = value,
             ),
@@ -92,6 +104,7 @@ Future<WatchTerms?> editWatchTerms(BuildContext context, AuctionWatch? watch) {
 }
 
 Future<Json?> _editAlert(BuildContext context, AlertRule? rule) {
+  final display = MoneyScope.displayOf(context);
   final form = GlobalKey<FormState>();
   final models = {...?rule?.models};
   var enabled = rule?.enabled ?? true;
@@ -133,7 +146,8 @@ Future<Json?> _editAlert(BuildContext context, AlertRule? rule) {
                   ],
                 ),
                 _priceField(
-                  'Max. teljes ár (EUR)',
+                  'Max. teljes ár',
+                  display,
                   rule?.maxTotal,
                   (value) => maxTotal = value,
                 ),
@@ -214,10 +228,16 @@ class WatchScreen extends StatelessWidget {
     return Card(
       child: ListTile(
         title: Text(watch.title),
-        subtitle: Text(
-          'Határár: ${watch.threshold} € · ${watch.lead} perccel zárás előtt\n'
-          'Utolsó ismert licit: ${money(bid, 'EUR')}\n'
-          'Utolsó ellenőrzés: ${checked == null ? 'Nem ismert' : dateLabel(checked)}',
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PriceText(watch.threshold.toString(), 'EUR', prefix: 'Határár: '),
+            Text('${watch.lead} perccel zárás előtt'),
+            PriceText(bid, 'EUR', prefix: 'Utolsó ismert licit: '),
+            Text(
+              'Utolsó ellenőrzés: ${checked == null ? 'Nem ismert' : dateLabel(checked)}',
+            ),
+          ],
         ),
         onTap: () => openExternal(context, watch.url),
         trailing: Wrap(
@@ -297,10 +317,19 @@ class WatchScreen extends StatelessWidget {
                             ? 'Minden modell'
                             : rule.models.join(', '),
                       ),
-                      subtitle: Text(
-                        'Legfeljebb ${rule.maxTotal} €\n'
-                        '${rule.enabled ? 'Engedélyezve' : 'Kikapcsolva'} · '
-                        '${rule.includeUnknown ? 'Ismeretlen szállítással is' : 'Ismert szállítással'}',
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          PriceText(
+                            rule.maxTotal.toString(),
+                            'EUR',
+                            prefix: 'Legfeljebb ',
+                          ),
+                          Text(
+                            '${rule.enabled ? 'Engedélyezve' : 'Kikapcsolva'} · '
+                            '${rule.includeUnknown ? 'Ismeretlen szállítással is' : 'Ismert szállítással'}',
+                          ),
+                        ],
                       ),
                       trailing: Wrap(
                         children: [

@@ -1,5 +1,37 @@
 typedef Json = Map<String, Object?>;
 
+class ExchangeRate {
+  ExchangeRate.fromJson(Object? value) : this._(Fields(value));
+
+  ExchangeRate._(Fields fields)
+    : eurHuf = fields.required<num>('eur_huf').toDouble(),
+      date = _date(fields.required<String>('date')),
+      source = fields.choice('source', ['ECB']),
+      stale = fields.required<bool>('stale') {
+    if (!eurHuf.isFinite || eurHuf <= 0) invalidResponse();
+  }
+
+  static DateTime _date(String value) {
+    final date = DateTime.tryParse('${value}T00:00:00Z');
+    if (date == null || date.toIso8601String().split('T').first != value) {
+      invalidResponse();
+    }
+    return date;
+  }
+
+  final double eurHuf;
+  final DateTime date;
+  final String source;
+  final bool stale;
+
+  Json toJson() => {
+    'eur_huf': eurHuf,
+    'date': date.toIso8601String().split('T').first,
+    'source': source,
+    'stale': stale,
+  };
+}
+
 final notificationUuid = RegExp(
   r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$',
 );
@@ -318,6 +350,9 @@ class SearchResult {
   SearchResult.fromJson(Object? value) : this._(Fields(value));
   SearchResult._(Fields fields)
     : status = fields.choice('status', searchStatuses),
+      exchangeRate = fields.json['exchange_rate'] == null
+          ? null
+          : ExchangeRate.fromJson(fields.json['exchange_rate']),
       listings = fields.list('listings', Listing.fromJson),
       unknownShipping = fields.list('unknown_shipping', Listing.fromJson),
       shippingBreakdown = ShippingBreakdown.fromJson(
@@ -347,6 +382,7 @@ class SearchResult {
       searchedAt = fields.date('searched_at');
 
   final String status;
+  final ExchangeRate? exchangeRate;
   final List<Listing> listings, unknownShipping;
   final ShippingBreakdown shippingBreakdown;
   final List<CountryStatus> countries;
@@ -364,6 +400,7 @@ class SearchResult {
 
   Json toCacheJson() => {
     'status': status,
+    'exchange_rate': exchangeRate?.toJson(),
     'listings': listings.map((item) => item.toJson()).toList(),
     'unknown_shipping': unknownShipping.map((item) => item.toJson()).toList(),
     'unknown_shipping_breakdown': shippingBreakdown.toJson(),
