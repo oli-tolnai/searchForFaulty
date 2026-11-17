@@ -7,7 +7,8 @@ const DEVICE_GROUPS = Object.freeze({
   controllers: {
     category: '117042',
     queries: ['ps5 controller', 'xbox series controller', 'xbox wireless controller', 'xbox elite controller'],
-    models: ['DualSense', 'DualSense Edge', 'Xbox Series kontroller', 'Xbox Elite Series 2', 'Xbox kontroller (generáció nem ismert)'],
+    models: ['DualSense', 'DualSense Edge', 'Xbox Series kontroller', 'Xbox Elite Series 2',
+      'Xbox Elite (sorozat nem ismert)', 'Xbox kontroller (generáció nem ismert)'],
   },
 });
 
@@ -21,5 +22,5 @@ function configuredModels() {
 
 function listingModelFamily(model) {
   if (model === 'PS5 Digital') return 'PS5 (változat nem ismert)';
-  return model.replace(/ (?:Disc|Digital|\(Scuf\))$/, '');
+  return model.replace(/ (?:Disc|Digital|\(Scuf\)|\(Egyedi\))$/, '');
 }

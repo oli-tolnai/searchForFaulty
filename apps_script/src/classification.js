@@ -13,15 +13,22 @@ const UNSUPPORTED_MODELS = {
   'Nintendo DS': /\b(?:nintendo\s+ds|(?:2ds|3ds))\b/,
 };
 
+function normalizedModelTitle(value) {
+  return value.toLowerCase().replace(/[‐‑–—]/g, '-')
+    .replace(/\bps\s+5\b/g, 'ps5')
+    .replace(/\bplay\s*station\s+5\b/g, 'playstation5')
+    .replace(/\b\d(?:\s*\d){3}\b/g, code => code.replace(/\s/g, ''));
+}
+
 function classifyItem(value) {
-  const title = value.toLowerCase();
+  const title = normalizedModelTitle(value);
   const banned = /\b(?:banned|gebannt|gesperrt)\b/.test(title);
   const codes = [...title.matchAll(/\bcfi[-\s]?(10|11|12|20|70)\d{2}([ab])?\b/g)];
   const ps5 = codes.length > 0 || /\b(?:ps\s*5|play\s*station\s*5)\b/.test(title);
   const xbox = new Set([...title.matchAll(/\bseries\s+([xs])\b/g)].map(match => match[1]));
   const unsupported = Object.keys(UNSUPPORTED_MODELS).filter(model => UNSUPPORTED_MODELS[model].test(title));
   const consoleWord = /\b(?:spielkonsole|wohnkonsole|heimkonsole|konsole|console)s?n?\b/.test(title);
-  const consoleFeature = /\b(?:825\s*gb|[12]\s*tb|(?:disc|disk|digital)e?\s+edition|für\s+teile|for\s+parts|nicht\s+funktionsfähig|läuft\s+nicht|bundle\s+(?:inkl\.?|including|mit|with))\b/.test(title);
+  const consoleFeature = /\b(?:825\s*gb|[12]\s*tb|(?:disc|disk|digital)e?\s+edition|für\s+teile|for\s+parts|nicht\s+funktionsfähig|funktionsfähig\s+aber\s+defekt|läuft\s+nicht|bundle\s+(?:inkl\.?|including|mit|with))\b/.test(title);
   const explicit = /\b(?:nur\s+konsole|console\s+only|komplette?\s+(?:ps5\s+)?konsole|complete\s+(?:ps5\s+)?console|(?:konsole|console)\s+(?:mit|with))\b/.test(title);
   const generations = new Set(codes.map(([, prefix]) => ({20: 'Slim', 70: 'Pro'})[prefix] || 'Fat'));
   if (ps5 && /\bpro\b/.test(title)) generations.add('Pro');
@@ -67,5 +74,5 @@ function classifyItem(value) {
 function possiblyNotFaulty(title) {
   const value = title.toLowerCase();
   return /\b(?:neu|new|versiegelt|sealed|nagelneu|neuf|nuovo|nuevo)\b/.test(value)
-    && !/\b(?:[a-zäöü]*defekt\w*|kaputt|bastler\w*|ersatzteil\w*|for\s+parts|faulty|broken|not\s+working|reparatur\w*|banned|gebannt|guasto|rotto|averiado|en\s+panne|pour\s+pièces)\b/.test(value);
+    && !/\b(?:[a-zäöü]*defekt\w*|kaputt|bastler\w*|ersatzteil\w*|for\s+parts|faulty|broken|not\s+working|reparatur\w*|banned|gebannt|guasto|rotto|averiado|en\s+panne|pour\s+pièces|con\s+difetto|difettoso|defectuoso|piezas)\b/.test(value);
 }

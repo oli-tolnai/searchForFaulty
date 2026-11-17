@@ -68,6 +68,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('PS5 Slim'), findsNothing);
       expect(find.text('DualSense Edge'), findsOneWidget);
+      expect(find.text('Xbox Elite (sorozat nem ismert)'), findsOneWidget);
       expect(shared.filters!['device_groups'], ['controllers']);
       await tester.tap(find.text('Keresés indítása'));
       await tester.pumpAndSettle();
@@ -91,6 +92,33 @@ void main() {
       expect(find.text('Külön töltőállomás'), findsOneWidget);
     },
   );
+
+  testWidgets('a custom DualSense card shows the Egyedi badge', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ListView(
+            children: [
+              ListingCard(
+                item: Listing.fromJson(
+                  listing(
+                    title: 'Ps5 Kingcontroller',
+                    type: 'controller',
+                    model: 'DualSense (Egyedi)',
+                    deviceGroup: 'controllers',
+                  ),
+                ),
+                now: testTime,
+                loadDetails: (_) async => ListingDetails.fromJson(details),
+                onUnavailable: () {},
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    expect(find.text('Egyedi'), findsOneWidget);
+  });
 
   testWidgets('hidden entries stay out of both normal and grouped results', (
     tester,

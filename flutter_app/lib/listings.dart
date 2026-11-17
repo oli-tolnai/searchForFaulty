@@ -49,6 +49,7 @@ const controllerModels = [
   'DualSense Edge',
   'Xbox Series kontroller',
   'Xbox Elite Series 2',
+  'Xbox Elite (sorozat nem ismert)',
   'Xbox kontroller (generáció nem ismert)',
 ];
 const modelsByDeviceGroup = {
@@ -159,7 +160,10 @@ class ListingFilters {
     }
     final family = item.model == 'PS5 Digital'
         ? 'PS5 (változat nem ismert)'
-        : item.model.replaceFirst(RegExp(r' (Disc|Digital|\(Scuf\))$'), '');
+        : item.model.replaceFirst(
+            RegExp(r' (Disc|Digital|\(Scuf\)|\(Egyedi\))$'),
+            '',
+          );
     if (models.isNotEmpty &&
         !models.contains(item.model) &&
         !models.contains(family)) {

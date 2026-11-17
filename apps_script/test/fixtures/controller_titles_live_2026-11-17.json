@@ -47,10 +47,10 @@
     {"diagnostic_group":"Bizonytalan","title":"Controller für PS5 Playstation mit Stick Drift & Original Karton","expected_scuf":false,"expected_type":"controller","expected_model":"DualSense"},
     {"diagnostic_group":"Bizonytalan","title":"Playstation 5 Scuff Controller Nur L2 Defekt","expected_scuf":true,"expected_type":"controller","expected_model":"DualSense (Scuf)"},
     {"diagnostic_group":"Bizonytalan","title":"Costum Controller Ps5 Beschädigt","expected_scuf":false,"expected_type":"controller","expected_model":"DualSense"},
-    {"diagnostic_group":"Bizonytalan","title":"Ps5 Kingcontroller","expected_scuf":false,"expected_type":"needs_review","expected_model":"Ellenőrzendő"},
+    {"diagnostic_group":"Bizonytalan","title":"Ps5 Kingcontroller","expected_scuf":false,"expected_type":"controller","expected_model":"DualSense (Egyedi)"},
     {"diagnostic_group":"Bizonytalan","title":"PS5 Edge Controller (kaputt) Als Ersatz Teil Controller (R2) taste Ist Kaputt","expected_scuf":false,"expected_type":"controller","expected_model":"DualSense Edge"},
     {"diagnostic_group":"Bizonytalan","title":"Sony Sixaxis Controller Playstation 3 ungetestet Stick beachten","expected_scuf":false,"expected_type":"unsupported_model","expected_model":"PS3"},
-    {"diagnostic_group":"Bizonytalan","title":"Logitech Driving Force GT Lenkrad Modell E-X5C19 mit Pedale ohne Netzteil","expected_scuf":false,"expected_type":"not_controller","expected_model":"Ellenőrzendő"}
+    {"diagnostic_group":"Bizonytalan","title":"Logitech Driving Force GT Lenkrad Modell E-X5C19 mit Pedale ohne Netzteil","expected_scuf":false,"expected_type":"third_party","expected_model":"Ellenőrzendő"}
   ],
   "without_category_extra": [
     {"query":"dualsense","title":"Defektes Mainboard DualSense Edge HD594V Controller Ps5 Sony Playstation5","expected_scuf":false,"expected_type":"not_controller","expected_model":"Ellenőrzendő"},
@@ -64,7 +64,7 @@
     {"query":"xbox series controller","title":"Microsoft Xbox Series X, 1TB, Schwarz, Inkl. Original Controller Defekt!!!!","expected_scuf":false,"expected_type":"not_controller","expected_model":"Ellenőrzendő"},
     {"query":"xbox series controller","title":"Kabelgebundener Controller PowerA Advantage Xbox Series XS Krieger-Nirw - Defekt","expected_scuf":false,"expected_type":"third_party","expected_model":"Ellenőrzendő"},
     {"query":"xbox series controller","title":"Xbox Elite Wireless Controller Series 2 mit Ersatzgehäuse, Tasten & Werkzeug-Set","expected_scuf":false,"expected_type":"controller","expected_model":"Xbox Elite Series 2"},
-    {"query":"xbox series controller","title":"Subsonic Superdrive Racing Lenkrad SV650 Racing Wheel Lenkrad Pedale Sc - Defekt","expected_scuf":false,"expected_type":"not_controller","expected_model":"Ellenőrzendő"},
+    {"query":"xbox series controller","title":"Subsonic Superdrive Racing Lenkrad SV650 Racing Wheel Lenkrad Pedale Sc - Defekt","expected_scuf":false,"expected_type":"third_party","expected_model":"Ellenőrzendő"},
     {"query":"xbox series controller","title":"Ladestation Sammlung für Playstation 3 + 4 Move Motion ohne Ladekabel ungetestet","expected_scuf":false,"expected_type":"unsupported_model","expected_model":"PS3"}
   ]
 }

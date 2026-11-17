@@ -13,6 +13,33 @@ for (const row of [...live.category_117042_sample, ...live.without_category_extr
   });
 }
 
+for (const [title, type, model, scuf = false] of fixture('controller_titles_review')) {
+  test('controller review title: ' + title, () => {
+    const actual = classifier.run('classifyController', title);
+    assert.equal(actual.item_type, type);
+    assert.equal(actual.console_model, model);
+    assert.equal(actual.is_scuf, scuf);
+  });
+}
+
+test('PS 5 with a partial failure is a console of unknown revision', () => {
+  assert.deepEqual(classifier.run('classifyItem', 'PS 5 funktionsfähig aber defekt'), {
+    item_type: 'console', console_model: 'PS5 (változat nem ismert)', is_banned: false,
+  });
+});
+
+test('PS5 model normalization keeps nearby storage capacities separate', () => {
+  for (const title of ['PS 5 825 GB defekt', 'PlayStation 5 825 GB defekt']) {
+    assert.equal(classifier.run('classifyItem', title).item_type, 'console', title);
+  }
+});
+
+test('translated fault markers prevent a new-looking controller from being marked possibly fault-free', () => {
+  for (const marker of ['con difetto', 'difettoso', 'defectuoso', 'averiado', 'en panne', 'piezas']) {
+    assert.equal(classifier.run('possiblyNotFaulty', 'New PS5 Controller ' + marker), false, marker);
+  }
+});
+
 for (const [title, type, model] of [
   ['Xbox Wireless Controller schwarz defekt', 'controller', 'Xbox kontroller (generáció nem ismert)'],
   ['Xbox One wireless controller 1537', 'unsupported_model', 'Xbox One'],
@@ -37,7 +64,7 @@ for (const [title, type, model] of [
 
 test('controller-only search uses four keywords, deduplicates hits and checks shipping only for eligible types', () => {
   const base = fixture('search').itemSummaries[2];
-  const titles = ['DualSense Stick Drift', '2x DualSense defekt', 'Kingcontroller',
+  const titles = ['DualSense Stick Drift', '2x DualSense defekt', 'Wireless Controller defekt',
     'DualSense Stick Modul', 'PDP Victrix Xbox Series Controller', 'Xbox One Controller'];
   const items = titles.map((title, i) => ({
     ...base, itemId: 'v1|' + (900 + i) + '|0', title, seller: { username: 'redacted-seller' },

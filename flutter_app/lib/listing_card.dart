@@ -165,6 +165,8 @@ class _ListingCardState extends State<ListingCard> {
                         item.type == 'controller_bundle')
                       tag('Csomag', colors.secondary),
                     if (item.isScuf) tag('Scuf', colors.secondary),
+                    if (item.model == 'DualSense (Egyedi)')
+                      tag('Egyedi', colors.secondary),
                     if (item.model == 'Xbox kontroller (generáció nem ismert)')
                       tag('Generáció nem ismert', colors.tertiary),
                     if (item.type == 'needs_review')
