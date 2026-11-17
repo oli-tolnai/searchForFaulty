@@ -139,6 +139,20 @@ A Figyelés lapon a szabály neve, eszközcsoportjai, modelljei, hirdetéstípus
 
 A meglévő szabályok olvasáskor megkapják az új alapértékeket, megtartva az eredeti árhatárt és az ismeretlen szállításra vonatkozó választást. Az új szabály alapból kizárja a „Lehet, hogy nem hibás” tételeket, és bevonja a használtként hirdetett, cím szerint hibás tételeket. Az árhatár üresen korlátlan. Az időzített keresés a szabályok által érintett eszközcsoportokat kéri le, és megtartja a napi 4000-es védelmet.
 
+## Új eszközcsoportok mérése (alkalmazásba építés előtt)
+
+A forrás feltöltése után frissítsd az Apps Script szerkesztőt. Nyisd meg a **diagnose_new_device_groups.gs** fájlt, a függvénylistából válaszd a **diagnoseNewDeviceGroups** függvényt, majd kattints a **Futtatás** gombra. A meglévő Script Properties eBay-kulcsait és azonos engedélyeit használja; a szerkesztőből indított diagnosztikához **nem kell új webapp-verziót telepíteni**.
+
+A mérés a Taxonomy API-val választ kategóriákat, majd a Switch, Steam Deck, iPhone és videokártya kulcsszavait DE, FR és IT országokra futtatja. Összesen 51 első oldalas keresés, 5 Taxonomy-hívás, szükség esetén OAuth, valamint csoportonként legfeljebb 10 getItem szükséges, a lapozáson és az egyszeri 429-es újrapróbálásokon felül. Egy lekérdezés legfeljebb öt oldalt kér le; a diagnosztika a teljes keresési részre 350 hívást és időkorlátot alkalmaz. Minden hívás bekerül a napi számlálóba. Hibánál vagy korlátnál a minta részlegességét jelzi.
+
+A **Végrehajtási naplóban** megtalálod a kategóriajavaslatokat, a kulcsszavak lefedettségét és egyedi hozzájárulását, a címbesorolás példáit, az iCloud-/aktiválásizár-említéseket, a szállítási mintát, a minimális teljes releváns lefedettségű kulcsszókészletet és a hívásbecslést. A releváns halmaz itt csak a címből egyértelműen felismert támogatott modelleket jelenti; a bizonytalan címeket külön számolja. A besorolás diagnosztikai becslés. A zár említése nem igazolt zároltság, az említés hiánya nem igazolt zármentesség.
+
+A szállítási minta az ismeretlen díjú, felismert tételekből váltakozva vesz DE/FR/IT példákat, legfeljebb tízet csoportonként. Ez nem véletlen, reprezentatív minta. Az eleve ismert díjak száma is a felismert támogatott tételekre vonatkozik. A 27 országos hívásbecslés a három mért ország egyszerű kivetítése; az országok eltérő kínálata és a gyorsítótár miatt a tényleges költség eltérhet. A getItem-becslés a jelenlegi, keresésenként közös 100-as korlátot feltételezi.
+
+**Ezt küldd vissza:** a teljes naplót, különösen az összesítést és a végén kiírt egyetlen JSON-sort. A napló megadja a célfájl nevét: `apps_script/test/fixtures/new_device_titles_live_<dátum>.json`. A JSON kizárólag kitakart példacímeket, országot, eszközcsoportot és diagnosztikai besorolást tartalmaz; a `diagnostic` mező még nem végleges tesztelvárás. Ha a Google a hosszú JSON-sort csonkolja, másold be helyette az összes `FIXTURE_PART_1`, `FIXTURE_PART_2`, … sort is; ezekből minden példacím visszaállítható, majd rögzíthető a fixture-ben. Ne másolj be Script Properties értékeket vagy nyers eBay-választ.
+
+A diagnosztika nem módosítja a keresési csoportokat, nem írja a Sheets/seen lapot, és nem tárol hirdetést gyorsítótárban. Csak a meglévő OAuth-token-cache és a napi hívásszámláló változhat. Az alkalmazás funkciói és buildje változatlanok.
+
 ## A kliensnek szánt API
 
 A `POST` JSON-törzse `token`, `action`, `params` és opcionális `request_id` mezőből áll. A felső mérethatár 10 240 bájt. Az egyszerű, legfeljebb 128 karakteres kérésazonosítót a válasz visszaadja. A `doGet` csak az API nevét adja vissza.

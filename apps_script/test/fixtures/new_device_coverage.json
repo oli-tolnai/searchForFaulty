@@ -1,0 +1,4 @@
+[
+  { "query": "nintendo switch", "items": [{ "id": "a", "supported": true }, { "id": "b", "supported": false }] },
+  { "query": "switch oled", "items": [{ "id": "a", "supported": true }, { "id": "c", "supported": true }] }
+]
