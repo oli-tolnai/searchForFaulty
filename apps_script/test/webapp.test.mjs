@@ -19,7 +19,7 @@ test('missing and wrong tokens are rejected before action handling', () => {
 test('correct token and each configured rotation token is accepted', () => {
   const app = runtime({ properties: { CLIENT_TOKENS: ' test-client-token, alternate-token ' } });
   assert.deepEqual(app.post('ping'), {
-    ok: true, request_id: 'request-1', data: { version: '1.0.0', server_time: '2026-11-14T12:00:00.000Z' },
+    ok: true, request_id: 'request-1', data: { version: '1.0.0', server_time: '2026-11-14T12:00:00.000Z', daily_api_calls: 0, daily_browse_calls: 0, search_config: {country_count:27,groups:{consoles:{query_count:2,estimated_calls:56},controllers:{query_count:4,estimated_calls:112},switch:{query_count:1,estimated_calls:27},steam_deck:{query_count:1,estimated_calls:27},iphone:{query_count:7,estimated_calls:189},gpu:{query_count:2,estimated_calls:54}}} },
   });
   assert.deepEqual(app.digests, ['test-client-token', 'test-client-token', 'alternate-token']);
   assert.equal(app.post('ping', {}, { token: 'alternate-token' }).ok, true);

@@ -3,6 +3,7 @@ function alertDefaults(row) {
   const inferredGroups = Object.keys(DEVICE_GROUPS).filter(group =>
     (!models.length ? ['consoles', 'controllers'].includes(group) : models.some(model => DEVICE_GROUPS[group].models.includes(model))));
   return {
+    min_price: null, include_mainboards: false, include_third_party: false, only_icloud_free: false, hide_unknown_icloud: false, gpu_vendor: 'both',
     name: 'Értesítési szabály', device_groups: inferredGroups, buying_options: 'both',
     max_price: null, max_total_price: null, known_shipping_only: !row.include_unknown_shipping,
     ending_hours: null, include_keywords: [], exclude_keywords: [], countries: [],
@@ -24,9 +25,9 @@ function alertValues(input, secrets = []) {
       !list(row.countries, EU_COUNTRIES, EU_COUNTRIES.length) ||
       !['both', 'auction', 'fixed'].includes(row.buying_options) ||
       ![null, 6, 12, 24, 48].includes(row.ending_hours) ||
-      [row.max_price, row.max_total_price].some(value => value !== null && !notificationPrice(value)) ||
-      !keywordList(row.include_keywords) || !keywordList(row.exclude_keywords) ||
-      ['known_shipping_only', 'exclude_possibly_not_faulty', 'exclude_banned', 'include_title_faults', 'enabled']
+      [row.min_price, row.max_price, row.max_total_price].some(value => value !== null && !notificationPrice(value)) ||
+      !['both','NVIDIA','AMD'].includes(row.gpu_vendor) || !keywordList(row.include_keywords) || !keywordList(row.exclude_keywords) ||
+      ['include_mainboards','include_third_party','only_icloud_free','hide_unknown_icloud','known_shipping_only', 'exclude_possibly_not_faulty', 'exclude_banned', 'include_title_faults', 'enabled']
         .some(key => typeof row[key] !== 'boolean')) invalidState();
   const safe = { ...row, name: redactContact(row.name.trim(), secrets),
     include_keywords: row.include_keywords.map(word => redactContact(word.trim(), secrets)),
@@ -39,7 +40,7 @@ function alertValues(input, secrets = []) {
 function alertMatches(item, original, now = new Date()) {
   const rule = alertDefaults(original);
   const group = item.device_group || 'consoles';
-  if (!rule.enabled || item.status !== 'ACTIVE' || !ACTIVE_ITEM_TYPES.includes(item.item_type) || item.ships_to_hu !== 'yes' ||
+  if (!rule.enabled || item.status !== 'ACTIVE' || !(ACTIVE_ITEM_TYPES.includes(item.item_type) || rule.include_mainboards && item.item_type === 'mainboard' || rule.include_third_party && item.item_type === 'third_party') || item.ships_to_hu !== 'yes' ||
       !rule.device_groups.includes(group) || item.currency !== 'EUR') return false;
   if (rule.models.length && !item.console_model.split(' / ').some(model => rule.models.includes(listingModelFamily(model)))) return false;
   if (rule.countries.length && !rule.countries.includes(item.item_country)) return false;
@@ -57,7 +58,11 @@ function alertMatches(item, original, now = new Date()) {
   const title = item.title.toLowerCase();
   if (rule.include_keywords.length && !rule.include_keywords.some(word => title.includes(word.toLowerCase()))) return false;
   if (rule.exclude_keywords.some(word => title.includes(word.toLowerCase()))) return false;
+  if (rule.only_icloud_free && item.device_group === 'iphone' && item.icloud_status !== 'free_by_seller') return false;
+  if (rule.hide_unknown_icloud && item.device_group === 'iphone' && (!item.icloud_status || item.icloud_status === 'unknown')) return false;
+  if (rule.gpu_vendor !== 'both' && item.device_group === 'gpu' && !(item.console_model.split(' / ').some(model => rule.gpu_vendor === 'NVIDIA' ? /^RTX/.test(model) : /^RX/.test(model)) || (rule.gpu_vendor === 'NVIDIA' ? /nvidia|geforce|rtx/i : /amd|radeon|\brx\b/i).test(item.title))) return false;
   const price = effectivePrice(item);
+  if (rule.min_price !== null && (price === null || Number(price) < rule.min_price)) return false;
   if (rule.max_price !== null && (price === null || Number(price) > rule.max_price)) return false;
   const unknown = item.shipping_cost === null || item.total_price === null || item.ships_to_hu === 'unknown';
   if (rule.known_shipping_only && unknown) return false;

@@ -256,7 +256,7 @@ function checkNewListingAlerts() {
       const hidden = new Set(readRows(book, 'hidden').filter(row => !row.deleted).map(rowKey));
       const notified = new Set(readRows(book, 'notified').map(rowKey));
       const matches = [...result.listings, ...result.unknown_shipping].filter(item =>
-        item.status === 'ACTIVE' && ACTIVE_ITEM_TYPES.includes(item.item_type) &&
+        item.status === 'ACTIVE' &&
         item.ships_to_hu === 'yes' && !hidden.has(rowKey(item)) && !notified.has(rowKey(item)) &&
         rules.some(rule => alertMatches(item, rule)));
       if (!matches.length) return null;

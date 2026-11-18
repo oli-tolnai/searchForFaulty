@@ -175,3 +175,9 @@ A Content Service a válaszhoz külön Google URL-t ad. A kliens a POST átirán
 A Flutter keresőjében és az értesítési szabályokban külön választható a Switch, Steam Deck, iPhone és videokártya. Első indításkor a korábbi Konzolok/Kontrollerek kijelölés marad; az újakat külön kapcsold be. A 11–17-es iPhone-ok zárjelölése nem azonos a SIM-zárral. A zárolt készülékek, a nem videokártya tételek és a valószínűleg nem Magyarországra szállítók külön rejtett nézetből megnyithatók. Az ismeretlen díjak korábbi külön blokkja megszűnt.
 
 Az új csoportok kiegészítő használtállapotú keresése még nincs bekapcsolva, csak az üres konfigurációja készült el. A 291 éles cím külön ellenőrzött tesztelvárásai és a bizonytalan esetek döntései: [besorolási feljegyzés](../docs/uj_eszkozcsoportok_besorolas.md).
+
+## Csoportfülek klienskonfigurációja
+
+A hitelesített `ping` válasz `search_config` mezője megadja az országok számát, csoportonként a fő lekérdezések számát és az első oldalak becsült hívásszámát (a kiegészítő keresésekkel együtt); a `daily_api_calls` az aktuális napi fogyasztást jelzi. A becslés nem foglalja magában a lapozást / újrapróbálást.
+
+A `state_apply` `setting_set` művelete a `search_tabs` kulcson a `visible_groups` és `selected_groups` listákat, a `search_filter_<csoport>` kulcsokon a csoport saját szűrőit tárolja. A keresőből készített értesítési szabály az új minimumár-, iCloud-, GPU-gyártó- és típusbevonási feltételeket is megőrzi. A meglévő szabályok alapértékekkel működnek tovább; a lap oszlopai automatikusan bővülnek.

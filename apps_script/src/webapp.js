@@ -42,7 +42,11 @@ function runAction(action, params, secrets) {
   switch (action) {
     case 'ping':
       requireKeys(params, []);
-      return { version: API_VERSION, server_time: new Date().toISOString() };
+      return { version: API_VERSION, server_time: new Date().toISOString(),
+        search_config: { country_count: EU_COUNTRIES.length, groups: Object.fromEntries(Object.entries(DEVICE_GROUPS)
+          .map(([key, group]) => [key, { query_count: group.queries.length,
+            estimated_calls: group.queries.length * EU_COUNTRIES.length + Object.values(SUPPLEMENTARY_QUERIES[key] || {}).reduce((n, queries) => n + queries.length, 0) }])) },
+        ...dailyCounter() };
     case 'search': {
       requireKeys(params, ['queries', 'countries', 'device_groups']);
       const groups = searchValues(params.device_groups, Object.keys(DEVICE_GROUPS));

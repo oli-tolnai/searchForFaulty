@@ -24,3 +24,22 @@ Az új csoportok kiegészítő keresésének konfigurációja üres; mérés né
 A keresés nem indít szállítási getItem-hívást. Ismert díj esetén `yes`, egyébként korábbi, hat órán belüli `yes`/`no` gyorsítótár alkalmazható; enélkül `probably_no`, rejtett csoporttal. A „Leírás” lekérése ellenőrzi és gyorsítótárazza a szállítást, valamint az iPhone zárra utaló leírását is értelmezi. Hiányzó információból nem becsül szállítási díjat.
 
 A kliens és az új szabályszerkesztő kezdetben a korábbi Konzolok/Kontrollerek kijelölést tartja meg; a négy új csoport külön bekapcsolható. A search API explicit csoportlista nélkül mind a hatot lekéri. A régi, üres modelllistájú értesítési szabályok a két korábbi csoportnál maradnak; az új csoportok ezekhez külön hozzárendelhetők.
+
+## Finomítás és felületi átalakítás – 2026-11-18
+
+A fenti táblázat a korábbi döntéseket őrzi. Az új szabály felülírja az `iCloud Sp` / `iCloud Sperr` / `iCloud Gut`, illetve az elírt `Icload`, `iClod`, `Gespert`, `Gesspert` eseteket: ezek zároltra utalnak, ezért `icloud_locked`, rejtett, de megtekinthető csoportba kerülnek. Az „iCloud Gut” nem egyértelmű nyelvi bizonyíték: óvatos jelzésként kezeljük, nem igazolt műszaki tényként. A hirdetés leírása ellenőrizhető; a SIM-zár továbbra is külön fogalom.
+
+Támogatott iPhone-okból álló csomag: `phone_bundle`; más márkával / iPaddel vegyes telefoncsomag: `not_supported_bundle` (rejtett). Csak régi modellek: `unsupported_model`. Támogatott és régi iPhone együtt, vagy modell nélküli csomag: ellenőrzendő marad.
+
+A videokártyáknál felismerjük a gyártói előtag után álló egyértelmű 3070/3080-as modelleket, és különválasztjuk a régi, nem támogatott kártyákat, teljes asztali PC-ket, WLAN/SATA-kártyákat és a többkártyás csomagokat. Márkanévből, memóriaméretből vagy általános „GPU” szóból nem találunk ki modellt.
+
+A korábbi éles jelentés a [rögzített mérési jelentésben](new_device_search_verification_2026-11-17.md), a géppel olvasható adatok a mellette lévő JSON-ban vannak. A címekből készített fixture újrabesorolásával (nem új éles mérés):
+
+| Csoport | Korábbi ellenőrzendő | Új szabályokkal megmaradó |
+|---|---:|---:|
+| Switch | 0 | 0 |
+| Steam Deck | 0 | 0 |
+| iPhone | 165 | 94 |
+| Videokártya | 26 | 5 |
+
+Ez a korábban ellenőrzendő címek összehasonlítása; az aktuális kínálat és az összes tétel új élő darabszáma eltérhet. A GPU-nál megmaradó bizonytalan címek: „radeon Grafikkarte”, „sapphire radeon grafikkarte”, „GPU”, „Defekte Grafikkarte”, „asus rog strix”. Mind a 26 korábbi GPU-címhez önálló elvárt besorolás tartozik a tesztben. A régi fixture tíz elvárása az itt kért új zárolási / csomagszabály miatt változott, a tesztek nem lettek kikapcsolva.

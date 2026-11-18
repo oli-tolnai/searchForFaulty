@@ -7,6 +7,7 @@ const ITEM_TYPES = [
   'console', 'console_bundle', 'mainboard', 'not_console', 'controller', 'controller_bundle',
   'not_controller', 'third_party', 'unsupported_model', 'needs_review',
   'phone', 'phone_bundle', 'part', 'icloud_locked', 'gpu', 'gpu_bundle', 'not_gpu',
+  'not_supported_bundle',
 ];
 const ACTIVE_ITEM_TYPES = ['console', 'console_bundle', 'controller', 'controller_bundle', 'needs_review', 'phone', 'phone_bundle', 'gpu', 'gpu_bundle'];
 

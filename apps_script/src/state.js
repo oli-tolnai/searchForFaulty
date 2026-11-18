@@ -10,7 +10,7 @@ const STATE_COLUMNS = {
     'status', 'last_bid', 'last_checked_at', 'end_time', 'notified_at', 'revision', 'deleted'],
   alerts: ['id', 'models', 'max_total_price', 'include_unknown_shipping', 'enabled', 'revision', 'deleted',
     'name', 'device_groups', 'buying_options', 'max_price', 'known_shipping_only', 'ending_hours',
-    'include_keywords', 'exclude_keywords', 'countries', 'exclude_possibly_not_faulty', 'exclude_banned', 'include_title_faults'],
+    'include_keywords', 'exclude_keywords', 'countries', 'exclude_possibly_not_faulty', 'exclude_banned', 'include_title_faults', 'min_price', 'include_mainboards', 'include_third_party', 'only_icloud_free', 'hide_unknown_icloud', 'gpu_vendor'],
   notified: ['source', 'source_listing_id', 'notified_at'],
   notifications: ['id', 'created_at', 'kind', 'title', 'body', 'url',
     'source_listing_ids', 'delivered_devices', 'expires_at'],
@@ -245,7 +245,16 @@ function stateApply(params, secrets) {
       case 'setting_set':
         table = 'settings';
         if (op.key === 'filters') row = { key: op.key, value: filterSettings(op.value) };
-        else if (op.key === 'currency' && record(op.value) && ['EUR', 'HUF'].includes(op.value.currency)) {
+        else if (op.key === 'search_tabs') {
+          const val = op.value;
+          if (!record(val) || !['visible_groups', 'selected_groups'].every(key => Array.isArray(val[key]) && val[key].length && new Set(val[key]).size === val[key].length && val[key].every(group => Object.hasOwn(DEVICE_GROUPS, group)))) invalidState();
+          row = { key: op.key, value: { visible_groups: val.visible_groups, selected_groups: val.selected_groups } };
+        } else if (typeof op.key === 'string' && op.key.startsWith('search_filter_') && Object.hasOwn(DEVICE_GROUPS, op.key.slice(14))) {
+          const group = op.key.slice(14);
+          if (!record(op.value) || !['total','cheap','expensive','newest','ending'].includes(op.value.order)) invalidState();
+          const values = alertValues({ ...op.value, name: 'Keresési szűrő', device_groups: [group], enabled: true }, secrets);
+          row = { key: op.key, value: { ...values, order: op.value.order } };
+        } else if (op.key === 'currency' && record(op.value) && ['EUR', 'HUF'].includes(op.value.currency)) {
           row = { key: op.key, value: { currency: op.value.currency } };
         } else invalidState();
         break;

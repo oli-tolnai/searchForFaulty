@@ -40,21 +40,22 @@ function classifySteamDeck(title) {
 }
 
 function iphoneCloudStatus(title) {
-  const words = deviceWords(title);
+  const words = deviceWords(title).replace(/\b(?:icload|iclod)\b/g, 'icloud');
   const free = /\b(?:icloud (?:frei|free)|fmi off|ohne icloud|no icloud lock)\b/.test(words);
   // Remove negated/free phrases before checking locks. A positive lock overrides a separate free claim.
   const rest = words.replace(/\b(?:icloud (?:frei|free)|fmi off|ohne icloud(?: sperre| lock)?|no icloud lock)\b/g, ' ')
     .replace(/\b(?:ohne sim ?lock|sim ?lock ?frei|unlocked|debloque|entsperrt|sim ?lock(?:ed)?)\b/g, ' ');
-  const locked = /\b(?:(?:icloud|icload) (?:sperre|gesperrt|locked)|fmi on|aktivierungssperre|activation lock|mdm|locked|gesperrt|gesspert|bloque|bloccato|bloqueado)\b/.test(rest);
+  const locked = /\b(?:icloud (?:sp(?:err(?:e)?)?|sperre|gut|gesperrt|locked)|fmi on|aktivierungssperre|activation lock|mdm|locked|gesperrt|gespert|gesspert|bloque|bloccato|bloqueado)\b/.test(rest);
   return locked ? 'locked' : free ? 'free_by_seller' : 'unknown';
 }
 
 function iphoneModels(title) {
-  const words = title.split(/[,/&+]/).map((part, index) => {
+  const words = title.replace(/айфон/gi, 'iphone').replace(/плюс/gi, 'plus').split(/[,/&+]/).map((part, index) => {
     const text = deviceWords(part);
     return index && /iphone/i.test(title) && /^1[1-7]\b/.test(text) ? 'iphone ' + text : text;
   }).join(' ');
-  const matches = [...words.matchAll(/\biphone\s*(1[1-7])(e\b|\s*(?:pro max|pro|mini|plus|air)\b)?\b/g)];
+  const matches = [...words.matchAll(/\b(?:iphone|apple|app(e)?l|айфон)\s*(1[1-7])(e\b|\s*(?:pro max|pro|mini|plus|air)\b)?\b/g)]
+    .map(match => [match[0], match[2], match[3]]);
   return [...new Set(matches.map(match => 'iPhone ' + match[1] + (match[2]
     ? match[2] === 'e' ? 'e' : ' ' + (match[2].trim() === 'mini' ? 'mini' : match[2].trim().replace(/\b\w/g, c => c.toUpperCase())) : '')))];
 }
@@ -64,15 +65,18 @@ function classifyIphone(title) {
   const cloud = iphoneCloudStatus(title);
   const models = iphoneModels(title);
   const old = /\biphone\s*(?:x[rs]?|[1-8](?:gs|s|g|c)?|se)\b/.test(words);
-  const mixed = /\b(?:ipad|ipod|samsung|xiaomi|huawei|noname|poco|lg)\b/.test(words);
-  const bundle = multipleDevices(words) || models.length > 1;
+  const mixed = /\b(?:ipad|ipod|samsung|xiaomi|huawei|noname|poco|lg|sony|ericsson|nokia|motorola|oppo|honor|wiko|siemens|redmi)\b/.test(words);
+  const bundle = multipleDevices(words) || models.length > 1 || /\b(?:pack telefonia|mehrere gerate|iphones|joblot)\b/.test(words);
   let model = models.length === 1 ? models[0] : models.length ? models.join(' / ') : 'iPhone (változat nem ismert)';
   let type = 'phone';
   const explicitPart = /\b(?:original display und gehause|nur (?:ruckseite|display|gehause|akku|platine|mainboard)|backcover|rahmen)\b/.test(words) ||
     /\b(?:display|screen|ecran|akku|battery|mainboard|motherboard|platine|gehause)\b/.test(words) &&
     !/\b(?:\d+\s*gb|smartphone|handy|gerate|defekt|gebrochen|gesprungen|schaden|beschadigt|spender|panic|kaputt|reparatur|totalschaden)\b/.test(words);
-  if (bundle && (old || mixed || !models.length)) type = 'needs_review';
+  if (bundle && mixed) type = 'not_supported_bundle';
+  else if (bundle && old && !models.length) { type = 'unsupported_model'; model = 'iPhone (régebbi modell)'; }
+  else if (bundle && (old || !models.length)) type = 'needs_review';
   else if (old) { type = 'unsupported_model'; model = 'iPhone (régebbi modell)'; }
+  else if (mixed && !models.length) type = 'unsupported_model';
   else if (explicitPart) type = 'part';
   else if (!models.length) type = 'needs_review';
   else if (bundle) type = 'phone_bundle';
@@ -87,6 +91,8 @@ function classifyGpu(title) {
     /^\s*(?:original )?(?:kuhler|lufter|cooler|heatsink)\b/.test(words) ||
     /\b(?:kuhler|lufter|cooler|fan)\b/.test(words) && !/\b(?:grafikkarte|graphics card|scheda grafica|carte graphique|\d+\s*gb)\b/.test(words);
   if (part) return result('not_gpu');
+  if (/\b(?:desktop pc|wlan|sata|erweiterungskarten|audio ?karten)\b/.test(words)) return result('not_gpu');
+  if (/\bxg mobile 3080\b/.test(words) || /\b(?:asus tuf|msi|gigabyte)\s+3070\b/.test(words)) return result('gpu', 'RTX 30');
   const unsupported = /\b(?:gtx\s*\d|gt\s*\d|rx\s*[45]\d{2}\b|rx\s*5600|vega|quadro|rtx\s*a\d|workstation|radeon\s*(?:hd|x|\d{4})|ati\s*(?:hd|x)\d|eah\d|gf 4|ti 4200|hd\s*\d{4})/.test(words);
   const rtx = [...words.matchAll(/\brtx\s*(\d{4})(?:\s*(super|ti))?/g)];
   const rx = [...words.matchAll(/\brx\s*(\d{4})/g)];
@@ -95,9 +101,10 @@ function classifyGpu(title) {
   const families = new Set([...rtx.filter(match => /^(20|30|40|50)/.test(match[1])).map(match => 'RTX ' + match[1].slice(0, 2)),
     ...rx.filter(match => match[1] === '5700' || /^[679]\d{3}$/.test(match[1])).map(match => 'RX ' + match[1][0] + '000')]);
   if (!families.size) {
-    if (/\b(?:rx\s*5[0-6]\d{2}|r[579]\s*\d{3}[a-z]*|firepro|radeon pro|radeon vii|ati|vintage|retro|agp|x\d{3,4}|a[hkx]?\d{4})\b/.test(words)) {
+    if (/\b(?:rx\s*5[0-6]\d{2}[a-z]*|r[579](?:\s*\d{3}[a-z]*)?|r290|firepro|gpro|radeon pro|radeon vii|ati|vintage|retro|agp|x\d{3,4}|a[hkx]?\d{4}[a-z]*|6870|4890|rtx\s*\d{3}|g?ddr[235])\b/.test(words) || /\b(?:[128]\s*gb|\d+\s*mb)\b/.test(words)) {
       return result('unsupported_model', 'Nem támogatott videokártya');
     }
+    if (multipleDevices(words) || /\b(?:graphics cards bundle|grafikkarten fur ersatzteile)\b/.test(words)) return result('gpu_bundle');
     return result('needs_review');
   }
   const model = [...families].join(' / ');

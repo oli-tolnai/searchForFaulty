@@ -915,10 +915,10 @@
     "device_group": "iphone",
     "title": "Apple iPhone 12 iCloud Gut für Ersatzteile! Defekt",
     "expected": {
-      "item_type": "phone",
+      "item_type": "icloud_locked",
       "console_model": "iPhone 12",
       "is_banned": false,
-      "icloud_status": "unknown"
+      "icloud_status": "locked"
     }
   },
   {
@@ -1751,10 +1751,10 @@
     "device_group": "iphone",
     "title": "Apple iPhone 14 Pro 512 GB Grau iOS Smartphone – Ersatzteil/defekt mit iCloud Sp",
     "expected": {
-      "item_type": "phone",
+      "item_type": "icloud_locked",
       "console_model": "iPhone 14 Pro",
       "is_banned": false,
-      "icloud_status": "unknown"
+      "icloud_status": "locked"
     }
   },
   {
@@ -2059,7 +2059,7 @@
     "device_group": "iphone",
     "title": "14x Apple Konvolut u.a. iPad, iPhone backcover, Rahmen, etc. Ersatzteile Bastler",
     "expected": {
-      "item_type": "needs_review",
+      "item_type": "not_supported_bundle",
       "console_model": "iPhone (változat nem ismert)",
       "is_banned": false,
       "icloud_status": "unknown"
@@ -2147,7 +2147,7 @@
     "device_group": "iphone",
     "title": "Apple Konvolut - iPhones, iPods, iPad mini 2 - ungetestet - Ersatzteil/defekt",
     "expected": {
-      "item_type": "needs_review",
+      "item_type": "not_supported_bundle",
       "console_model": "iPhone (változat nem ismert)",
       "is_banned": false,
       "icloud_status": "unknown"
@@ -2158,7 +2158,7 @@
     "device_group": "iphone",
     "title": "Smartphone Handy Tablet Konvolut Lot 10 Stück Samsung IPhone Poco Xiaomi Teildef",
     "expected": {
-      "item_type": "needs_review",
+      "item_type": "not_supported_bundle",
       "console_model": "iPhone (változat nem ismert)",
       "is_banned": false,
       "icloud_status": "unknown"
@@ -2191,7 +2191,7 @@
     "device_group": "iphone",
     "title": "Konvolut 2 Apple iPhones ein 6s 64Gb und ein 7 32Gb und ein noname",
     "expected": {
-      "item_type": "needs_review",
+      "item_type": "not_supported_bundle",
       "console_model": "iPhone (változat nem ismert)",
       "is_banned": false,
       "icloud_status": "unknown"
@@ -2202,7 +2202,7 @@
     "device_group": "iphone",
     "title": "Handy Tablet Konvolut iPhone iPad Samsung LG Huawei defekt",
     "expected": {
-      "item_type": "needs_review",
+      "item_type": "not_supported_bundle",
       "console_model": "iPhone (változat nem ismert)",
       "is_banned": false,
       "icloud_status": "unknown"
@@ -2213,7 +2213,7 @@
     "device_group": "iphone",
     "title": "Smartphone Konvolut. Samsung Z Flip 4, X27, Samsung Galaxy Folder 2, IPhone 5etc",
     "expected": {
-      "item_type": "needs_review",
+      "item_type": "not_supported_bundle",
       "console_model": "iPhone (változat nem ismert)",
       "is_banned": false,
       "icloud_status": "unknown"
