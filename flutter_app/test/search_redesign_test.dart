@@ -360,4 +360,36 @@ void main() {
       await tester.binding.setSurfaceSize(null);
     },
   );
+  testWidgets('horizontal tabs keep an independent scroll offset', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(430, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: SearchScreen(
+          clock: () => testTime,
+          search: (_) async => SearchResult.fromJson(search()),
+          loadDetails: (_) async => ListingDetails.fromJson(details),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final tabs = find.byKey(const PageStorageKey('device-group-tabs'));
+    await tester.drag(tabs, const Offset(-620, 0));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.widgetWithText(ChoiceChip, 'Switch'));
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Switch'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Keresés ·').hitTestable(), findsOneWidget);
+    expect(
+      find.widgetWithText(ChoiceChip, 'Switch').hitTestable(),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Ebben a csoportban még nem kerestél').hitTestable(),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
 }

@@ -69,6 +69,9 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
   final failures = <String, SearchResult>{};
   PingResult? configuration;
   final localFilters = <String, GroupSearchFilter>{};
+  final tabKeys = {
+    for (final group in ['all', ...deviceGroups]) group: GlobalKey(),
+  };
   final selected = {'consoles', 'controllers'};
   Timer? timer;
   late final cachedGroups = widget.results.groups.keys.toSet();
@@ -476,6 +479,7 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
 
   Widget tabs() {
     return SingleChildScrollView(
+      key: const PageStorageKey('device-group-tabs'),
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
@@ -483,12 +487,19 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: ChoiceChip(
+                key: tabKeys[group],
                 avatar: Icon(groupIcons[group], size: 18),
                 selected: tab == group,
                 onSelected: (_) => setState(() {
                   tab = group;
                   hidden = null;
                   if (group != 'all') filterGroup = group;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    final target = tabKeys[group]?.currentContext;
+                    if (mounted && target != null) {
+                      Scrollable.ensureVisible(target, alignment: .5);
+                    }
+                  });
                 }),
                 label: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -746,6 +757,8 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
               title: const Text('Keresés részletei'),
               children: [
                 Text('Mai API-felhasználás: ${todayUsage ?? 'Nem ismert'}'),
+                if (MoneyScope.displayOf(context).rate != null)
+                  Text(MoneyScope.displayOf(context).rateLabel),
                 for (final group in scopedGroups)
                   if ((failures[group] ?? widget.results.groups[group])
                       case final result?) ...[
@@ -763,7 +776,9 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
                         children: [
                           for (final query in country.queries)
                             ListTile(
-                              title: Text(query.query),
+                              title: Text(
+                                '${query.query} · ${statusLabel(query.status)}',
+                              ),
                               subtitle: Text(
                                 '${query.error ?? '${query.count} találat'}${query.warnings.isEmpty ? '' : '\n${query.warnings.join('\n')}'}',
                               ),
