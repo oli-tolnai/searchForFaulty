@@ -4,10 +4,6 @@ A personal **Android and Windows app** that searches EU eBay sites for **faulty,
 
 The app's user interface and the developer documentation in the subfolders are in Hungarian.
 
-| Desktop | Phone filters |
-|---|---|
-| ![Desktop view](docs/screenshots/desktop-all.png) | ![Phone filters](docs/screenshots/phone-search-filters.png) |
-
 ## Features
 
 - **Device groups in separate tabs:** PS5 and Xbox Series consoles, DualSense and Xbox controllers, Nintendo Switch (V1, V2, Lite, OLED, Switch 2), Steam Deck, iPhone 11–17 and graphics cards (RTX 20–50, RX 5700–9000). Each tab keeps its own results until you search that group again.
