@@ -1,131 +1,75 @@
 # Console Deal Finder
 
-A Console Deal Finder hibás és alkatrésznek árult konzolokat keres az
-eBay-en, közvetlen magyarországi szállítással. A React felület a FastAPI
-keresőjét használja.
+> **EN:** A personal Android & Windows app (Flutter) that finds faulty, for-parts consoles, controllers, Nintendo Switch, Steam Deck, iPhones and graphics cards on EU eBay sites that ship directly to Hungary. Backend: Google Apps Script + Google Sheets, using the official eBay Browse API. UI and docs are in Hungarian.
 
-## Telepítés Windowson
+Saját használatra készült **Android- és Windows-alkalmazás**, amely EU-s eBay-oldalakon keres **hibás, alkatrésznek vagy javításra árult** készülékeket, kizárólag olyanokat, amelyek **közvetlenül Magyarországra rendelhetők**. A cél: megtalálni a megjavítható és továbbértékesíthető készülékeket, egy helyen, valós és friss adatokkal.
 
-Windowsra a Python 3.14 ajánlott, a legkisebb támogatott verzió a 3.12.
-A Python telepítéskezelőjével (`pymanager`), a repó
-gyökeréből, PowerShellben futtasd:
+| Asztali nézet | Telefonos szűrők |
+|---|---|
+| ![Asztali nézet](docs/screenshots/desktop-all.png) | ![Telefonos szűrők](docs/screenshots/phone-search-filters.png) |
 
-```powershell
-cd backend
-pymanager exec -V:3.14 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+## Funkciók
+
+- **Eszközcsoportok külön fülön:** PS5 és Xbox Series konzolok, DualSense és Xbox kontrollerek, Nintendo Switch (V1, V2, Lite, OLED, Switch 2), Steam Deck, iPhone 11–17, videokártyák (RTX 20–50, RX 5700–9000). Minden fül megtartja a saját találatait, amíg abban a csoportban nem indítasz új keresést.
+- **Csak Magyarországra szállítható ajánlatok**, a magyarországi szállítási díjjal és teljes árral. Az ismeretlen szállítási díjú tételek külön, megtekinthető csoportba kerülnek.
+- **Automatikus besorolás a cím alapján:** modell és változat, csomag, alkatrész, nem támogatott modell, harmadik féltől származó kontroller, tiltott (banned) konzol, iCloud-zárolt iPhone, „lehet, hogy nem hibás” jelölés. Minden rejtett csoport megtekinthető.
+- **Szűrők** azonnal, új lekérdezés nélkül: modell, ár, teljes ár, hirdetéstípus (aukció / fix ár), zárási idő, ország, kulcsszó.
+- **EUR ↔ HUF:** bármelyik árra koppintva az egész app átvált (Európai Központi Bank napi árfolyama).
+- **Kedvencek, elrejtés, „ÚJ” jelölés**, szinkronizálva a telefon és a gép között.
+- **Aukciófigyelés és értesítés:** ha egy figyelt aukció aznap zárul, és még a megadott határ alatt van; értesítés új, feltételeknek megfelelő találatról.
+- **Hirdetésleírás** egy kattintással, fordítás a Google Fordítóval.
+- **0 Ft/hó:** nincs saját szerver és nincs fizetős szolgáltatás.
+
+## Architektúra
+
+```
+ Telefon (Flutter) ─┐                         ┌─ eBay Browse API
+                    ├─► Apps Script webapp ───┤
+ Gép (Flutter)     ─┘   + időzített triggerek └─ ECB-árfolyam
+                              │
+                       Google Sheets (állapot, értesítési sor)
 ```
 
-## eBay-kulcsok beállítása és ellenőrzése
+| Rész | Technológia | Mappa |
+|---|---|---|
+| Kliens | Flutter (Dart), Android és Windows | [`flutter_app/`](flutter_app/README.md) |
+| Háttérrendszer | Google Apps Script (V8), webapp és időzített triggerek | [`apps_script/`](apps_script/README.md) |
+| Adattár | Google Sheets (a felhasználó saját táblázata) | – |
+| Adatforrás | eBay Browse API (hivatalos, application token) | – |
+| Prototípus (referencia) | Python FastAPI + React | [`backend/`](backend/README.md), `frontend/` |
 
-1. Jelentkezz be az [eBay Developers Program](https://developer.ebay.com/)
-   oldalán, és az **Application Keys** részen válaszd a **Production**
-   kulcskészletet. Az éles kulcshoz teljesíteni kell a Marketplace Account
-   Deletion követelményt. Ehhez a projekthez a fejlesztői portálon mentesség
-   kérhető, mivel a szkript nem tárol eBay-felhasználói adatot.
-2. A repó gyökerében másold a `.env.example` fájlt `.env` néven, és töltsd ki:
-   `EBAY_CLIENT_ID` = **App ID**, `EBAY_CLIENT_SECRET` = **Cert ID**.
-   A Dev ID nem szükséges. Az üresen hagyott `EBAY_ENV` értéke `production`;
-   a `sandbox` beállítással a szkript csak a tesztkörnyezet tokenjét ellenőrzi.
-   A `.env` fájlt ne commitold.
-3. A `backend` mappában futtasd:
+Az eBay-kulcsok kizárólag az Apps Script projekt *Script Properties* tárában vannak. Az app csak a webapp címét és egy saját kliens-tokent ismeri, és ezeket a rendszer biztonságos tárolójában őrzi.
 
-   ```powershell
-   .\.venv\Scripts\python.exe -m scripts.check_ebay
-   ```
+## Saját példány telepítése
 
-A szkript kiírja a token lejáratát, a napi Browse-keretet és a hátralévő
-hívásokat, ha az Analytics API megadja ezeket, majd a Taxonomy API-ból
-ellenőrzött konzolkategóriával német eBay-próbakeresést futtat. Legfeljebb
-tíz tételt mutat, és jelzi a nem EU-s vagy ismeretlen termékhelyet. A token
-értéke és az eladói adatok nem kerülnek a kimenetbe. A szkript nem ment
-hirdetéseket vagy válaszokat fájlba, illetve adatbázisba.
+A rendszer saját példányként futtatható: mindenki a saját eBay-kulcsával és a saját Google-fiókjában.
 
-A `buyingOptions:{AUCTION|FIXED_PRICE}` szűrővel a próbakeresés aukciókat és
-fix áras hirdetéseket is kér. Minden tételnél megjelennek az eBay által
-visszaadott hirdetéstípusok, köztük az ajánlattétel, ha elérhető.
-A hiányzó vagy számított szállítási díj „Nem ismert”.
-A sikeres tokenkérés önmagában még nem igazolja a Browse-hozzáférést.
-Az eBay-adatok használatára az [API License Agreement](https://developer.ebay.com/develop/api-license-agreement)
-vonatkozik.
+1. **eBay fejlesztői kulcs:** regisztrálj a [developer.ebay.com](https://developer.ebay.com/) oldalon, és hozz létre egy *Production* kulcskészletet. A *Marketplace Account Deletion* értesítések alól mentesség kérhető, mert az alkalmazás nem tárol eBay-felhasználói adatot.
+2. **Apps Script háttérrendszer:** az [`apps_script/README.md`](apps_script/README.md) lépései szerint (feltöltés `clasp`-pal, Script Properties, webapp-telepítés).
+3. **Flutter-app:** a [`flutter_app/README.md`](flutter_app/README.md) szerint (Windows-build, APK). Első indításkor add meg a webapp címét és a kliens-tokent.
 
-Az eBay helyszűrőinek éles összevetéséhez a `backend` mappából futtasd a
-`python -m scripts.compare_location_filters` parancsot az aktivált virtuális
-környezetben. A szkript változatonként egy, legfeljebb 200 tételes oldalt
-vizsgál. Az országeloszlást és az egyedi EU-s tételek számát a visszakapott
-oldalakból számolja, az API által közölt teljes találatszámot külön mutatja.
+## Fejlesztés
 
-A `python -m scripts.compare_country_strategy` parancs ugyaninnen futtatható.
-A piacterek és a kulcsszó hatását vizsgálja. Lekérdezésenként legfeljebb három,
-egyenként 200 tételes oldalt kér, és a lekért oldalak egyedi hirdetéseit veti össze.
+- A specifikáció: [`console_deal_finder_terv.md`](console_deal_finder_terv.md), benne az élesben kimért eBay-keresési stratégia.
+- A kódoló agenteknek szóló szabályok: [`AGENTS.md`](AGENTS.md).
+- Vizsgálatok és mérési jelentések: [`docs/`](docs/).
 
-A `python -m scripts.diagnose_search_quality --shipping-only` ugyanazon a
-mintán hasonlítja össze a szállítási fejléceket. A harmadik változathoz
-opcionálisan megadható a `HU_POSTAL_CODE` a gyökérszintű `.env` fájlban.
-
-## Keresési API
-
-Az elindított backend `POST /api/search` végpontja üres JSON-objektummal
-az összes beállított országban keres. Opcionális szűrők a `max_price`,
-`max_total_price`, `buying_options` (`auction`, `fixed` vagy `both`) és
-`console_models` (modellnevek listája). Az `include_mainboards` bekapcsolja
-az alaplapokat. Az `item_type_counts` az aktív, EU-s, deduplikált tételeket
-számolja a válasz szűrőinek alkalmazása előtt. Az ismeretlen szállítási díjú
-találatok az `unknown_shipping` listába kerülnek. A válaszban
-`partial` jelzi a részleges országkudarcot. Ha minden ország hibát ad,
-a végpont HTTP 502 választ küld az országonkénti hibákkal.
-
-A gyökérszintű `.env` fájlban az `EBAY_SEARCH_QUERIES` az eBay kulcsszavait JSON-listaként,
-az `EBAY_COUNTRIES` pedig az országok JSON-listáját állítja be
-(például `EBAY_COUNTRIES='["DE","FR"]'`). Az alapértelmezés
-`["ps5","xbox series"]` és mind a 27 EU-tagállam. A backend a mért,
-URL-kódolt, irányítószám nélküli fejlécet használja.
-A két árkorlát a tétel pénznemében értendő. A teljes árhoz az árnak és a
-szállításnak azonos pénznemben kell szerepelnie. A napi hívásszámláló a
-backend folyamatának memóriájában, UTC szerinti napokra bontva működik.
-
-## Tesztelés és helyi indítás
-
-A `backend` mappában:
+Tesztek:
 
 ```powershell
-.\.venv\Scripts\pytest.exe
-.\.venv\Scripts\ruff.exe check .
-.\.venv\Scripts\python.exe -m uvicorn app.main:app
+cd apps_script; npm ci; npm test; npm run lint
 ```
-
-A tesztek HTTP-mockokat használnak, így eBay-kulcs és internetkapcsolat nélkül
-futtathatók. Az elindított backend a
-[`http://127.0.0.1:8000/api/health`](http://127.0.0.1:8000/api/health) címen
-`{"status":"ok"}` választ ad. Ehhez sem kell eBay-kulcs.
-
-## A webes felület indítása Windowson
-
-Telepítsd a Node.js LTS kiadását. A kereséshez legyen kitöltve a repó
-gyökerében lévő `.env` az eBay-kulcsokkal.
-
-Az első PowerShell-ablakban a repó gyökeréből indítsd a backendet:
 
 ```powershell
-cd backend
-.\.venv\Scripts\python.exe -m uvicorn app.main:app
+cd flutter_app; flutter pub get; flutter analyze; flutter test
 ```
 
-A második PowerShell-ablakban, szintén a repó gyökeréből:
+A tesztek az eBay API-t nem hívják, rögzített mintaválaszokkal dolgoznak.
 
-```powershell
-cd frontend
-npm ci
-npm run dev
-```
+## Adatkezelés és jogi megjegyzések
 
-Nyisd meg a [keresőt](http://127.0.0.1:5173). A Vite az `/api` kéréseket
-a helyi backend 8000-es portjára továbbítja.
-
-A frontend ellenőrzése a `frontend` mappából:
-
-```powershell
-npm run lint
-npm run build
-npm test
-```
+- Az alkalmazás kizárólag a **hivatalos eBay Browse API-t** használja, scraping nélkül. A használatra az [eBay API License Agreement](https://developer.ebay.com/develop/api-license-agreement) vonatkozik.
+- **Eladói vagy más eBay-felhasználói adatot az alkalmazás nem tárol.** Csak a hirdetés adatai (azonosító, cím, ár, szállítás, hely, link) kerülnek tárolásra, a frissességi szabályok szerint.
+- A tesztekben és a mérési jelentésekben szereplő hirdetéscímek nyilvános eBay-hirdetésekből származnak, eladói adat nélkül.
+- A projekt nem áll kapcsolatban az eBay Inc.-vel, a Sony-val, a Microsofttal, a Nintendóval, a Valve-val, az Apple-lel, az NVIDIA-val vagy az AMD-vel. A márkanevek a tulajdonosaik védjegyei.
+- Az alkalmazás csak tájékoztat. A vásárlás előtt mindig ellenőrizd a hirdetést, a szállítást és (iPhone esetén) az iCloud-zár állapotát az eladónál.
