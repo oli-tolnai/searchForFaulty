@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'fixtures/responses.dart';
+import 'fixtures/ui_actions.dart';
 
 void main() {
   test(
@@ -91,12 +92,14 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.widgetWithText(FilterChip, 'Switch'));
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Switch'));
       await tester.pumpAndSettle();
       expect(calls, 0);
       expect(find.text('Vizsgált Switch készülék'), findsNothing);
-      await tester.tap(
-        find.text('1 · Valószínűleg nem szállít Magyarországra'),
+      await openHidden(
+        tester,
+        'Valószínűleg nem szállít Magyarországra',
+        count: 1,
       );
       await tester.pumpAndSettle();
       expect(find.text('Vizsgált Switch készülék'), findsOneWidget);

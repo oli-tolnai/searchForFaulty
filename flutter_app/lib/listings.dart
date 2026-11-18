@@ -15,6 +15,7 @@ enum HiddenGroup {
   part('Nem telefon (alkatrész)', 'part'),
   locked('iCloud-zárolt (csak alkatrésznek)', 'icloud_locked'),
   notGpu('Nem videokártya', 'not_gpu'),
+  unsupportedBundle('Nem támogatott vegyes csomag', 'not_supported_bundle'),
   noShipping('Valószínűleg nem szállít Magyarországra', null);
 
   const HiddenGroup(this.title, this.type);

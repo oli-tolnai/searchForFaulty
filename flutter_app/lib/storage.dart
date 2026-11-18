@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'api/models.dart';
 import 'api/webapp.dart';
+import 'group_results.dart';
 
 class SettingsStore {
   const SettingsStore();
@@ -73,6 +74,34 @@ class SearchCache {
         ? 'last-search.json'
         : 'last-search-$stateId.json';
     return File('${directory.path}${Platform.pathSeparator}$filename');
+  }
+
+  Future<GroupResults> readGroups() async {
+    try {
+      final file = await _file();
+      if (!await file.exists()) return GroupResults();
+      return GroupResults.fromJson(
+        object(jsonDecode(await file.readAsString())),
+      )..expire(DateTime.now());
+    } on Exception {
+      return GroupResults();
+    }
+  }
+
+  static final _writes = <String, Future<void>>{};
+  Future<void> writeGroups(GroupResults results) {
+    results.expire(DateTime.now());
+    final encoded = jsonEncode(results.toJson());
+    final next = (_writes[stateId] ?? Future<void>.value())
+        .catchError((Object _) {})
+        .then((_) async {
+          final file = await _file();
+          final pending = File('${file.path}.tmp');
+          await pending.writeAsString(encoded, flush: true);
+          await pending.rename(file.path);
+        });
+    _writes[stateId] = next;
+    return next;
   }
 
   Future<SearchResult?> read() async {

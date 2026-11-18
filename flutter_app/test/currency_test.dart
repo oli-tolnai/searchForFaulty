@@ -22,7 +22,7 @@ void main() {
       'HUF',
       ExchangeRate.fromJson({...rateJson, 'eur_huf': 392.15, 'stale': true}),
     );
-      expect(display.format('115.567', 'EUR'), '45 320 Ft');
+    expect(display.format('115.567', 'EUR'), '45 320 Ft');
     expect(display.format(null, 'EUR'), 'Nem ismert');
     expect(display.format('123', 'GBP'), 'Nem ismert');
     expect(
@@ -95,8 +95,16 @@ void main() {
           ),
         ),
       );
-      final maxPrice = find.widgetWithText(TextField, 'Max. vételár');
-      final maxTotal = find.widgetWithText(TextField, 'Max. teljes ár');
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Konzol'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Szűrők'));
+      await tester.pumpAndSettle();
+      Finder amount(String label) => find.widgetWithText(
+        TextFormField,
+        '$label (${state.currency == 'HUF' ? 'Ft' : 'EUR'})',
+      );
+      final maxPrice = amount('Ár eddig');
+
       await tester.enterText(maxPrice, '100');
       await tester.pumpAndSettle();
       expect(find.text('75 €'), findsOneWidget);
@@ -106,17 +114,39 @@ void main() {
       expect(find.text('30 000 Ft'), findsOneWidget);
       expect(find.text('4 800 Ft'), findsOneWidget);
       expect(find.text('34 800 Ft'), findsOneWidget);
-      expect(tester.widget<TextField>(maxPrice).controller!.text, '40 000');
-      expect(state.filters!['max_price'], 100);
+      expect(
+        tester
+            .widget<EditableText>(
+              find.descendant(
+                of: amount('Ár eddig'),
+                matching: find.byType(EditableText),
+              ),
+            )
+            .controller
+            .text,
+        '40 000',
+      );
+      expect(state.searchFilter('consoles').amount('max_price'), 100);
 
-      await tester.enterText(maxTotal, '36 001');
+      await tester.enterText(amount('Max. teljes ár'), '36 001');
       await tester.pumpAndSettle();
-      expect(state.filters!['max_total'], 90.0025);
+      expect(state.searchFilter('consoles').amount('max_total_price'), 90.0025);
       await tester.tap(find.text('4 800 Ft'));
       await tester.pumpAndSettle();
       expect(state.currency, 'EUR');
-      expect(tester.widget<TextField>(maxTotal).controller!.text, '90');
-      expect(state.filters!['max_total'], 90.0025);
+      expect(
+        tester
+            .widget<EditableText>(
+              find.descendant(
+                of: amount('Max. teljes ár'),
+                matching: find.byType(EditableText),
+              ),
+            )
+            .controller
+            .text,
+        '90',
+      );
+      expect(state.searchFilter('consoles').amount('max_total_price'), 90.0025);
       expect(find.text('12 €'), findsOneWidget);
     },
   );

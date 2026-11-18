@@ -13,6 +13,7 @@ class SettingsScreen extends StatefulWidget {
     this.initial,
     this.initialError,
     this.shared,
+    this.navigation,
     this.sendTestNotification,
     this.notificationsEnabled = true,
     this.changeNotifications,
@@ -23,6 +24,7 @@ class SettingsScreen extends StatefulWidget {
   final WebappSettings? initial;
   final String? initialError;
   final SharedState? shared;
+  final Widget? navigation;
   final Future<void> Function(WebappSettings settings) save;
   final Future<void> Function(WebappSettings settings)? sendTestNotification;
   final bool notificationsEnabled;
@@ -183,6 +185,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(title: const Text('Console Deal Finder')),
+      bottomNavigationBar: widget.navigation,
       body: SafeArea(
         child: Align(
           alignment: Alignment.topCenter,
@@ -201,6 +204,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(height: 24),
                 if (widget.shared case final shared?) ...[
+                  ListenableBuilder(
+                    listenable: shared,
+                    builder: (context, _) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Látható keresési fülek'),
+                        Wrap(
+                          spacing: 6,
+                          children: [
+                            for (final entry in deviceGroupLabels.entries)
+                              FilterChip(
+                                label: Text(entry.value),
+                                selected: shared.visibleSearchGroups.contains(
+                                  entry.key,
+                                ),
+                                onSelected: (selected) {
+                                  final groups = shared.visibleSearchGroups
+                                      .toSet();
+                                  if (!selected && groups.length == 1) return;
+                                  selected
+                                      ? groups.add(entry.key)
+                                      : groups.remove(entry.key);
+                                  unawaited(
+                                    shared.setVisibleSearchGroups(
+                                      groups.toList(),
+                                    ),
+                                  );
+                                },
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                  ),
                   ListenableBuilder(
                     listenable: shared,
                     builder: (context, _) => Text(

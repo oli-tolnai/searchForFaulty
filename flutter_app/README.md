@@ -55,3 +55,13 @@ A kedvencek frissítése a lap megnyitásakor és a keresés után indulhat, leg
 5. Az alkalmazás **Beállítások** lapján kapcsold be az **Értesítések** kapcsolót, majd válaszd a **Próbaértesítés** gombot. Itt látható az utolsó sikeres értesítés-lekérés időpontja is.
 
 Az Android hálózat mellett nagyjából 15 percenként ad lehetőséget a háttérben történő lekérésére. Az ütemezés késhet. Windowson az alkalmazás indításkor és futás közben ötpercenként ellenőrzi a sort. [A WorkManager időzítéséről](https://developer.android.com/develop/background-work/background-tasks/persistent/getting-started/define-work)
+
+## Csoportfülek és helyi szűrők
+
+A Keresés oldalon az Összes, Konzol, Kontroller, Switch, Steam Deck, iPhone és Videokártya fülek külön eredménylistát és frissítési időt tartanak. A **Keresés** csak az adott csoportot frissíti. Az **Összes kijelölt frissítése** sorban frissíti a kijelölt csoportokat; 150 feletti vagy ismeretlen költségnél megerősítést kér. A becslés a szerver ország- és lekérdezés-konfigurációjából jön; lapozás és újrapróbálás többletet jelenthet.
+
+A **Szűrők** telefonon alsó panelt, széles ablakban oldalsó panelt nyit. A beállítások csoportonként külön szinkronizálódnak, és azonnal hatnak a letöltött listára, eBay-hívás nélkül. Az aktív feltételek chipenként eltávolíthatók. Az **Értesítés ilyen találatokról** szerkeszthető szabályt készít elő az aktuális csoport szűrőiből. Az árak bevitele a kiválasztott pénznemben történik, tárolásuk EUR.
+
+Az összesítő részletei lenyithatók; a lista alján a **Rejtett tételek** sávból nyílnak a külön csoportnézetek. A látható fülek a Beállításokban választhatók ki és szinkronizálódnak. Telefonon alsó navigáció, széles ablakban oldalsó navigáció látható.
+
+A helyi gyorsítótár csoportonként megmarad újraindítás után is, részleges eredménynél a hibajelzésekkel együtt. Egy másik csoport keresése nem írja felül. Két óra után figyelmeztetés és „Nem ellenőrzött” jelölés látszik; hat óra után a régi hirdetési adatok kikerülnek, de az utolsó keresés időpontja megmarad. Sikertelen frissítés nem törli a korábbi listát.

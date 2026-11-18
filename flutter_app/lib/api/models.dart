@@ -161,6 +161,7 @@ const itemTypes = [
   'third_party',
   'unsupported_model',
   'needs_review',
+  'not_supported_bundle',
   'phone',
   'phone_bundle',
   'part',
@@ -403,6 +404,7 @@ class SearchResult {
                     'gpu',
                     'gpu_bundle',
                     'not_gpu',
+                    'not_supported_bundle',
                   ].contains(type)
               ? 0 // Offline snapshots from before controller support.
               : Fields(fields.required<Json>('item_type_counts')).count(type),
@@ -467,9 +469,28 @@ class PingResult {
   PingResult.fromJson(Object? value) : this._(Fields(value));
   PingResult._(Fields fields)
     : version = fields.required<String>('version'),
-      serverTime = fields.date('server_time');
+      serverTime = fields.date('server_time'),
+      searchConfig = fields.json['search_config'] == null
+          ? null
+          : object(fields.json['search_config']),
+      dailyApiCalls = fields.json['daily_api_calls'] == null
+          ? null
+          : fields.count('daily_api_calls');
   final String version;
   final DateTime serverTime;
+  final Json? searchConfig;
+  final int? dailyApiCalls;
+  int? estimatedSearchCalls(Iterable<String> groups) {
+    final config = searchConfig;
+    if (config == null) return null;
+    final rows = Fields(config).required<Json>('groups');
+    var total = 0;
+    for (final group in groups) {
+      if (!rows.containsKey(group)) return null;
+      total += Fields(rows[group]).count('estimated_calls');
+    }
+    return total;
+  }
 }
 
 class ListingDetails {

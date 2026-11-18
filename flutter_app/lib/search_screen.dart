@@ -1,13 +1,12 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:material_ui/material_ui.dart';
 
 import 'api/models.dart';
-import 'api/webapp.dart';
 import 'currency.dart';
+import 'group_results.dart';
 import 'listing_card.dart';
-import 'listings.dart';
+import 'search_workspace.dart';
 import 'sync.dart';
 import 'watch_screen.dart';
 
@@ -15,10 +14,14 @@ class SearchScreen extends StatefulWidget {
   const SearchScreen({
     super.key,
     this.initial,
+    this.initialGroups,
+    this.saveGroups,
+    this.loadConfig,
     required this.search,
     required this.loadDetails,
     this.saveResult,
     this.openSettings,
+    this.settingsPage,
     this.shared,
     this.sanitize,
     this.watchNavigation,
@@ -26,10 +29,14 @@ class SearchScreen extends StatefulWidget {
     this.clock = DateTime.now,
   });
   final SearchResult? initial;
+  final GroupResults? initialGroups;
+  final Future<void> Function(GroupResults)? saveGroups;
+  final Future<PingResult> Function()? loadConfig;
   final Future<SearchResult> Function(Set<String> groups) search;
   final Future<ListingDetails> Function(String) loadDetails;
   final Future<void> Function(SearchResult)? saveResult;
   final VoidCallback? openSettings;
+  final Widget Function(Widget? navigation)? settingsPage;
   final SharedState? shared;
   final String Function(String)? sanitize;
   final Listenable? watchNavigation;
@@ -42,58 +49,37 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen>
     with WidgetsBindingObserver {
-  final title = TextEditingController();
-  final price = TextEditingController();
-  final total = TextEditingController();
-  double? maxPriceEuro, maxTotalEuro;
-  MoneyDisplay? inputDisplay;
-  String localCurrency = 'EUR';
-  final models = <String>{};
-  final selectedDeviceGroups = {'consoles', 'controllers'};
-  final unavailable = <String>{};
+  late final GroupResults groups =
+      widget.initialGroups ??
+      (widget.initial == null
+          ? GroupResults()
+          : GroupResults.fromJson(widget.initial!.toCacheJson()));
+  late SearchResult? result =
+      widget.initial ?? groups.groups.values.firstOrNull;
   final updatedListings = <String, Listing>{};
-  late SearchResult? result = widget.initial;
-  late bool cached = widget.initial != null;
-  BuyingFilter buying = BuyingFilter.both;
-  ListingOrder order = ListingOrder.total;
-  HiddenGroup? selectedGroup;
-  int section = 0;
-  String? appliedFilters;
-  String? country;
-  bool ending = false, boards = false, busy = false;
-  String? error, cacheError;
-  Timer? timer;
+  final unavailable = <String>{};
   int generation = 0;
-
+  int section = 0;
+  bool wideLayout = false;
+  String localCurrency = 'EUR';
+  Timer? timer;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    widget.shared?.addListener(sharedChanged);
+    widget.shared?.addListener(refresh);
     widget.watchNavigation?.addListener(openWatches);
-    if (widget.openWatchesInitially) section = 3;
-    restoreFilters();
+    if (widget.openWatchesInitially) section = 2;
     scheduleRefresh();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    widget.shared?.removeListener(sharedChanged);
-    widget.watchNavigation?.removeListener(openWatches);
     timer?.cancel();
-    title.dispose();
-    price.dispose();
-    total.dispose();
+    widget.shared?.removeListener(refresh);
+    widget.watchNavigation?.removeListener(openWatches);
     super.dispose();
-  }
-
-  void openWatches() {
-    setState(() {
-      selectedGroup = null;
-      section = 3;
-    });
-    unawaited(widget.shared?.sync());
   }
 
   @override
@@ -108,806 +94,156 @@ class _SearchScreenState extends State<SearchScreen>
   void didUpdateWidget(covariant SearchScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.shared != widget.shared) {
-      oldWidget.shared?.removeListener(sharedChanged);
-      widget.shared?.addListener(sharedChanged);
-      restoreFilters();
+      oldWidget.shared?.removeListener(refresh);
+      widget.shared?.addListener(refresh);
     }
-  }
-
-  void sharedChanged() {
-    if (mounted) {
-      setState(restoreFilters);
-      scheduleRefresh();
-    }
-  }
-
-  void restoreFilters() {
-    final filters = widget.shared?.filters;
-    if (filters == null || jsonEncode(filters) == appliedFilters) {
-      refreshPriceInputs();
-      return;
-    }
-    appliedFilters = jsonEncode(filters);
-    selectedDeviceGroups
-      ..clear()
-      ..addAll(
-        (filters['device_groups'] as List?)?.cast<String>() ??
-            const ['consoles', 'controllers'],
-      );
-    models
-      ..clear()
-      ..addAll((filters['models'] as List).cast<String>());
-    maxPriceEuro = (filters['max_price'] as num?)?.toDouble();
-    maxTotalEuro = (filters['max_total'] as num?)?.toDouble();
-    refreshPriceInputs(force: true);
-    buying = BuyingFilter.values.byName(filters['buying'] as String);
-    ending = filters['ending'] as bool;
-    boards = filters['boards'] as bool;
-    order = ListingOrder.values.byName(filters['order'] as String);
-  }
-
-  void changeFilters(VoidCallback change) {
-    setState(change);
-    final filters = <String, Object?>{
-      'models': models.toList(),
-      'device_groups': selectedDeviceGroups.toList(),
-      'max_price': maxPriceEuro,
-      'max_total': maxTotalEuro,
-      'buying': buying.name,
-      'ending': ending,
-      'boards': boards,
-      'order': order.name,
-    };
-    appliedFilters = jsonEncode(filters);
-    unawaited(widget.shared?.setFilters(filters));
   }
 
   void refresh() {
-    if (!mounted) return;
-    setState(() {});
-    scheduleRefresh();
+    if (mounted) setState(() {});
   }
 
   void scheduleRefresh() {
     timer?.cancel();
-    final now = widget.clock();
-    Duration? next;
-    void scheduleAt(DateTime time) {
-      final duration = time.difference(now);
-      if (duration > Duration.zero && (next == null || duration < next!)) {
-        next = duration;
-      }
-    }
-
-    for (final item in result?.allListings ?? const <Listing>[]) {
-      if (!visibleListing(item, now)) continue;
-      scheduleAt(item.checkedAt.add(uncheckedAfter));
-      scheduleAt(item.checkedAt.add(maxListingAge));
-      if (item.auction) {
-        scheduleAt(item.end!);
-        scheduleAt(item.end!.subtract(day));
-        scheduleAt(item.end!.subtract(day * 2));
-        if (!isUnchecked(item, now)) {
-          scheduleAt(now.add(const Duration(seconds: 1)));
-        }
-      }
-    }
-    if (section == 1) {
-      for (final favorite in widget.shared!.favorites) {
-        final item = favorite.item;
-        scheduleAt(item.checkedAt.add(uncheckedAfter));
-        scheduleAt(item.checkedAt.add(maxListingAge));
-        if (item.end case final end?) scheduleAt(end);
-        if (item.auction && favoriteStatus(item, now) == 'ACTIVE') {
-          scheduleAt(now.add(const Duration(seconds: 1)));
-        }
-      }
-    }
-    if (next != null) timer = Timer(next!, refresh);
+    timer = Timer.periodic(const Duration(seconds: 1), (_) => refresh());
   }
 
-  Future<void> runSearch() async {
-    final groups = Set<String>.unmodifiable(selectedDeviceGroups);
-    setState(() {
-      busy = true;
-      error = null;
-      cacheError = null;
-    });
-    try {
-      await widget.shared?.sync();
-      widget.shared?.searchedAgain(result?.allListings ?? []);
-      final searched = await widget.search(groups);
-      if (!mounted) return;
-      if (searched.status == 'success') {
-        try {
-          await widget.saveResult?.call(searched);
-        } on Exception {
-          cacheError = 'Az eredmény offline mentése nem sikerült.';
-        }
-      }
-      if (!mounted) return;
-      setState(() {
-        result = searched;
-        updatedListings.clear();
-        generation++;
-        unavailable.clear();
-        cached = false;
-        refreshPriceInputs();
-      });
-      if (searched.exchangeRate case final rate?) {
-        widget.shared?.acceptExchangeRate(rate);
-      }
-      scheduleRefresh();
-      unawaited(syncAfterSearch());
-    } on AppFailure catch (failure) {
-      if (mounted) setState(() => error = failure.message);
-    } finally {
-      if (mounted) setState(() => busy = false);
-    }
-  }
-
-  Future<void> syncAfterSearch() async {
-    final shared = widget.shared;
-    await shared?.sync();
-    await shared?.refresh();
+  void openWatches() {
+    setState(() => section = 2);
+    unawaited(widget.shared?.sync());
   }
 
   MoneyDisplay get priceDisplay => MoneyDisplay(
     widget.shared?.currency ?? localCurrency,
     widget.shared?.exchangeRate ?? result?.exchangeRate,
   );
-
-  void refreshPriceInputs({bool force = false}) {
-    final display = priceDisplay;
-    final previous = inputDisplay;
-    if (!force &&
-        previous?.huf == display.huf &&
-        (!display.huf || previous?.rate?.eurHuf == display.rate?.eurHuf)) {
-      return;
-    }
-    inputDisplay = display;
-    price.text = display.euroInput(maxPriceEuro);
-    total.text = display.euroInput(maxTotalEuro);
-  }
-
   void toggleCurrency() {
     if (priceDisplay.rate == null) return;
     final next = priceDisplay.huf ? 'EUR' : 'HUF';
     if (widget.shared case final shared?) {
       unawaited(shared.setCurrency(next));
     } else {
-      setState(() {
-        localCurrency = next;
-        refreshPriceInputs();
-      });
+      setState(() => localCurrency = next);
     }
   }
 
-  String? amountError(TextEditingController controller) =>
-      controller.text.trim().isNotEmpty &&
-          priceDisplay.inputToEuro(controller.text) == null
-      ? 'Adj meg egy pozitív számot vagy nullát.'
-      : null;
-
-  @override
-  Widget build(BuildContext context) => MoneyScope(
-    display: priceDisplay,
-    toggle: toggleCurrency,
-    child: buildSearch(context),
-  );
-
-  Widget buildSearch(BuildContext context) {
-    final now = widget.clock();
-    if (section == 3 && widget.shared != null) {
-      return WatchScreen(
-        shared: widget.shared!,
-        now: now,
-        navigation: navigation(),
-      );
+  Future<void> persistGroups(GroupResults next) async {
+    result = next.groups.values.lastOrNull;
+    if (widget.saveGroups != null) {
+      await widget.saveGroups!(next);
+    } else if (result != null) {
+      await widget.saveResult?.call(result!);
     }
-    if (section != 0 && widget.shared != null) return savedScreen(now);
-    final data = result;
-    final active =
-        data?.allListings
-            .map((item) => updatedListings[item.id] ?? item)
-            .where(
-              (item) =>
-                  visibleListing(item, now) &&
-                  selectedDeviceGroups.contains(item.deviceGroup) &&
-                  widget.shared?.isHidden(item) != true,
-            )
-            .toList() ??
-        <Listing>[];
-    if (selectedGroup case final group?) {
-      return hiddenResults(group, active.where(group.contains).toList(), now);
-    }
-    final visible = selectListings(
-      active,
-      ListingFilters(
-        models: models.where(availableModels.contains).toSet(),
-        maxPrice: maxPriceEuro,
-        maxTotal: maxTotalEuro,
-        buying: buying,
-        endingSoon: ending,
-        mainboards: boards,
-        title: title.text,
-        country: country,
-      ),
-      order,
-      now,
-    );
-    final known = visible;
-    return Scaffold(
-      bottomNavigationBar: navigation(),
-      appBar: AppBar(
-        leading: Icon(
-          Icons.sports_esports_outlined,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-        title: const Text('Console Deal Finder'),
-        actions: [
-          if (widget.openSettings != null)
-            IconButton(
-              onPressed: widget.openSettings,
-              tooltip: 'Beállítások',
-              icon: const Icon(Icons.settings_outlined),
-            ),
-          const SizedBox(width: 12),
-        ],
-      ),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, box) {
-            final columns = box.maxWidth >= 1080
-                ? 3
-                : box.maxWidth >= 720
-                ? 2
-                : 1;
-            final gutter = box.maxWidth >= 600 ? 28.0 : 16.0;
-            final inset =
-                ((box.maxWidth - 1320) / 2).clamp(0.0, double.infinity) +
-                gutter;
-            return CustomScrollView(
-              slivers: [
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(inset, 16, inset, 14),
-                  sliver: SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          'Keresés',
-                          style: Theme.of(context).textTheme.headlineMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 16),
-                        filters(active),
-                        if (busy)
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 14),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                LinearProgressIndicator(),
-                                SizedBox(height: 8),
-                                Text(
-                                  'Keresés folyamatban… több eszközcsoporttal tovább tarthat.',
-                                ),
-                              ],
-                            ),
-                          ),
-                        if (error != null)
-                          notice('A keresés sikertelen. $error', warning: true),
-                        if (cacheError != null)
-                          notice(cacheError!, warning: true),
-                        if (data != null) ...[
-                          if (data.firstSync)
-                            notice(
-                              'Első szinkronizálás – a következő kereséstől jelöljük az új hirdetéseket.',
-                            ),
-                          if (cached)
-                            notice(
-                              'Korábban mentett eredmény – utoljára frissítve: ${dateLabel(data.searchedAt)}',
-                            ),
-                          if (data.status == 'partial')
-                            notice(
-                              'Részleges keresés – egyes országok vagy lekérdezések sikertelenek.',
-                              warning: true,
-                            ),
-                          if (data.status == 'error')
-                            notice(
-                              'A keresés sikertelen – egyetlen lekérdezés sem sikerült.',
-                              warning: true,
-                            ),
-                          summary(data, visible.length, active),
-                          if (data.status != 'error' && visible.isEmpty)
-                            notice(
-                              'Nincs megjeleníthető találat az aktuális szűrőkkel.',
-                            ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-                ...resultRows(known, columns, inset, now),
-
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Iterable<String> get availableModels =>
-      selectedDeviceGroups.expand((group) => modelsByDeviceGroup[group]!);
-
-  Widget filters(List<Listing> active) => Card(
-    margin: EdgeInsets.zero,
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Eszközcsoport', style: Theme.of(context).textTheme.titleSmall),
-          Wrap(
-            spacing: 8,
-            children: [
-              for (final (group, label) in deviceGroupLabels.entries.map(
-                (entry) => (entry.key, entry.value),
-              ))
-                FilterChip(
-                  label: Text(label),
-                  selected: selectedDeviceGroups.contains(group),
-                  onSelected:
-                      busy ||
-                          (selectedDeviceGroups.length == 1 &&
-                              selectedDeviceGroups.contains(group))
-                      ? null
-                      : (selected) => changeFilters(() {
-                          if (selected) {
-                            selectedDeviceGroups.add(group);
-                          } else {
-                            selectedDeviceGroups.remove(group);
-                          }
-                        }),
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text('Modell', style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 6,
-            children: [
-              for (final model in availableModels)
-                FilterChip(
-                  label: Text(model),
-                  selected: models.contains(model),
-                  onSelected: (selected) => changeFilters(
-                    () => selected ? models.add(model) : models.remove(model),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, box) {
-              final width = box.maxWidth >= 820
-                  ? (box.maxWidth - 36) / 4
-                  : box.maxWidth >= 440
-                  ? (box.maxWidth - 12) / 2
-                  : box.maxWidth;
-              return Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  SizedBox(
-                    width: width,
-                    child: priceField(price, 'Max. vételár'),
-                  ),
-                  SizedBox(
-                    width: width,
-                    child: priceField(total, 'Max. teljes ár'),
-                  ),
-                  SizedBox(
-                    width: width,
-                    child: dropdown('Hirdetéstípus', buying, {
-                      for (final option in BuyingFilter.values)
-                        option: option.label,
-                    }, (value) => changeFilters(() => buying = value)),
-                  ),
-                  SizedBox(
-                    width: width,
-                    child: dropdown('Aukciók', ending, {
-                      false: 'Mind',
-                      true: '24 órán belül záródók',
-                    }, (value) => changeFilters(() => ending = value)),
-                  ),
-                ],
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 18,
-            runSpacing: 8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Semantics(
-                    label: 'Alaplapok mutatása',
-                    child: Switch(
-                      value: boards,
-                      onChanged: (value) => changeFilters(() => boards = value),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text('Alaplapok mutatása'),
-                ],
-              ),
-              FilledButton.icon(
-                onPressed: busy ? null : runSearch,
-                icon: const Icon(Icons.search),
-                label: const Text('Keresés indítása'),
-              ),
-            ],
-          ),
-          if (result != null) ...[
-            const Divider(height: 28),
-            LayoutBuilder(
-              builder: (context, box) {
-                final width = box.maxWidth >= 700
-                    ? (box.maxWidth - 24) / 3
-                    : box.maxWidth;
-                final available =
-                    active
-                        .map((item) => item.country)
-                        .whereType<String>()
-                        .toSet()
-                        .toList()
-                      ..sort(
-                        (a, b) => countryName(a).compareTo(countryName(b)),
-                      );
-                return Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    SizedBox(
-                      width: width,
-                      child: TextField(
-                        controller: title,
-                        decoration: const InputDecoration(
-                          labelText: 'Keresés a címekben',
-                          prefixIcon: Icon(Icons.search),
-                        ),
-                        onChanged: (_) => setState(() {}),
-                      ),
-                    ),
-                    SizedBox(
-                      width: width,
-                      child: dropdown('Rendezés', order, {
-                        for (final option in ListingOrder.values)
-                          option: option.label,
-                      }, (value) => changeFilters(() => order = value)),
-                    ),
-                    SizedBox(
-                      width: width,
-                      child: dropdown(
-                        'Ország',
-                        country ?? '',
-                        {
-                          '': 'Mind',
-                          for (final code in {...available, ?country})
-                            code: countryName(code),
-                        },
-                        (value) => setState(
-                          () => country = value.isEmpty ? null : value,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ],
-        ],
-      ),
-    ),
-  );
-
-  Widget priceField(TextEditingController controller, String label) =>
-      TextField(
-        controller: controller,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        decoration: InputDecoration(
-          labelText: label,
-          suffixText: priceDisplay.unit,
-          errorText: amountError(controller),
-        ),
-        onChanged: (value) => changeFilters(() {
-          final euro = priceDisplay.inputToEuro(value);
-          if (controller == price) {
-            maxPriceEuro = euro;
-          } else {
-            maxTotalEuro = euro;
-          }
-        }),
-      );
-
-  Widget dropdown<T>(
-    String label,
-    T current,
-    Map<T, String> options,
-    ValueChanged<T> change,
-  ) => DropdownButtonFormField<T>(
-    key: ValueKey((label, current)),
-    initialValue: current,
-    isExpanded: true,
-    decoration: InputDecoration(labelText: label),
-    items: [
-      for (final entry in options.entries)
-        DropdownMenuItem(
-          value: entry.key,
-          child: Text(entry.value, overflow: TextOverflow.ellipsis),
-        ),
-    ],
-    onChanged: (value) {
-      if (value != null) change(value);
-    },
-  );
-
-  Widget notice(String message, {bool warning = false}) {
-    final colors = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: Semantics(
-        liveRegion: true,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: warning ? colors.errorContainer : colors.secondaryContainer,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Icon(
-                  warning ? Icons.warning_amber : Icons.info_outline,
-                  size: 20,
-                  color: warning
-                      ? colors.onErrorContainer
-                      : colors.onSecondaryContainer,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    message,
-                    style: TextStyle(
-                      color: warning
-                          ? colors.onErrorContainer
-                          : colors.onSecondaryContainer,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  String safeText(String text) => widget.sanitize?.call(text) ?? text;
-
-  Widget hiddenResults(HiddenGroup group, List<Listing> items, DateTime now) {
-    void back() => setState(() => selectedGroup = null);
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) back();
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          leading: BackButton(onPressed: back),
-          title: Text(group.title),
-        ),
-        body: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, box) {
-              final columns = box.maxWidth >= 1080
-                  ? 3
-                  : box.maxWidth >= 720
-                  ? 2
-                  : 1;
-              final inset =
-                  ((box.maxWidth - 1320) / 2).clamp(0.0, double.infinity) +
-                  (box.maxWidth >= 600 ? 28.0 : 16.0);
-              return CustomScrollView(
-                slivers: [
-                  SliverPadding(
-                    padding: EdgeInsets.fromLTRB(inset, 16, inset, 14),
-                    sliver: SliverToBoxAdapter(
-                      child: Text(
-                        items.isEmpty
-                            ? 'Ebben a csoportban nincs megjeleníthető tétel.'
-                            : '${items.length} tétel',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                    ),
-                  ),
-                  ...resultRows(items, columns, inset, now),
-                ],
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget summary(SearchResult data, int count, List<Listing> active) => Card(
-    margin: const EdgeInsets.only(top: 12),
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (data.status != 'error')
-            Text(
-              '$count / ${active.length} találat',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-          const SizedBox(height: 6),
-          Wrap(
-            spacing: 16,
-            runSpacing: 6,
-            children: [
-              Text(
-                'API-hívások: ${data.apiCalls} futásban · ${data.dailyApiCalls} ${cached ? 'akkor aznap' : 'ma'}',
-              ),
-              Text('Keresés: ${dateLabel(data.searchedAt)}'),
-              Text(priceDisplay.rateLabel),
-              if (data.filteredNotFaulty > 0)
-                Text(
-                  '${data.filteredNotFaulty} cím alapján nem hibás tétel kiszűrve',
-                ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Wrap(
-            spacing: 16,
-            runSpacing: 6,
-            children: [
-              for (final group in HiddenGroup.values)
-                TextButton(
-                  onPressed: () => setState(() => selectedGroup = group),
-                  child: Text(
-                    '${active.where(group.contains).length} · ${group.title}',
-                  ),
-                ),
-              Text(
-                '${data.filteredNonEu} EU-n kívüli vagy ismeretlen helyű tétel kiszűrve',
-              ),
-            ],
-          ),
-          if (data.quotaWarning case final warning?)
-            notice(safeText(warning), warning: true),
-          if (data.countries.isNotEmpty)
-            ExpansionTile(
-              tilePadding: EdgeInsets.zero,
-              title: const Text('Országonkénti állapot és figyelmeztetések'),
-              children: [
-                for (final country in data.countries)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      '${countryName(country.country)} · ${switch (country.status) {
-                        'success' => 'Sikeres',
-                        'partial' => 'Részleges',
-                        _ => 'Hiba',
-                      }}',
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for (final query in country.queries) ...[
-                          Text(
-                            '${query.query}: ${query.status == 'success' ? '${query.count} találat' : 'Hiba'}',
-                          ),
-                          if (query.error case final error?)
-                            Text('Hiba: ${safeText(error)}'),
-                          for (final warning in query.warnings)
-                            Text(
-                              'Figyelmeztetés: ${safeText(warning is Json && warning['message'] is String
-                                  ? warning['message'] as String
-                                  : warning is String
-                                  ? warning
-                                  : 'eBay figyelmeztetés')}',
-                            ),
-                        ],
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-        ],
-      ),
-    ),
-  );
-
-  Iterable<Widget> resultRows(
-    List<Listing> items,
-    int columns,
-    double inset,
-    DateTime now,
-  ) sync* {
-    if (items.isEmpty) return;
-    yield SliverPadding(
-      padding: EdgeInsets.symmetric(horizontal: inset),
-      sliver: SliverList.builder(
-        itemCount: (items.length + columns - 1) ~/ columns,
-        itemBuilder: (context, row) => Padding(
-          padding: const EdgeInsets.only(bottom: 14),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (var column = 0; column < columns; column++) ...[
-                if (column > 0) const SizedBox(width: 14),
-                Expanded(
-                  child: row * columns + column < items.length
-                      ? listingCard(items[row * columns + column], now)
-                      : const SizedBox.shrink(),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   Future<ListingDetails> loadAndUpdateDetails(String id) async {
     final details = await widget.loadDetails(id);
-    final original = result?.allListings
-        .where((item) => item.id == id)
-        .firstOrNull;
-    if (mounted && original != null) {
-      setState(
-        () => updatedListings[id] = details.update(
-          updatedListings[id] ?? original,
-        ),
-      );
-      final data = result!.toCacheJson();
-      for (final key in ['listings', 'unknown_shipping']) {
-        data[key] = (data[key] as List).map((raw) {
-          final row = object(raw);
-          return updatedListings[row['source_listing_id']]?.toJson() ?? row;
-        }).toList();
-      }
-      try {
-        await widget.saveResult?.call(SearchResult.fromJson(data));
-      } on Exception {
-        if (mounted) {
-          setState(
-            () => cacheError =
-                'A frissített tételt nem sikerült helyben menteni.',
-          );
-        }
-      }
+    if (!mounted) return details;
+    final original =
+        groups.groups.values
+            .expand((r) => r.allListings)
+            .where((item) => item.id == id)
+            .firstOrNull ??
+        widget.shared?.favorites
+            .where((f) => f.item.id == id)
+            .firstOrNull
+            ?.item;
+    if (original != null) {
+      setState(() => updatedListings[id] = details.update(original));
+      groups.details(id, details);
+      await persistGroups(groups);
     }
     return details;
   }
 
-  Widget listingCard(Listing item, DateTime now) => ListingCard(
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final wide = constraints.maxWidth >= 1000;
+      wideLayout = wide;
+      final content = section == 4 && widget.settingsPage != null
+          ? widget.settingsPage!(navigation())
+          : section == 2 && widget.shared != null
+          ? WatchScreen(
+              shared: widget.shared!,
+              now: widget.clock(),
+              navigation: navigation(),
+            )
+          : section != 0 && widget.shared != null
+          ? savedScreen(widget.clock())
+          : SearchWorkspace(
+              results: groups,
+              search: widget.search,
+              details: widget.loadDetails,
+              clock: widget.clock,
+              shared: widget.shared,
+              config: widget.loadConfig,
+              onSettings: widget.settingsPage != null
+                  ? () => selectSection(4)
+                  : widget.openSettings,
+              sanitize: widget.sanitize,
+              navigation: navigation(),
+              persist: persistGroups,
+              card: (item, now, loader, label) => listingCard(
+                item,
+                now,
+                detailsLoader: loader,
+                groupLabel: label,
+              ),
+            );
+      return MoneyScope(
+        display: priceDisplay,
+        toggle: toggleCurrency,
+        child: wide && widget.shared != null
+            ? Row(
+                children: [
+                  NavigationRail(
+                    selectedIndex: section,
+                    onDestinationSelected: selectSection,
+                    labelType: NavigationRailLabelType.all,
+                    destinations: const [
+                      NavigationRailDestination(
+                        icon: Icon(Icons.search),
+                        label: Text('Keresés'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.favorite_border),
+                        label: Text('Kedvencek'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.notifications_outlined),
+                        label: Text('Figyelés'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.visibility_off_outlined),
+                        label: Text('Elrejtett'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.settings_outlined),
+                        label: Text('Beállítások'),
+                      ),
+                    ],
+                  ),
+                  const VerticalDivider(width: 1),
+                  Expanded(child: content),
+                ],
+              )
+            : content,
+      );
+    },
+  );
+
+  Widget listingCard(
+    Listing item,
+    DateTime now, {
+    Future<ListingDetails> Function(String)? detailsLoader,
+    bool groupLabel = false,
+  }) => ListingCard(
     key: ValueKey((generation, item.id)),
+    showDeviceGroup: groupLabel,
     item: item,
     now: now,
-    loadDetails: loadAndUpdateDetails,
+    loadDetails: detailsLoader ?? loadAndUpdateDetails,
     unavailable: unavailable.contains(item.id),
     onUnavailable: () => setState(() => unavailable.add(item.id)),
     favorite: widget.shared?.isFavorite(item) ?? false,
@@ -954,20 +290,23 @@ class _SearchScreenState extends State<SearchScreen>
       );
   }
 
+  void selectSection(int value) {
+    if (value == 4 && widget.settingsPage == null) {
+      widget.openSettings?.call();
+      return;
+    }
+    setState(() => section = value);
+    if (value == 1) unawaited(widget.shared?.refresh());
+    if (value == 2 || value == 3) unawaited(widget.shared?.sync());
+  }
+
   Widget? navigation() {
-    if (widget.shared == null) return null;
+    if (widget.shared == null || wideLayout) {
+      return null;
+    }
     return NavigationBar(
       selectedIndex: section,
-      onDestinationSelected: (value) {
-        if (value == 4) {
-          widget.openSettings?.call();
-          return;
-        }
-        setState(() => section = value);
-        scheduleRefresh();
-        if (value == 1) unawaited(widget.shared!.refresh());
-        if (value == 2 || value == 3) unawaited(widget.shared!.sync());
-      },
+      onDestinationSelected: selectSection,
       destinations: const [
         NavigationDestination(icon: Icon(Icons.search), label: 'Keresés'),
         NavigationDestination(
@@ -975,12 +314,12 @@ class _SearchScreenState extends State<SearchScreen>
           label: 'Kedvencek',
         ),
         NavigationDestination(
-          icon: Icon(Icons.visibility_off_outlined),
-          label: 'Elrejtett',
-        ),
-        NavigationDestination(
           icon: Icon(Icons.notifications_outlined),
           label: 'Figyelés',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.visibility_off_outlined),
+          label: 'Elrejtett',
         ),
         NavigationDestination(
           icon: Icon(Icons.settings_outlined),

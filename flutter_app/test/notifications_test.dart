@@ -58,10 +58,7 @@ void main() {
         loadDetails: (_) async => ListingDetails.fromJson(details),
       ),
     );
-    await tester.drag(
-      find.byType(CustomScrollView).first,
-      const Offset(0, -750),
-    );
+    await tester.drag(find.byType(ListView).first, const Offset(0, -750));
     await tester.pumpAndSettle();
     await tap(tester, find.widgetWithText(OutlinedButton, 'Figyelés'));
     expect(find.text('Aukció figyelése'), findsOneWidget);
@@ -71,7 +68,13 @@ void main() {
     expect(shared.watches.single.threshold, 101.5);
     expect(shared.watches.single.lead, 120);
     expect(find.text('Figyelve · 101,5 €'), findsOneWidget);
-    await tap(tester, find.widgetWithText(NavigationDestination, 'Figyelés'));
+    await tap(
+      tester,
+      find.descendant(
+        of: find.byType(NavigationRail),
+        matching: find.text('Figyelés'),
+      ),
+    );
     expect(find.text('Aktív'), findsOneWidget);
     await tap(tester, find.byTooltip('Figyelés szerkesztése'));
     await tester.enterText(find.byType(TextFormField), '120');

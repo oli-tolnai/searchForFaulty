@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'api/models.dart';
 import 'listings.dart';
 import 'notifications.dart';
+import 'search_filters.dart';
 
 String listingKey(Listing item) => '${item.source}:${item.id}';
 String stateKey(Json row) => '${row['source']}:${row['source_listing_id']}';
@@ -103,6 +104,58 @@ class SharedState extends ChangeNotifier {
           .map(SavedFavorite.new);
   Iterable<Json> get hidden =>
       _view('hidden').values.where((row) => row['deleted'] == false);
+  GroupSearchFilter searchFilter(String group) {
+    final row = _view('settings')['search_filter_$group'];
+    if (row != null) return GroupSearchFilter(object(row['value']));
+    final legacy = filters;
+    return legacy == null
+        ? GroupSearchFilter()
+        : GroupSearchFilter({
+            'models': (legacy['models'] as List)
+                .where((model) => modelsByDeviceGroup[group]!.contains(model))
+                .toList(),
+            'max_price': legacy['max_price'],
+            'max_total_price': legacy['max_total'],
+            'include_mainboards': legacy['boards'],
+            'buying_options': legacy['buying'],
+            'ending_hours': legacy['ending'] == true ? 24 : null,
+            'order': legacy['order'],
+          });
+  }
+
+  List<String> get visibleSearchGroups =>
+      ((_view('settings')['search_tabs']?['value'] as Json?)?['visible_groups']
+              as List?)
+          ?.cast<String>() ??
+      deviceGroups;
+  List<String> get selectedSearchGroups =>
+      ((_view('settings')['search_tabs']?['value'] as Json?)?['selected_groups']
+              as List?)
+          ?.cast<String>() ??
+      ['consoles', 'controllers'];
+  Future<void> setSelectedSearchGroups(List<String> groups) => _add({
+    'type': 'setting_set',
+    'key': 'search_tabs',
+    'value': {'visible_groups': visibleSearchGroups, 'selected_groups': groups},
+  });
+  Future<void> setVisibleSearchGroups(List<String> groups) {
+    final selected = selectedSearchGroups.where(groups.contains).toList();
+    return _add({
+      'type': 'setting_set',
+      'key': 'search_tabs',
+      'value': {
+        'visible_groups': groups,
+        'selected_groups': selected.isEmpty ? [groups.first] : selected,
+      },
+    });
+  }
+
+  Future<void> setSearchFilter(String group, GroupSearchFilter filter) => _add({
+    'type': 'setting_set',
+    'key': 'search_filter_$group',
+    'value': filter.values,
+  });
+
   Json? get filters => _view('settings')['filters']?['value'] as Json?;
   String get currency =>
       (_view('settings')['currency']?['value'] as Json?)?['currency']
@@ -380,7 +433,26 @@ class SharedState extends ChangeNotifier {
         final rowFields = Fields(row);
         rowFields.count('revision');
         if (entry.key == 'settings') {
-          final key = rowFields.choice('key', ['filters', 'currency']);
+          final key = rowFields.required<String>('key');
+          if (key.startsWith('search_filter_') &&
+              deviceGroups.contains(key.substring(14))) {
+            GroupSearchFilter(rowFields.required<Json>('value'));
+            continue;
+          }
+          if (key == 'search_tabs') {
+            final values = Fields(rowFields.required<Json>('value'));
+            for (final name in ['visible_groups', 'selected_groups']) {
+              final groups = values.list(
+                name,
+                (v) => deviceGroups.contains(v) && v is String
+                    ? v
+                    : invalidResponse(),
+              );
+              if (groups.isEmpty) invalidResponse();
+            }
+            continue;
+          }
+          if (!['filters', 'currency'].contains(key)) invalidResponse();
           final filter = Fields(rowFields.required<Json>('value'));
           if (key == 'currency') {
             filter.choice('currency', ['EUR', 'HUF']);

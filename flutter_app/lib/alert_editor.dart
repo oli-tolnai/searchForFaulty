@@ -4,16 +4,29 @@ import 'api/models.dart';
 import 'currency.dart';
 import 'listings.dart';
 import 'notifications.dart';
+import 'search_filters.dart';
+import 'search_filter_panel.dart' show filterLabels;
 
-Future<Json?> editAlert(BuildContext context, AlertRule? rule) =>
-    showDialog<Json>(
-      context: context,
-      builder: (_) =>
-          _AlertEditor(rule: rule, money: MoneyScope.displayOf(context)),
-    );
+Future<Json?> editAlert(
+  BuildContext context,
+  AlertRule? rule, {
+  bool newRule = false,
+}) => showDialog<Json>(
+  context: context,
+  builder: (_) => _AlertEditor(
+    rule: rule,
+    money: MoneyScope.displayOf(context),
+    isNew: newRule,
+  ),
+);
 
 class _AlertEditor extends StatefulWidget {
-  const _AlertEditor({required this.rule, required this.money});
+  const _AlertEditor({
+    required this.rule,
+    required this.money,
+    this.isNew = false,
+  });
+  final bool isNew;
   final AlertRule? rule;
   final MoneyDisplay money;
   @override
@@ -25,6 +38,13 @@ class _AlertEditorState extends State<_AlertEditor> {
   late final name = TextEditingController(
     text: widget.rule?.name ?? 'Értesítési szabály',
   );
+  late final minPrice = TextEditingController(
+    text: widget.money.euroInput(widget.rule?.advanced['min_price'] as num?),
+  );
+  late final advanced = <String, Object?>{
+    ...GroupSearchFilter.defaults,
+    ...?widget.rule?.advanced,
+  };
   late final maxPrice = TextEditingController(
     text: widget.money.euroInput(widget.rule?.maxPrice),
   );
@@ -53,7 +73,14 @@ class _AlertEditorState extends State<_AlertEditor> {
 
   @override
   void dispose() {
-    for (final input in [name, maxPrice, maxTotal, include, exclude]) {
+    for (final input in [
+      name,
+      minPrice,
+      maxPrice,
+      maxTotal,
+      include,
+      exclude,
+    ]) {
       input.dispose();
     }
     super.dispose();
@@ -111,7 +138,9 @@ class _AlertEditorState extends State<_AlertEditor> {
   @override
   Widget build(BuildContext context) => AlertDialog(
     title: Text(
-      widget.rule == null ? 'Új értesítési szabály' : 'Szabály szerkesztése',
+      widget.rule == null || widget.isNew
+          ? 'Új értesítési szabály'
+          : 'Szabály szerkesztése',
     ),
     scrollable: true,
     content: SizedBox(
@@ -180,6 +209,7 @@ class _AlertEditorState extends State<_AlertEditor> {
               ],
               onChanged: (value) => setState(() => buying = value!),
             ),
+            amount(minPrice, 'Min. vételár vagy aktuális licit'),
             amount(maxPrice, 'Max. vételár vagy aktuális licit'),
             amount(maxTotal, 'Max. teljes ár'),
             toggle(
@@ -249,6 +279,33 @@ class _AlertEditorState extends State<_AlertEditor> {
               titleFaults,
               (value) => titleFaults = value,
             ),
+            for (final key in [
+              if (groups.contains('consoles')) 'include_mainboards',
+              if (groups.contains('controllers')) 'include_third_party',
+              if (groups.contains('iphone')) ...[
+                'only_icloud_free',
+                'hide_unknown_icloud',
+              ],
+            ])
+              toggle(
+                filterLabels[key]!,
+                advanced[key] == true,
+                (value) => advanced[key] = value,
+              ),
+            if (groups.contains('gpu'))
+              DropdownButtonFormField<String>(
+                initialValue: advanced['gpu_vendor'] as String,
+                decoration: const InputDecoration(labelText: 'Gyártó'),
+                items: ['both', 'NVIDIA', 'AMD']
+                    .map(
+                      (value) => DropdownMenuItem(
+                        value: value,
+                        child: Text(value == 'both' ? 'Mind' : value),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) => advanced['gpu_vendor'] = value,
+              ),
             toggle('Szabály engedélyezve', enabled, (value) => enabled = value),
           ],
         ),
@@ -266,6 +323,11 @@ class _AlertEditorState extends State<_AlertEditor> {
               .expand((group) => modelsByDeviceGroup[group]!)
               .toSet();
           Navigator.pop(context, {
+            ...advanced,
+            'min_price': euroValue(
+              minPrice,
+              widget.rule?.advanced['min_price'] as num?,
+            ),
             'name': name.text.trim(),
             'device_groups': groups.toList(),
             'models': models.where(available.contains).toList(),

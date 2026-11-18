@@ -41,6 +41,7 @@ class ListingCard extends StatefulWidget {
     this.watchThreshold,
     this.onOpened,
     this.newLabel = false,
+    this.showDeviceGroup = false,
     this.savedStatus,
   });
 
@@ -50,6 +51,7 @@ class ListingCard extends StatefulWidget {
   final VoidCallback onUnavailable;
   final bool unavailable;
   final bool favorite, newLabel;
+  final bool showDeviceGroup;
   final VoidCallback? onFavorite, onHide, onOpened, onWatch;
   final num? watchThreshold;
   final String? savedStatus;
@@ -126,8 +128,8 @@ class _ListingCardState extends State<ListingCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          AspectRatio(
-            aspectRatio: 2.15,
+          SizedBox(
+            height: 110,
             child: item.image == null || archive
                 ? placeholder
                 : Image.network(
@@ -149,6 +151,8 @@ class _ListingCardState extends State<ListingCard> {
                   spacing: 6,
                   runSpacing: 6,
                   children: [
+                    if (widget.showDeviceGroup)
+                      tag(deviceGroupLabels[item.deviceGroup]!, colors.primary),
                     if (widget.newLabel) tag('ÚJ', colors.primary),
                     if (widget.watchThreshold case final threshold?)
                       PriceText(
@@ -198,6 +202,8 @@ class _ListingCardState extends State<ListingCard> {
                       tag(HiddenGroup.noShipping.title, colors.tertiary),
                     if (item.type == 'icloud_locked')
                       tag(HiddenGroup.locked.title, colors.error),
+                    if (item.type == 'not_supported_bundle')
+                      tag(HiddenGroup.unsupportedBundle.title, colors.tertiary),
                     if (item.type == 'not_gpu')
                       tag(HiddenGroup.notGpu.title, colors.tertiary),
                     if (item.type == 'part')
@@ -240,7 +246,7 @@ class _ListingCardState extends State<ListingCard> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${item.model} · ${countryName(item.country)} · eBay',
+                  item.model,
                   style: text.bodySmall?.copyWith(
                     color: colors.onSurfaceVariant,
                   ),
@@ -287,10 +293,6 @@ class _ListingCardState extends State<ListingCard> {
                     ),
                 ],
                 const SizedBox(height: 10),
-                Text(
-                  'Utoljára ellenőrizve: ${dateLabel(item.checkedAt)}',
-                  style: text.bodySmall,
-                ),
                 const SizedBox(height: 12),
                 Wrap(
                   spacing: 8,
@@ -342,6 +344,8 @@ class _ListingCardState extends State<ListingCard> {
                   ],
                 ),
                 if (expanded) ...[
+                  Text('${countryName(item.country)} · eBay'),
+                  Text('Utoljára ellenőrizve: ${dateLabel(item.checkedAt)}'),
                   const Divider(height: 24),
                   if (loading)
                     const LinearProgressIndicator()

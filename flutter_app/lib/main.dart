@@ -10,6 +10,7 @@ import 'listing_card.dart';
 import 'local_notifications.dart';
 import 'search_screen.dart';
 import 'settings_screen.dart';
+import 'group_results.dart';
 import 'storage.dart';
 import 'sync.dart';
 
@@ -76,6 +77,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
   WebappClient? client;
   WebappSettings? settings;
   SearchResult? cached;
+  GroupResults cachedGroups = GroupResults();
   String? settingsError;
   bool loading = true;
   final localNotifications = LocalNotifications();
@@ -281,7 +283,10 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
       next = create(null);
     }
     final nextCache = SearchCache(value.stateId);
-    final nextResult = sameProject ? cached : await nextCache.read();
+    final nextGroups = sameProject
+        ? cachedGroups
+        : await nextCache.readGroups();
+    final nextResult = sameProject ? cached : null;
     if (!mounted) {
       next.dispose();
       return;
@@ -292,6 +297,7 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
     client = nextClient;
     cache = nextCache;
     cached = nextResult;
+    cachedGroups = nextGroups;
     unawaited(next.sync());
     pollQuietly();
   }
@@ -341,11 +347,29 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
     return SearchScreen(
       key: ValueKey(settings!.stateId),
       initial: cached,
+      initialGroups: cachedGroups,
+      saveGroups: (groups) async {
+        cachedGroups = groups;
+        await cache.writeGroups(groups);
+      },
+      loadConfig: client!.ping,
       search: client!.search,
       loadDetails: client!.details,
       sanitize: settings!.safeText,
       saveResult: cache.write,
       openSettings: openSettings,
+      settingsPage: (navigation) => SettingsScreen(
+        initial: settings,
+        shared: shared,
+        navigation: navigation,
+        notificationsEnabled: notificationsEnabled,
+        changeNotifications: setNotificationsEnabled,
+        readLastNotificationPull: () async =>
+            deliveryFiles?.lastPull(settings!.stateId),
+        openSystemSettings: Platform.isAndroid ? openAndroidAppSettings : null,
+        sendTestNotification: sendTestNotification,
+        save: save,
+      ),
       shared: shared,
       openWatchesInitially: openWatchesOnLaunch,
       watchNavigation: watchNavigation,

@@ -38,7 +38,18 @@ class AlertRule {
   AlertRule(Json row) : this._(Fields(row));
 
   AlertRule._(Fields fields)
-    : id = fields.required<String>('id'),
+    : advanced = {
+        'min_price': optionalAlertAmount(fields, 'min_price'),
+        for (final key in [
+          'include_mainboards',
+          'include_third_party',
+          'only_icloud_free',
+          'hide_unknown_icloud',
+        ])
+          key: fields.json[key] ?? false,
+        'gpu_vendor': fields.json['gpu_vendor'] ?? 'both',
+      },
+      id = fields.required<String>('id'),
       name = fields.json['name'] == null
           ? 'Értesítési szabály'
           : fields.required<String>('name'),
@@ -93,6 +104,17 @@ class AlertRule {
           ? true
           : fields.required<bool>('include_title_faults'),
       enabled = fields.required<bool>('enabled') {
+    for (final key in [
+      'include_mainboards',
+      'include_third_party',
+      'only_icloud_free',
+      'hide_unknown_icloud',
+    ]) {
+      if (advanced[key] is! bool) invalidResponse();
+    }
+    if (!['both', 'NVIDIA', 'AMD'].contains(advanced['gpu_vendor'])) {
+      invalidResponse();
+    }
     if (name.trim().isEmpty ||
         name.length > 120 ||
         groups.isEmpty ||
@@ -101,6 +123,7 @@ class AlertRule {
     }
   }
 
+  final Json advanced;
   static final countryNames = countryCodes;
   final String id, name, buying;
   final List<String> models,
@@ -117,6 +140,7 @@ class AlertRule {
       includeTitleFaults;
 
   Json get values => {
+    ...advanced,
     'name': name,
     'models': models,
     'device_groups': groups,

@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'fixtures/responses.dart';
+import 'fixtures/ui_actions.dart';
 
 void main() {
   Future<void> screen(WidgetTester tester, SearchScreen page) async {
@@ -64,29 +65,39 @@ void main() {
           loadDetails: (_) async => ListingDetails.fromJson(details),
         ),
       );
-      await tester.tap(find.text('Konzolok'));
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Kontroller'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.textContaining('Keresés ·'));
+      await tester.pumpAndSettle();
+      expect(requested, {'controllers'});
+      await tester.tap(find.text('Szűrők'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Modellek (mind)'));
       await tester.pumpAndSettle();
       expect(find.text('PS5 Slim'), findsNothing);
       expect(find.text('DualSense Edge'), findsOneWidget);
       expect(find.text('Xbox Elite (sorozat nem ismert)'), findsOneWidget);
-      expect(shared.filters!['device_groups'], ['controllers']);
-      await tester.tap(find.text('Keresés indítása'));
-      await tester.pumpAndSettle();
-      expect(requested, {'controllers'});
       await tester.tap(find.text('DualSense'));
+      await tester.pumpAndSettle();
+      expect(shared.searchFilter('controllers').strings('models'), [
+        'DualSense',
+      ]);
+      await tester.tap(find.byTooltip('Szűrők bezárása'));
       await tester.pumpAndSettle();
       expect(find.text('Scuf hibás kontroller'), findsOneWidget);
       expect(find.text('Scuf'), findsOneWidget);
       expect(find.text('Utángyártott kontroller'), findsNothing);
       expect(find.text('Külön töltőállomás'), findsNothing);
-      await tester.tap(find.text('1 · Harmadik féltől származó kontroller'));
+      await openHidden(tester, 'Harmadik féltől származó kontroller', count: 1);
       await tester.pumpAndSettle();
       expect(find.text('Utángyártott kontroller'), findsOneWidget);
       expect(find.text('Külön töltőállomás'), findsNothing);
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.text('1 · Nem kontroller (alkatrész vagy tartozék)'),
+      await openHidden(
+        tester,
+        'Nem kontroller (alkatrész vagy tartozék)',
+        count: 1,
       );
       await tester.pumpAndSettle();
       expect(find.text('Külön töltőállomás'), findsOneWidget);
@@ -185,7 +196,11 @@ void main() {
     );
     expect(find.text('Látható konzol'), findsOneWidget);
     expect(find.text('Elrejtett belföldi konzol'), findsNothing);
-    await tester.tap(find.text('0 · Valószínűleg nem szállít Magyarországra'));
+    await openHidden(
+      tester,
+      'Valószínűleg nem szállít Magyarországra',
+      count: 0,
+    );
     await tester.pumpAndSettle();
     expect(find.text('Elrejtett belföldi konzol'), findsNothing);
     await tester.tap(find.byType(BackButton));
@@ -230,9 +245,14 @@ void main() {
       (1, 'Alaplap', 'Donor alaplap'),
     ]) {
       expect(find.text(item), findsNothing);
-      await tester.tap(find.text('$count · $group'));
+      await openHidden(tester, group, count: count);
       await tester.pumpAndSettle();
-      expect(find.widgetWithText(AppBar, group), findsOneWidget);
+      expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('hidden-group-heading')))
+            .data,
+        group,
+      );
       expect(find.text(item), findsOneWidget);
       expect(
         find.text('Bizonytalan szállítás'),
@@ -353,13 +373,17 @@ void main() {
         loadDetails: (_) async => ListingDetails.fromJson(details),
       ),
     );
-    await tester.tap(find.text('Keresés indítása'));
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Konzol'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Keresés ·'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Részleges keresés'), findsOneWidget);
-    await tester.tap(find.text('Országonkénti állapot és figyelmeztetések'));
+    await tester.tap(find.text('Keresés részletei'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Németország ·'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Németország'), findsOneWidget);
-    expect(find.text('Hiba: Időtúllépés'), findsOneWidget);
+    expect(find.textContaining('Időtúllépés'), findsOneWidget);
   });
 
   testWidgets('auction disappears exactly at expiration', (tester) async {
