@@ -1,0 +1,106 @@
+[
+  {
+    "group": "consoles",
+    "status": "success",
+    "api_calls": 56,
+    "total": 125,
+    "needs_review": 2
+  },
+  {
+    "group": "controllers",
+    "status": "success",
+    "api_calls": 113,
+    "total": 499,
+    "needs_review": 1
+  },
+  {
+    "group": "switch",
+    "status": "success",
+    "api_calls": 27,
+    "total": 154,
+    "needs_review": 0
+  },
+  {
+    "group": "iphone",
+    "status": "success",
+    "api_calls": 197,
+    "total": 2399,
+    "needs_review": 92,
+    "types": [
+      {
+        "type": "icloud_locked",
+        "count": 66
+      },
+      {
+        "type": "needs_review",
+        "count": 92
+      },
+      {
+        "type": "not_supported_bundle",
+        "count": 26
+      },
+      {
+        "type": "part",
+        "count": 44
+      },
+      {
+        "type": "phone",
+        "count": 681
+      },
+      {
+        "type": "phone_bundle",
+        "count": 14
+      },
+      {
+        "type": "unsupported_model",
+        "count": 1476
+      }
+    ]
+  },
+  {
+    "group": "gpu",
+    "status": "success",
+    "api_calls": 54,
+    "total": 562,
+    "needs_review": 5,
+    "types": [
+      {
+        "type": "gpu",
+        "count": 67
+      },
+      {
+        "type": "gpu_bundle",
+        "count": 7
+      },
+      {
+        "type": "needs_review",
+        "count": 5
+      },
+      {
+        "type": "not_gpu",
+        "count": 40
+      },
+      {
+        "type": "unsupported_model",
+        "count": 443
+      }
+    ]
+  },
+  {
+    "group": "steam_deck",
+    "status": "success",
+    "api_calls": 27,
+    "total": 6,
+    "needs_review": 0,
+    "types": [
+      {
+        "type": "console",
+        "count": 2
+      },
+      {
+        "type": "not_console",
+        "count": 4
+      }
+    ]
+  }
+]
