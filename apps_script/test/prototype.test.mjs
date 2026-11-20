@@ -171,3 +171,35 @@ test('the API returns all six item types and counts each deduplicated listing on
   assert.deepEqual(new Set(result.listings.map(item => item.item_type)),
     new Set(['console', 'console_bundle', 'needs_review', 'mainboard', 'not_console', 'unsupported_model']));
 });
+
+for (const [title, expected] of [
+  ['Blauer Wireless Controller für Xbox - Nicht Original Xbox', 'not_console'],
+  ['Wireless Controller für Xbox Series X kompatibel', 'not_console'],
+  ['Controller für PS5 Nicht Original', 'not_console'],
+  ['PS5 Konsole 1TB mit Controller', 'console'],
+  ['Xbox Series X Konsole mit Wireless Controller', 'console'],
+]) {
+  test('console category separates standalone controllers: ' + title, () => {
+    assert.equal(classifier.run('classifyItem', title).item_type, expected);
+  });
+}
+
+for (const title of [
+  'Blauer Wireless Controller für Xbox - Nicht Original Xbox',
+  'Wireless Controller für Xbox Series X kompatibel',
+  'PS5 Controller für Ersatzteile',
+  'Kompatibel für PS5 - Nicht Original',
+]) {
+  test('console group excludes a standalone controller: ' + title, () => {
+    assert.equal(classifier.run('classifyItem', title).item_type, 'not_console');
+  });
+}
+for (const title of [
+  'PS5 Slim Konsole mit Controller',
+  'Xbox Series X 1TB mit Wireless Controller',
+  'Sony PS5 CFI-2016 Controller und Kabel',
+]) {
+  test('console group retains consoles supplied with controllers: ' + title, () => {
+    assert.equal(classifier.run('classifyItem', title).item_type, 'console');
+  });
+}

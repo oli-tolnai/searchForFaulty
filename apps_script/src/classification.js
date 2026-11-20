@@ -62,7 +62,13 @@ function classifyItem(value) {
   const part = /\b(?:controller|kontroller|dualsense|manette|gehäuse|cover|box|ovp|karton|kabel|netzteil|lüfter|laufwerk|drive|lemezmeghajtó|hdmi[-\s]+(?:port|buchse))(?:s|n|e|ok)?(?![\p{L}\p{N}_])/u.test(title);
   const strong = consoleWord || consoleFeature || codes.length || xbox.size || (ps5 && banned);
   const multiple = /\b(?:posten\s*\d+|lot|bundle of|[2-9]\d*\s*(?:x|×)\s*(?:ps5|xbox|konsole|console))\b/.test(title);
-  if (emptyBox || onlyPart) type = 'not_console';
+  const actualConsole = consoleWord || codes.length > 0
+    || /\bbundle\s+(?:inkl\.?|including|mit|with)\b/.test(title)
+    || /\b(?:825\s*gb|[12]\s*tb|(?:disc|disk|digital)e?\s+edition)\b/.test(title);
+  const standaloneController = /\b(?:controllers?|kontroller|dualsense|manette)\b/.test(title)
+    || /\b(?:kompatibel|nicht\s+original)\b/.test(title) && /\bfür\s+(?:xbox|ps5)\b/.test(title);
+  if (standaloneController && !actualConsole) type = 'not_console';
+  else if (emptyBox || onlyPart) type = 'not_console';
   else if ((board && !explicit) || (donor && !(consoleWord || consoleFeature || codes.length))) type = 'mainboard';
   else if ((service && !explicit) || (part && !strong)) type = 'not_console';
   else if (!conflict && unsupported.length) type = 'unsupported_model';
