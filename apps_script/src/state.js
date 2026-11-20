@@ -249,11 +249,12 @@ function stateApply(params, secrets) {
           const val = op.value;
           if (!record(val) || !['visible_groups', 'selected_groups'].every(key => Array.isArray(val[key]) && val[key].length && new Set(val[key]).size === val[key].length && val[key].every(group => Object.hasOwn(DEVICE_GROUPS, group)))) invalidState();
           row = { key: op.key, value: { visible_groups: val.visible_groups, selected_groups: val.selected_groups } };
-        } else if (typeof op.key === 'string' && op.key.startsWith('search_filter_') && Object.hasOwn(DEVICE_GROUPS, op.key.slice(14))) {
+        } else if (typeof op.key === 'string' && op.key.startsWith('search_filter_') && (op.key.slice(14) === 'all' || Object.hasOwn(DEVICE_GROUPS, op.key.slice(14)))) {
           const group = op.key.slice(14);
           if (!record(op.value) || !['total','cheap','expensive','newest','ending'].includes(op.value.order)) invalidState();
-          const values = alertValues({ ...op.value, name: 'Keresési szűrő', device_groups: [group], enabled: true }, secrets);
-          row = { key: op.key, value: { ...values, order: op.value.order } };
+          const values = alertValues({ ...op.value, name: 'Keresési szűrő', device_groups: group === 'all' ? Object.keys(DEVICE_GROUPS) : [group], enabled: true }, secrets);
+          row = { key: op.key, value: { ...values, order: op.value.order,
+            ...(group === 'all' ? { models: [], include_mainboards: false, include_third_party: false, only_icloud_free: false, hide_unknown_icloud: false, gpu_vendor: 'both', known_shipping_only: false } : {}) } };
         } else if (op.key === 'currency' && record(op.value) && ['EUR', 'HUF'].includes(op.value.currency)) {
           row = { key: op.key, value: { currency: op.value.currency } };
         } else invalidState();

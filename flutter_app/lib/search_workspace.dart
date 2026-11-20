@@ -64,7 +64,7 @@ class SearchWorkspace extends StatefulWidget {
 
 class _SearchWorkspaceState extends State<SearchWorkspace> {
   String tab = 'all';
-  String filterGroup = 'consoles';
+  String get filterGroup => tab;
   HiddenGroup? hidden;
   bool busy = false, showFilters = false, confirming = false;
   String titleQuery = '';
@@ -82,7 +82,6 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
   final tabKeys = {
     for (final group in ['all', ...deviceGroups]) group: GlobalKey(),
   };
-  final selected = {'consoles', 'controllers'};
   Timer? timer;
   bool offline = false;
   List<String> get visibleGroups =>
@@ -91,14 +90,6 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
   @override
   void initState() {
     super.initState();
-    selected
-      ..clear()
-      ..addAll(
-        widget.shared?.selectedSearchGroups ?? ['consoles', 'controllers'],
-      );
-    selected.retainAll(visibleGroups);
-    if (selected.isEmpty) selected.add(visibleGroups.first);
-    filterGroup = visibleGroups.first;
     widget.shared?.addListener(changed);
     scheduleRefresh();
     unawaited(loadConfig());
@@ -184,18 +175,7 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
   void changed() {
     if (mounted) {
       setState(() {
-        final synced = widget.shared?.selectedSearchGroups;
-        if (synced != null) {
-          selected
-            ..clear()
-            ..addAll(synced);
-        }
-        selected.retainAll(visibleGroups);
-        if (selected.isEmpty) selected.add(visibleGroups.first);
         if (tab != 'all' && !visibleGroups.contains(tab)) tab = 'all';
-        if (!visibleGroups.contains(filterGroup)) {
-          filterGroup = visibleGroups.first;
-        }
       });
     }
   }
@@ -239,56 +219,23 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
     unawaited(widget.shared?.setSearchFilter(group, GroupSearchFilter()));
   }
 
-  Widget filterPanel(VoidCallback close) => StatefulBuilder(
-    builder: (context, rebuild) {
-      final group = filterGroup;
-      return Column(
-        children: [
-          if (tab == 'all')
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: DropdownButtonFormField<String>(
-                key: ValueKey('filter-group-$group'),
-                initialValue: group,
-                decoration: const InputDecoration(
-                  labelText: 'Kategória szűrői',
-                ),
-                items: [
-                  for (final key in visibleGroups)
-                    DropdownMenuItem(value: key, child: Text(label(key))),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => filterGroup = value);
-                    rebuild(() {});
-                  }
-                },
-              ),
-            ),
-          Expanded(
-            child: SearchFilterPanel(
-              key: ValueKey('$group-$filterEpoch'),
-              group: group,
-              read: () => filter(group),
-              change: (key, value) => changeFilter(group, key, value),
-              close: close,
-              clear: () => clearFilter(group),
-              count: () =>
-                  shown.where((item) => item.deviceGroup == group).length,
-              alert: widget.shared == null ? null : createAlert,
-              desktop: MediaQuery.sizeOf(context).width >= Ui.desktop,
-              footer: MediaQuery.sizeOf(context).width >= Ui.desktop
-                  ? elsewhere()
-                  : null,
-            ),
-          ),
-        ],
-      );
-    },
+  Widget filterPanel(VoidCallback close) => SearchFilterPanel(
+    key: ValueKey('$filterGroup-$filterEpoch'),
+    group: filterGroup,
+    read: () => filter(filterGroup),
+    change: (key, value) => changeFilter(filterGroup, key, value),
+    close: close,
+    clear: () => clearFilter(filterGroup),
+    count: () => shown.length,
+    alert: widget.shared == null ? null : createAlert,
+    desktop: MediaQuery.sizeOf(context).width >= Ui.desktop,
+    footer: MediaQuery.sizeOf(context).width >= Ui.desktop ? elsewhere() : null,
   );
 
-  int? estimate(Iterable<String> groups) =>
-      configuration?.estimatedSearchCalls(groups) ?? estimatedBaseCalls(groups);
+  int? estimate(Iterable<String> groups) => estimateSearchCalls(
+    groups,
+    configured: (group) => configuration?.estimatedSearchCalls([group]),
+  );
   int? get todayUsage {
     int? used = configuration?.dailyApiCalls;
     final now = widget.clock();
@@ -322,7 +269,8 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
     final items = active
         .where(
           (item) =>
-              filter(item.deviceGroup).matches(item, now) &&
+              filter(tab == 'all' ? 'all' : item.deviceGroup)
+                  .matches(item, now) &&
               item.title.toLowerCase().contains(titleQuery.toLowerCase()),
         )
         .toList();
@@ -467,7 +415,6 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
   }
 
   void openFilters(bool wide) {
-    if (tab != 'all') filterGroup = tab;
     if (wide) {
       setState(() => showFilters = !showFilters);
       return;
@@ -488,10 +435,11 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
   }
 
   Future<void> createAlert() async {
-    final group = tab == 'all' ? filterGroup : tab;
+    final group = filterGroup;
     final draft = AlertRule({
       'id': 'draft-search-alert',
       ...filter(group).alert(group),
+      if (group == 'all') 'device_groups': visibleGroups,
     });
     final values = await alerts.editAlert(context, draft, newRule: true);
     if (values != null && mounted) await widget.shared?.saveAlert(null, values);
@@ -562,13 +510,12 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
         (item) =>
             visibleListing(item, widget.clock()) &&
             widget.shared?.isHidden(item) != true &&
-            filter(item.deviceGroup).allowsType(item),
+            filter(tab == 'all' ? 'all' : item.deviceGroup).allowsType(item),
       )
       .toList();
   void choose(String group) => setState(() {
     tab = group;
     hidden = null;
-    if (group != 'all') filterGroup = group;
   });
   Future<void> categories() => showModalBottomSheet<void>(
     context: context,
@@ -761,8 +708,11 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
     onChanged: (value) => setState(() => titleQuery = value),
   );
   Widget elsewhere() {
-    final group = tab == 'all' ? filterGroup : tab;
-    final query = externalSearchText(group, filter(group).strings('models'));
+    final group = filterGroup;
+    final query = externalSearchText(
+      group == 'all' ? visibleGroups.first : group,
+      filter(group).strings('models'),
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Column(
@@ -819,7 +769,7 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
     ),
   );
   Set<String> get requestedGroups =>
-      tab == 'all' ? selected.where(visibleGroups.contains).toSet() : {tab};
+      tab == 'all' ? visibleGroups.toSet() : {tab};
   Widget searchButton({bool wide = false, bool initial = false}) =>
       FilledButton.icon(
         key: const ValueKey('run-search'),
@@ -841,7 +791,7 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
     spacing: 6,
     runSpacing: 4,
     children: [
-      for (final group in scopedGroups)
+      for (final group in [filterGroup])
         for (final entry in filter(group).active.entries)
           InputChip(
             deleteButtonTooltipMessage: 'Feltétel eltávolítása',
@@ -857,10 +807,10 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
               setState(() => filterEpoch++);
             },
           ),
-      if (scopedGroups.any((group) => filter(group).active.isNotEmpty))
+      if ([filterGroup].any((group) => filter(group).active.isNotEmpty))
         TextButton(
           onPressed: () {
-            for (final group in scopedGroups) {
+            for (final group in [filterGroup]) {
               clearFilter(group);
             }
           },
@@ -982,38 +932,6 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
       Text('Mai API-felhasználás: ${todayUsage ?? 'Nem ismert'}'),
       if (MoneyScope.displayOf(context).rate != null)
         Text(MoneyScope.displayOf(context).rateLabel),
-      if (tab == 'all')
-        Wrap(
-          spacing: 6,
-          children: [
-            for (final group in visibleGroups)
-              FilterChip(
-                label: Text(label(group)),
-                selected: selected.contains(group),
-                onSelected: (value) {
-                  if (!value && selected.length == 1) return;
-                  setState(
-                    () => value ? selected.add(group) : selected.remove(group),
-                  );
-                  unawaited(
-                    widget.shared?.setSelectedSearchGroups(selected.toList()),
-                  );
-                },
-              ),
-          ],
-        ),
-      if (tab == 'all')
-        DropdownButton<String>(
-          value: filterGroup,
-          items: [
-            for (final group in visibleGroups)
-              DropdownMenuItem(
-                value: group,
-                child: Text('${label(group)} szűrői'),
-              ),
-          ],
-          onChanged: (value) => setState(() => filterGroup = value!),
-        ),
       for (final group in scopedGroups)
         if ((failures[group] ?? runs[group]) case final result?) ...[
           Text(
@@ -1055,7 +973,11 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
                 .map((r) => r.searchedAt)
                 .reduce((a, b) => a.isAfter(b) ? a : b);
       final hiddenRows = active
-          .where((item) => !filter(item.deviceGroup).allowsType(item))
+          .where(
+            (item) =>
+                !filter(tab == 'all' ? 'all' : item.deviceGroup)
+                    .allowsType(item),
+          )
           .toList();
       final unsearched = runs.isEmpty;
       Widget hiddenFooter() => ExpansionTile(
@@ -1116,6 +1038,8 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
                 ],
               ),
               const SizedBox(height: 8),
+              if (!wide)
+                Align(alignment: Alignment.centerRight, child: sortButton()),
               activeChips(),
               Row(
                 children: [
@@ -1206,14 +1130,7 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
                       children: [
                         hiddenFooter(),
                         if (!wide) elsewhere(),
-                        if (!unsearched) ...[
-                          if (!wide)
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: sortButton(),
-                            ),
-                          runDetails(runs),
-                        ],
+                        if (!unsearched) ...[runDetails(runs)],
                       ],
                     )
                   : const SizedBox();

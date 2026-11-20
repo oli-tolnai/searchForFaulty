@@ -14,13 +14,13 @@ import 'fixtures/ui_actions.dart';
 
 void main() {
   test('fallback estimates count distinct groups and all 27 countries', () {
-    expect(estimatedBaseCalls(['consoles']), 54);
-    expect(estimatedBaseCalls(['controllers']), 108);
+    expect(estimatedBaseCalls(['consoles']), 56);
+    expect(estimatedBaseCalls(['controllers']), 112);
     expect(estimatedBaseCalls(['switch']), 27);
     expect(estimatedBaseCalls(['steam_deck']), 27);
     expect(estimatedBaseCalls(['iphone']), 189);
     expect(estimatedBaseCalls(['gpu']), 54);
-    expect(estimatedBaseCalls(['consoles', 'controllers', 'consoles']), 162);
+    expect(estimatedBaseCalls(['consoles', 'controllers', 'consoles']), 168);
     expect(estimatedBaseCalls(['unexpected']), isNull);
   });
   test('external queries use first selected model or category fallback', () {
@@ -172,7 +172,7 @@ void main() {
       );
       await t.pumpAndSettle();
       await selectCategory(t, 'Konzol');
-      expect(find.text('Keresés · kb. 54 hívás'), findsOneWidget);
+      expect(find.text('Keresés · kb. 56 hívás'), findsOneWidget);
       expect(find.textContaining('becslés nincs'), findsNothing);
       expect(find.textContaining('Korábban mentett eredmény'), findsNothing);
       expect(find.textContaining('Offline –'), findsNothing);

@@ -46,7 +46,26 @@ int? estimatedBaseCalls(Iterable<String> groups) {
   for (final group in groups.toSet()) {
     final queries = baseQueriesPerCountry[group];
     if (queries == null) return null;
-    count += queries * 27;
+    count += queries * 27 + ({'consoles': 2, 'controllers': 4}[group] ?? 0);
   }
   return count;
+}
+
+int? estimateSearchCalls(
+  Iterable<String> groups, {
+  int? Function(String)? configured,
+}) {
+  var total = 0;
+  for (final group in groups.toSet()) {
+    int? calls;
+    try {
+      calls = configured?.call(group);
+    } on FormatException {
+      // Fall back when optional server configuration has an obsolete schema.
+    }
+    calls ??= estimatedBaseCalls([group]);
+    if (calls == null) return null;
+    total += calls;
+  }
+  return total;
 }

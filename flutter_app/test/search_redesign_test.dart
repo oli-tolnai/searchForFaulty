@@ -278,7 +278,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(AlertDialog),
-          matching: find.textContaining('170'),
+          matching: find.textContaining('278'),
         ),
         findsOneWidget,
       );

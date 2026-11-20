@@ -61,7 +61,7 @@ class _SearchFilterPanelState extends State<SearchFilterPanel> {
 
   Widget select(String key, Map<Object, String> options, Object current) =>
       DropdownButtonFormField<Object>(
-        key: ValueKey('${widget.group}-$key-$current'),
+        key: PageStorageKey('${widget.group}-$key-$current'),
         initialValue: current,
         isExpanded: true,
         decoration: InputDecoration(labelText: filterLabels[key]),
@@ -106,7 +106,7 @@ class _SearchFilterPanelState extends State<SearchFilterPanel> {
     final money = MoneyScope.displayOf(context);
     final filter = widget.read();
     return TextFormField(
-      key: ValueKey('${widget.group}-$key-${money.unit}'),
+      key: PageStorageKey('${widget.group}-$key-${money.unit}'),
       initialValue: money.euroInput(filter.amount(key)),
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
@@ -140,7 +140,7 @@ class _SearchFilterPanelState extends State<SearchFilterPanel> {
               children: [
                 Expanded(
                   child: Text(
-                    'Szűrők · ${deviceGroupLabels[widget.group]}',
+                    'Szűrők · ${widget.group == 'all' ? 'Összes' : deviceGroupLabels[widget.group]}',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
@@ -162,25 +162,27 @@ class _SearchFilterPanelState extends State<SearchFilterPanel> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                const Text('Modell'),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
-                  children: [
-                    for (final model in modelsByDeviceGroup[widget.group]!)
-                      FilterChip(
-                        label: Text(model),
-                        selected: filter.strings('models').contains(model),
-                        onSelected: (selected) {
-                          final values = filter.strings('models').toSet();
-                          selected ? values.add(model) : values.remove(model);
-                          update('models', values.toList());
-                        },
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                if (widget.group != 'all') ...[
+                  const Text('Modell'),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: [
+                      for (final model in modelsByDeviceGroup[widget.group]!)
+                        FilterChip(
+                          label: Text(model),
+                          selected: filter.strings('models').contains(model),
+                          onSelected: (selected) {
+                            final values = filter.strings('models').toSet();
+                            selected ? values.add(model) : values.remove(model);
+                            update('models', values.toList());
+                          },
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 Row(
                   children: [
                     Expanded(child: amount('min_price')),
@@ -237,13 +239,9 @@ class _SearchFilterPanelState extends State<SearchFilterPanel> {
                   ),
                   subtitle: const Text('Ország, kulcsszó, jelölések'),
                   children: [
-                    select('order', {
-                      for (final order in ListingOrder.values)
-                        order.name: order.label,
-                    }, filter.order.name),
                     chips('countries', countries),
                     for (final key in [
-                      'known_shipping_only',
+                      if (widget.group != 'all') 'known_shipping_only',
                       'exclude_possibly_not_faulty',
                       'exclude_banned',
                       'include_title_faults',
@@ -270,7 +268,7 @@ class _SearchFilterPanelState extends State<SearchFilterPanel> {
                       Padding(
                         padding: const EdgeInsets.only(top: 12),
                         child: TextFormField(
-                          key: ValueKey('${widget.group}-$key'),
+                          key: PageStorageKey('${widget.group}-$key'),
                           initialValue: filter.strings(key).join(', '),
                           decoration: InputDecoration(
                             labelText: filterLabels[key],

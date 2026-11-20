@@ -30,6 +30,22 @@ class GroupSearchFilter {
       f.required<bool>(key);
     }
   }
+  static const commonKeys = {
+    'min_price',
+    'max_price',
+    'max_total_price',
+    'buying_options',
+    'ending_hours',
+    'countries',
+    'include_keywords',
+    'exclude_keywords',
+    'exclude_possibly_not_faulty',
+    'exclude_banned',
+    'include_title_faults',
+    'order',
+  };
+  GroupSearchFilter get common =>
+      GroupSearchFilter({for (final key in commonKeys) key: values[key]});
   static const flags = [
     'known_shipping_only',
     'exclude_possibly_not_faulty',
@@ -170,8 +186,9 @@ class GroupSearchFilter {
   );
   Json alert(String group) => {
     ...values,
-    'name': '${deviceGroupLabels[group]} – keresési szűrők',
-    'device_groups': [group],
+    'name':
+        '${group == 'all' ? 'Összes' : deviceGroupLabels[group]} – keresési szűrők',
+    'device_groups': group == 'all' ? deviceGroups : [group],
     'enabled': true,
     'include_unknown_shipping': !flag('known_shipping_only'),
   };

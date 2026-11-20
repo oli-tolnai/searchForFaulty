@@ -212,10 +212,12 @@ class Listing {
           : fields.required<bool>('is_scuf'),
       banned = fields.required<bool>('is_banned'),
       possiblyNotFaulty = fields.required<bool>('possibly_not_faulty'),
-      options = fields.list(
-        'buying_options',
-        (value) => value is String ? value : invalidResponse(),
-      ),
+      options = !fields.json.containsKey('buying_options')
+          ? const []
+          : fields.list(
+              'buying_options',
+              (value) => value is String ? value : invalidResponse(),
+            ),
       price = fields.amount('price'),
       currentBid = fields.amount('current_bid'),
       bidCount = fields.nullable<int>('bid_count'),

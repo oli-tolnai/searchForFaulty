@@ -59,3 +59,25 @@ test('notification presets enforce new price, iCloud, accessory and vendor condi
   assert.equal(app.run('alertMatches',{...base,device_group:'consoles',item_type:'mainboard'},{...rule,include_mainboards:true}),true);
   assert.equal(app.run('alertMatches',{...base,device_group:'gpu',item_type:'gpu',console_model:'RTX 30'},{...rule,gpu_vendor:'AMD'}),false);
 });
+
+test('aggregate search filters synchronize as an independent settings row', () => {
+  const app = runtime();
+  const values = {...app.run('alertDefaults', {models: [], include_unknown_shipping: true, enabled: true}),
+    order: 'total', max_price: 40, min_price: 5, countries: ['DE','FR'],
+    models: ['PS5 Slim'], include_mainboards: true, include_third_party: true, gpu_vendor: 'NVIDIA'};
+  const ops = [
+    {type: 'setting_set', op_id: 'all-common-filter-1', key: 'search_filter_all', value: values},
+    {type: 'setting_set', op_id: 'all-common-filter-2', key: 'search_filter_consoles', value: {...values, max_price: 100}},
+  ];
+  assert.equal(app.post('state_apply', {ops}).ok, true);
+  const rows = app.post('state_get', {since_revision: 0}).data.settings;
+  const all = rows.find(row => row.key === 'search_filter_all').value;
+  assert.equal(all.max_price, 40);
+  assert.equal(all.min_price, 5);
+  assert.deepEqual(all.countries, ['DE','FR']);
+  assert.deepEqual(all.models, []);
+  assert.equal(all.include_mainboards, false);
+  assert.equal(all.include_third_party, false);
+  assert.equal(all.gpu_vendor, 'both');
+  assert.equal(rows.find(row => row.key === 'search_filter_consoles').value.max_price, 100);
+});

@@ -171,8 +171,10 @@ class _ListingCardState extends State<ListingCard> {
     final values = <Widget>[
       badge(
         item.auction
-            ? 'Aukció${remaining != null && !stale ? ' · ${countdown(remaining)}' : ''}'
-            : 'Fix ár',
+            ? '${item.options.contains('FIXED_PRICE') ? 'Aukció + Azonnali vétel' : 'Aukció'}${remaining != null && !stale ? ' · ${countdown(remaining)}' : ''}'
+            : item.options.contains('FIXED_PRICE')
+            ? 'Fix ár'
+            : 'Hirdetéstípus: Nem ismert',
         foreground: item.auction ? Ui.auction : Ui.fixed,
         background: item.auction ? Ui.auctionSurface : Ui.fixedSurface,
       ),

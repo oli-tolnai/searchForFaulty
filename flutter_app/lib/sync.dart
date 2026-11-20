@@ -106,7 +106,11 @@ class SharedState extends ChangeNotifier {
       _view('hidden').values.where((row) => row['deleted'] == false);
   GroupSearchFilter searchFilter(String group) {
     final row = _view('settings')['search_filter_$group'];
-    if (row != null) return GroupSearchFilter(object(row['value']));
+    if (row != null) {
+      final value = GroupSearchFilter(object(row['value']));
+      return group == 'all' ? value.common : value;
+    }
+    if (group == 'all') return GroupSearchFilter();
     final legacy = filters;
     return legacy == null
         ? GroupSearchFilter()
@@ -153,7 +157,7 @@ class SharedState extends ChangeNotifier {
   Future<void> setSearchFilter(String group, GroupSearchFilter filter) => _add({
     'type': 'setting_set',
     'key': 'search_filter_$group',
-    'value': filter.values,
+    'value': (group == 'all' ? filter.common : filter).values,
   });
 
   Json? get filters => _view('settings')['filters']?['value'] as Json?;
@@ -435,7 +439,7 @@ class SharedState extends ChangeNotifier {
         if (entry.key == 'settings') {
           final key = rowFields.required<String>('key');
           if (key.startsWith('search_filter_') &&
-              deviceGroups.contains(key.substring(14))) {
+              ['all', ...deviceGroups].contains(key.substring(14))) {
             GroupSearchFilter(rowFields.required<Json>('value'));
             continue;
           }
