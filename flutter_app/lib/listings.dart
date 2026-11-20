@@ -168,7 +168,7 @@ enum BuyingFilter {
 }
 
 enum ListingOrder {
-  total('Legalacsonyabb ismert teljes ár'),
+  total('Legolcsóbb teljes ár'),
   cheap('Legolcsóbb'),
   expensive('Legdrágább'),
   newest('Legújabb'),

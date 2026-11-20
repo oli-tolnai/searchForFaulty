@@ -38,6 +38,7 @@ class SearchFilterPanel extends StatefulWidget {
     required this.count,
     this.alert,
     this.desktop = false,
+    this.footer,
   });
   final String group;
   final GroupSearchFilter Function() read;
@@ -46,6 +47,7 @@ class SearchFilterPanel extends StatefulWidget {
   final int Function() count;
   final VoidCallback? alert;
   final bool desktop;
+  final Widget? footer;
   @override
   State<SearchFilterPanel> createState() => _SearchFilterPanelState();
 }
@@ -293,6 +295,7 @@ class _SearchFilterPanelState extends State<SearchFilterPanel> {
                     icon: const Icon(Icons.notifications_outlined),
                     label: const Text('Értesítés ilyen találatokról'),
                   ),
+                if (widget.footer != null) widget.footer!,
               ],
             ),
           ),

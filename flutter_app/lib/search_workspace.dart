@@ -13,6 +13,8 @@ import 'search_filter_panel.dart';
 import 'search_filters.dart';
 import 'sync.dart';
 import 'app_theme.dart';
+import 'external_search.dart';
+import 'listing_card.dart' show openExternal;
 
 const groupIcons = {
   'all': Icons.dashboard_outlined,
@@ -82,7 +84,7 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
   };
   final selected = {'consoles', 'controllers'};
   Timer? timer;
-  late final cachedGroups = widget.results.groups.keys.toSet();
+  bool offline = false;
   List<String> get visibleGroups =>
       widget.shared?.visibleSearchGroups ?? deviceGroups;
   List<String> get scopedGroups => tab == 'all' ? visibleGroups : [tab];
@@ -201,11 +203,23 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
   Future<void> loadConfig() async {
     try {
       final config = await widget.config?.call();
-      if (mounted) setState(() => configuration = config);
+      if (mounted) {
+        setState(() {
+          configuration = config;
+          if (config != null) offline = false;
+        });
+      }
+    } on AppFailure catch (failure) {
+      if (mounted) setState(() => offline = connectionFailed(failure));
     } on Exception {
-      /* Searches remain available when config is offline. */
+      // An invalid configuration is not proof that the device is offline.
     }
   }
+
+  bool connectionFailed(AppFailure failure) =>
+      failure.message.contains('nem érhető el') ||
+      failure.message.contains('nem válaszolt időben') ||
+      failure.code == 'network';
 
   GroupSearchFilter filter(String group) =>
       widget.shared?.searchFilter(group) ??
@@ -263,6 +277,9 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
                   shown.where((item) => item.deviceGroup == group).length,
               alert: widget.shared == null ? null : createAlert,
               desktop: MediaQuery.sizeOf(context).width >= Ui.desktop,
+              footer: MediaQuery.sizeOf(context).width >= Ui.desktop
+                  ? elsewhere()
+                  : null,
             ),
           ),
         ],
@@ -271,7 +288,7 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
   );
 
   int? estimate(Iterable<String> groups) =>
-      configuration?.estimatedSearchCalls(groups);
+      configuration?.estimatedSearchCalls(groups) ?? estimatedBaseCalls(groups);
   int? get todayUsage {
     int? used = configuration?.dailyApiCalls;
     final now = widget.clock();
@@ -406,7 +423,7 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
                 GroupResults.split(result, [group]),
               ),
             );
-            cachedGroups.remove(group);
+            offline = false;
             await widget.persist(widget.results);
             scheduleRefresh();
           }
@@ -415,15 +432,21 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
           }
         } on AppFailure catch (failure) {
           if (mounted) {
-            setState(
-              () => error = '${deviceGroupLabels[group]}: ${failure.message}',
-            );
+            setState(() {
+              offline = connectionFailed(failure);
+              error = '${deviceGroupLabels[group]}: ${failure.message}';
+            });
           }
         }
       }
       unawaited(widget.shared?.sync());
     } on AppFailure catch (failure) {
-      if (mounted) setState(() => error = failure.message);
+      if (mounted) {
+        setState(() {
+          offline = connectionFailed(failure);
+          error = failure.message;
+        });
+      }
     } on Exception {
       if (mounted) {
         setState(() => error = 'A keresés vagy a helyi mentés sikertelen.');
@@ -737,8 +760,37 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
     ),
     onChanged: (value) => setState(() => titleQuery = value),
   );
+  Widget elsewhere() {
+    final group = tab == 'all' ? filterGroup : tab;
+    final query = externalSearchText(group, filter(group).strings('models'));
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Keress máshol is',
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          const SizedBox(height: 8),
+          for (final site in ExternalMarket.values)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: OutlinedButton.icon(
+                onPressed: () =>
+                    openExternal(context, externalSearchUri(site, query)),
+                icon: const Icon(Icons.open_in_new, size: 18),
+                label: Text(site.label),
+              ),
+            ),
+          Text(query, style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ),
+    );
+  }
+
   Widget sortButton() => SizedBox(
-    width: 180,
+    width: 210,
     child: PopupMenuButton<ListingOrder>(
       tooltip: 'Rendezés',
       initialValue: filter(filterGroup).order,
@@ -768,23 +820,23 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
   );
   Set<String> get requestedGroups =>
       tab == 'all' ? selected.where(visibleGroups.contains).toSet() : {tab};
-  Widget searchButton({
-    bool wide = false,
-    bool initial = false,
-  }) => FilledButton.icon(
-    key: const ValueKey('run-search'),
-    onPressed: busy || requestInFlight
-        ? null
-        : () => refreshGroups(requestedGroups),
-    icon: const Icon(Icons.refresh, size: 16),
-    label: Text(
-      initial
-          ? 'Keresés indítása'
-          : wide
-          ? 'Keresés · ${estimate(requestedGroups) == null ? 'becslés nincs' : 'kb. ${estimate(requestedGroups)} hívás'}'
-          : 'Keresés',
-    ),
-  );
+  Widget searchButton({bool wide = false, bool initial = false}) =>
+      FilledButton.icon(
+        key: const ValueKey('run-search'),
+        onPressed: busy || requestInFlight
+            ? null
+            : () => refreshGroups(requestedGroups),
+        icon: const Icon(Icons.refresh, size: 16),
+        label: Text(
+          initial
+              ? 'Keresés indítása'
+              : wide
+              ? (estimate(requestedGroups) == null
+                    ? 'Keresés'
+                    : 'Keresés · kb. ${estimate(requestedGroups)} hívás')
+              : 'Keresés',
+        ),
+      );
   Widget activeChips() => Wrap(
     spacing: 6,
     runSpacing: 4,
@@ -1005,9 +1057,6 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
       final hiddenRows = active
           .where((item) => !filter(item.deviceGroup).allowsType(item))
           .toList();
-      final mainCount = active
-          .where((item) => filter(item.deviceGroup).allowsType(item))
-          .length;
       final unsearched = runs.isEmpty;
       Widget hiddenFooter() => ExpansionTile(
         key: PageStorageKey('hidden-footer-$tab'),
@@ -1118,11 +1167,11 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
                   'A jelenlegi szűrőkkel nincs megjeleníthető találat.',
                 ),
               ),
-            if (scopedGroups.any(cachedGroups.contains) && !unsearched)
+            if (offline && !unsearched)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(
-                  'Korábban mentett eredmény · $mainCount alaplistás tétel',
+                  'Offline – korábban mentett eredmény',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
@@ -1156,6 +1205,7 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
                   ? Column(
                       children: [
                         hiddenFooter(),
+                        if (!wide) elsewhere(),
                         if (!unsearched) ...[
                           if (!wide)
                             Align(

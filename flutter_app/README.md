@@ -83,3 +83,12 @@ flutter test tools/capture_ui.dart --dart-define="CDF_CAPTURE_FILE=$env:APPDATA/
 ```
 
 Ez a kézi eszköz nem része az automatikus tesztfutásnak. Nem hívja az eBay keresési API-ját, nem gyárt hirdetést, és nem írja át a mentett felhasználói állapotot.
+
+
+### Keresés más piactereken
+
+A „Keress máshol is” blokk telefonon a találati lista végén, asztalon a szűrőpanel alján érhető el, keresés előtt is. A kiválasztott kategória első kijelölt modelljéből (enélkül a kategória általános keresőszavából) és a „hibás” szóból készít keresőlinket. Az Összes nézetben a szűrőpanelhez kiválasztott kategóriát használja. A link a rendszerböngészőben nyílik; az alkalmazás nem kérdezi le és nem olvassa ezeket az oldalakat.
+
+A Jófogás és HardverApró formátuma a `lib/external_search.dart` fájl `externalSearchFormats` konstansában, a keresési paraméter neve az `ExternalMarket` felsorolásban javítható. A megadott nyilvános URL-formátumokat **a felhasználónak kattintással kell ellenőriznie**, hogy a megfelelő, előre kitöltött találati oldal nyílik-e meg. Automatikus ellenőrzés vagy scraping nem történt.
+
+Ha a webapp nem ad hívásbecslést, a kliens a csoportonként ismert 2 / 4 / 1 / 1 / 7 / 2 lekérdezést szorozza 27 országgal. Ez „kb.” érték: a kiegészítő keresések, lapozás és újrapróbálás növelhetik a tényleges hívásszámot.

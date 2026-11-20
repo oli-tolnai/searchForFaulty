@@ -450,12 +450,15 @@ void main() {
         tester,
         SearchScreen(
           initial: result,
+          loadConfig: () async =>
+              throw const AppFailure('A webapp nem érhető el.'),
           clock: () => testTime,
           search: (_) async => result,
           loadDetails: (_) async => ListingDetails.fromJson(details),
         ),
       );
-      expect(find.textContaining('Korábban mentett eredmény'), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(find.text('Offline – korábban mentett eredmény'), findsOneWidget);
       expect(find.text('Nem ellenőrzött'), findsOneWidget);
       expect(find.text('Túl régi'), findsNothing);
     },
