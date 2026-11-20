@@ -36,7 +36,7 @@ Az Android-build legalább API 23-at igényel. A release APK a gép helyi debug 
 
 1. A **Beállítások** oldalon add meg a telepített Apps Script webapp `/exec` végű címét és a hozzá tartozó **kliens-tokent**. A webapp felállításának lépései az [Apps Script útmutatójában](../apps_script/README.md) vannak.
 2. Kattints a **Kapcsolat tesztelése** gombra. Siker esetén válaszd a **Mentés** gombot, majd a keresőképernyőn a **Keresés indítása** gombot.
-3. A modell-, ár- és egyéb szűrők a letöltött eredményeket rendezik és szűrik. A kártyán a **Leírás** gomb külön lekéri a hirdetés szövegét.
+3. A modell-, ár- és egyéb szűrők a letöltött eredményeket rendezik és szűrik. A részletes nézetben a **Leírás és az eladó megjegyzése** sor külön lekéri a hirdetés szövegét.
 
 A cím és a token az eszköz biztonságos tárolójában marad. Az utolsó teljesen sikeres keresés helyi másolata internet nélkül is megjelenik, az eredeti frissítési idővel. Két órától a kártya „Nem ellenőrzött” jelölést kap, hat órától a régi tétel nem jelenik meg.
 
@@ -65,3 +65,21 @@ A **Szűrők** telefonon alsó panelt, széles ablakban oldalsó panelt nyit. A 
 Az összesítő részletei lenyithatók; a lista alján a **Rejtett tételek** sávból nyílnak a külön csoportnézetek. A látható fülek a Beállításokban választhatók ki és szinkronizálódnak. Telefonon alsó navigáció, széles ablakban oldalsó navigáció látható.
 
 A helyi gyorsítótár csoportonként megmarad újraindítás után is, részleges eredménynél a hibajelzésekkel együtt. Egy másik csoport keresése nem írja felül. Két óra után figyelmeztetés és „Nem ellenőrzött” jelölés látszik; hat óra után a régi hirdetési adatok kikerülnek, de az utolsó keresés időpontja megmarad. Sikertelen frissítés nem törli a korábbi listát.
+
+## A jóváhagyott UI-terv szerinti felület
+
+Telefonon a fejléc kategóriaválasztója nyitja a **Mit keresel?** panelt; nincs vízszintes kategóriasor. A négy alsó pont: Keresés, Kedvencek, Figyelés, Beállítások. Az **Elrejtett hirdetések** a Beállításokból érhető el. Kártyára koppintva nyílik a részletes nézet, benne az eBay-, leírás-, figyelés- és elrejtésműveletekkel; a kártyán csak a szív marad.
+
+Asztalon a kategóriafülek és a 272 px-es szűrőpanel állandók, 1440 px-en négy oszlopban látszanak a kártyák. A részletek párbeszédablakban nyílnak. A szűrőpanel további beállításai alatt találhatók az országok, kulcsszavak, jelölések és a rendezés. A keresés országonkénti állapota, az API-felhasználás és az Összes kategória frissítési kijelölése a **Keresés részletei** alatt maradt.
+
+A **Mégse** a választ kliensoldalon dobja el; a már elküldött szerverkérést nem tudja leállítani. Az Inter beágyazott betűtípus, offline működik; licence az `assets/fonts/OFL.txt` fájlban van. Új csomagfüggőség nincs.
+
+A pontos méretű képek, az éles próba és a tervtől való eltérések: [UI-ellenőrzés](../docs/ui_terv/kepernyokepek/README.md).
+
+A képek újragenerálása csak friss, valódi keresési gyorsítótárral (a `flutter_app` mappából):
+
+```powershell
+flutter test tools/capture_ui.dart --dart-define="CDF_CAPTURE_FILE=$env:APPDATA/hu.consoledealfinder/Console Deal Finder/last-search.json"
+```
+
+Ez a kézi eszköz nem része az automatikus tesztfutásnak. Nem hívja az eBay keresési API-ját, nem gyárt hirdetést, és nem írja át a mentett felhasználói állapotot.
