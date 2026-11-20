@@ -65,14 +65,14 @@ void main() {
           loadDetails: (_) async => ListingDetails.fromJson(details),
         ),
       );
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Kontroller'));
+      await selectCategory(tester, 'Kontroller');
       await tester.pumpAndSettle();
-      await tester.tap(find.textContaining('Keresés ·'));
+      await tester.tap(find.byKey(const ValueKey('run-search')));
       await tester.pumpAndSettle();
       expect(requested, {'controllers'});
-      await tester.tap(find.text('Szűrők'));
+      await openFilters(tester);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Modellek (mind)'));
+
       await tester.pumpAndSettle();
       expect(find.text('PS5 Slim'), findsNothing);
       expect(find.text('DualSense Edge'), findsOneWidget);
@@ -82,10 +82,15 @@ void main() {
       expect(shared.searchFilter('controllers').strings('models'), [
         'DualSense',
       ]);
-      await tester.tap(find.byTooltip('Szűrők bezárása'));
+      if (find.byTooltip('Szűrők bezárása').evaluate().isNotEmpty) {
+        await tester.tap(find.byTooltip('Szűrők bezárása'));
+      }
       await tester.pumpAndSettle();
       expect(find.text('Scuf hibás kontroller'), findsOneWidget);
+      await openListing(tester, title: 'Scuf hibás kontroller');
       expect(find.text('Scuf'), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
       expect(find.text('Utángyártott kontroller'), findsNothing);
       expect(find.text('Külön töltőállomás'), findsNothing);
       await openHidden(tester, 'Harmadik féltől származó kontroller', count: 1);
@@ -128,6 +133,7 @@ void main() {
         ),
       ),
     );
+    await openListing(tester);
     expect(find.text('Egyedi'), findsOneWidget);
   });
 
@@ -155,6 +161,7 @@ void main() {
           ),
         ),
       );
+      await openListing(tester);
       expect(
         find.text('Használtként hirdetve – a hiba a címből derül ki'),
         findsOneWidget,
@@ -196,16 +203,14 @@ void main() {
     );
     expect(find.text('Látható konzol'), findsOneWidget);
     expect(find.text('Elrejtett belföldi konzol'), findsNothing);
-    await openHidden(
-      tester,
-      'Valószínűleg nem szállít Magyarországra',
-      count: 0,
+    expect(
+      find.widgetWithText(ExpansionTile, 'Rejtett tételek (0)'),
+      findsOneWidget,
     );
-    await tester.pumpAndSettle();
     expect(find.text('Elrejtett belföldi konzol'), findsNothing);
-    await tester.tap(find.byType(BackButton));
+    await tester.tap(find.text('Beállítások'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Elrejtett'));
+    await tester.tap(find.text('Elrejtett hirdetések'));
     await tester.pumpAndSettle();
     expect(find.text('Elrejtett belföldi konzol'), findsOneWidget);
   });
@@ -295,16 +300,25 @@ void main() {
           ),
         ),
       );
+      await openListing(tester);
       expect(find.text('Teljes ár'), findsOneWidget);
-      expect(find.text('Nem ismert'), findsOneWidget);
-      expect(requests, 0);
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Leírás').first);
+      expect(find.text('87 €'), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
+      await tester.tap(find.byType(ListingCard).last);
+      await tester.pumpAndSettle();
+      expect(find.text('Teljes ár'), findsNothing);
+      expect(find.text('Nem ismert'), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      await openListing(tester);
+      expect(requests, 0);
+      await description(tester);
       expect(requests, 1);
       expect(find.text('Az eladó megjegyzése az állapotról'), findsOneWidget);
       expect(find.text('Defektes Laufwerk'), findsOneWidget);
       expect(find.text('Originalverpackt mit Zubehör'), findsOneWidget);
-      expect(find.text('Fordítás a Google Fordítóval'), findsOneWidget);
+      expect(find.text('Google Fordító megnyitása'), findsOneWidget);
       expect(
         translationLink('é & ${'🎮' * 4500}')
             .queryParameters['text']!
@@ -334,10 +348,8 @@ void main() {
         ),
       ),
     );
-    final button = find.widgetWithText(OutlinedButton, 'Leírás');
-    await tester.ensureVisible(button);
-    await tester.tap(button);
-    await tester.pumpAndSettle();
+    await openListing(tester);
+    await description(tester);
     expect(unavailable, isTrue);
     expect(find.text('A hirdetés már nem elérhető'), findsOneWidget);
   });
@@ -373,9 +385,9 @@ void main() {
         loadDetails: (_) async => ListingDetails.fromJson(details),
       ),
     );
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Konzol'));
+    await selectCategory(tester, 'Konzol');
     await tester.pumpAndSettle();
-    await tester.tap(find.textContaining('Keresés ·'));
+    await tester.tap(find.byKey(const ValueKey('run-search')));
     await tester.pumpAndSettle();
     expect(find.textContaining('Részleges keresés'), findsOneWidget);
     await tester.tap(find.text('Keresés részletei'));

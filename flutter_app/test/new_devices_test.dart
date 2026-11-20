@@ -92,7 +92,7 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Switch'));
+      await selectCategory(tester, 'Switch');
       await tester.pumpAndSettle();
       expect(calls, 0);
       expect(find.text('Vizsgált Switch készülék'), findsNothing);
@@ -103,10 +103,13 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Vizsgált Switch készülék'), findsOneWidget);
-      await tester.tap(find.text('Leírás'));
+      await openListing(tester, title: 'Vizsgált Switch készülék');
+      await description(tester);
       await tester.pumpAndSettle();
       expect(calls, 1);
-      expect(find.text('Vizsgált Switch készülék'), findsNothing);
+      expect(saved!.allListings.single.shipsToHu, 'yes');
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
       expect(find.text('Vizsgált Switch készülék'), findsOneWidget);
@@ -145,7 +148,11 @@ void main() {
           ),
         ),
       );
+      await openListing(tester, title: 'iPhone kártya free_by_seller');
       expect(find.text('iCloud-mentes (az eladó szerint)'), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      await openListing(tester, title: 'iPhone kártya unknown');
       expect(
         find.text(
           'Az iCloud-zár állapota nem ismert – vásárlás előtt kérdezd meg az eladót',

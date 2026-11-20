@@ -5,6 +5,9 @@ import 'api/models.dart';
 import 'api/webapp.dart';
 import 'currency.dart';
 import 'listings.dart';
+import 'app_theme.dart';
+
+import 'dart:async';
 
 Uri translationLink(String text) => Uri.https('translate.google.com', '/', {
   'sl': 'auto',
@@ -39,359 +42,542 @@ class ListingCard extends StatefulWidget {
     this.onHide,
     this.onWatch,
     this.watchThreshold,
+    this.watchValue,
     this.onOpened,
     this.newLabel = false,
     this.showDeviceGroup = false,
     this.savedStatus,
+    this.detailed = false,
   });
-
   final Listing item;
   final DateTime now;
   final Future<ListingDetails> Function(String id) loadDetails;
   final VoidCallback onUnavailable;
-  final bool unavailable;
-  final bool favorite, newLabel;
-  final bool showDeviceGroup;
-  final VoidCallback? onFavorite, onHide, onOpened, onWatch;
+  final bool unavailable, favorite, newLabel, showDeviceGroup;
+  final bool detailed;
+  final VoidCallback? onFavorite, onHide, onWatch, onOpened;
   final num? watchThreshold;
-  final String? savedStatus;
+  final num? Function()? watchValue;
 
+  final String? savedStatus;
   @override
   State<ListingCard> createState() => _ListingCardState();
 }
 
 class _ListingCardState extends State<ListingCard> {
-  bool expanded = false;
-  bool loading = false;
+  final revision = ValueNotifier(0);
+  bool expanded = false, loading = false, routeOpen = false;
+  bool? favoriteOverride;
   ListingDetails? details;
   String? error;
-
-  Future<void> toggleDetails() async {
-    setState(() => expanded = !expanded);
-    if (!expanded || loading || details != null || widget.unavailable) return;
-    setState(() {
-      loading = true;
-      error = null;
-    });
-    try {
-      final result = await widget.loadDetails(widget.item.id);
-      if (mounted) setState(() => details = result);
-    } on AppFailure catch (failure) {
-      if (!mounted) return;
-      if (failure.code == 'listing_not_found') widget.onUnavailable();
-      setState(() => error = failure.message);
-    } finally {
-      if (mounted) setState(() => loading = false);
+  Timer? ticker;
+  Listing get item => details?.update(widget.item) ?? widget.item;
+  DateTime get now => widget.now.add(
+    routeOpen
+        ? DateTime.now().difference(openedAt ?? DateTime.now())
+        : Duration.zero,
+  );
+  DateTime? openedAt;
+  bool get favorite => favoriteOverride ?? widget.favorite;
+  void changed() {
+    if (mounted) {
+      setState(() {});
+      revision.value++;
     }
   }
 
-  Widget tag(String text, Color color) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+  @override
+  void didUpdateWidget(covariant ListingCard old) {
+    super.didUpdateWidget(old);
+    if (old.favorite != widget.favorite) favoriteOverride = null;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && routeOpen) revision.value++;
+    });
+  }
+
+  @override
+  void dispose() {
+    ticker?.cancel();
+    revision.dispose();
+    super.dispose();
+  }
+
+  Future<void> fetchDescription() async {
+    expanded = !expanded;
+    changed();
+    if (!expanded || loading || details != null || widget.unavailable) return;
+    loading = true;
+    error = null;
+    changed();
+    try {
+      details = await widget.loadDetails(widget.item.id);
+    } on AppFailure catch (failure) {
+      if (!mounted) return;
+      error = failure.message;
+      if (failure.code == 'listing_not_found') widget.onUnavailable();
+    } finally {
+      loading = false;
+      changed();
+    }
+  }
+
+  void toggleFavorite() {
+    favoriteOverride = !favorite;
+    widget.onFavorite?.call();
+    changed();
+  }
+
+  Widget image(double height, {double? width}) => SizedBox(
+    height: height,
+    width: width,
+    child: item.image == null || now.difference(item.checkedAt) >= maxListingAge
+        ? const ColoredBox(
+            color: Ui.image,
+            child: Center(
+              child: Icon(Icons.image_outlined, color: Ui.muted, size: 28),
+            ),
+          )
+        : Image.network(
+            item.image.toString(),
+            fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => const ColoredBox(
+              color: Ui.image,
+              child: Center(child: Icon(Icons.image_outlined, color: Ui.muted)),
+            ),
+          ),
+  );
+  Widget badge(
+    String text, {
+    Color foreground = Ui.muted,
+    Color background = Ui.border,
+  }) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
     decoration: BoxDecoration(
-      color: color.withValues(alpha: .13),
-      borderRadius: BorderRadius.circular(8),
+      color: background,
+      borderRadius: BorderRadius.circular(6),
     ),
     child: Text(
       text,
-      style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 12),
+      style: TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        color: foreground,
+      ),
     ),
   );
+  List<Widget> badges({bool full = false}) {
+    final stale = isUnchecked(item, now);
+    final remaining = item.end?.difference(now);
+    final values = <Widget>[
+      badge(
+        item.auction
+            ? 'Aukció${remaining != null && !stale ? ' · ${countdown(remaining)}' : ''}'
+            : 'Fix ár',
+        foreground: item.auction ? Ui.auction : Ui.fixed,
+        background: item.auction ? Ui.auctionSurface : Ui.fixedSurface,
+      ),
+      if (widget.newLabel && !stale && widget.savedStatus != 'ENDED')
+        badge('ÚJ', foreground: Ui.primary, background: Ui.selected),
+      if (widget.savedStatus == 'ENDED') badge('Lejárt / nem elérhető'),
+      if (stale || widget.savedStatus == 'UNKNOWN') badge('Nem ellenőrzött'),
+      if (widget.unavailable)
+        badge('Valószínűleg lezárult', foreground: Ui.danger),
+      if (full) ...[
+        if (widget.showDeviceGroup) badge(deviceGroupLabels[item.deviceGroup]!),
+        if (item.auction && remaining != null && remaining > day * 2 && !stale)
+          badge(
+            'Korai licit – a végső ár várhatóan magasabb',
+            foreground: Ui.auction,
+          ),
+        if (item.type.endsWith('_bundle')) badge('Csomag'),
+        if (item.type == 'needs_review') badge('Ellenőrzendő'),
+        if (item.type == 'mainboard') badge('Alaplap'),
+        if (item.isScuf) badge('Scuf'),
+        if (item.model == 'DualSense (Egyedi)') badge('Egyedi'),
+        if (item.model.contains('nem ismert'))
+          badge('Generáció / változat nem ismert'),
+        for (final group in HiddenGroup.values)
+          if (group.contains(item)) badge(group.title),
+        if (item.deviceGroup == 'iphone')
+          badge(
+            item.icloudStatus == 'free_by_seller'
+                ? 'iCloud-mentes (az eladó szerint)'
+                : item.icloudStatus == 'locked'
+                ? 'iCloud-zárolt (csak alkatrésznek)'
+                : 'Az iCloud-zár állapota nem ismert – vásárlás előtt kérdezd meg az eladót',
+            foreground: Ui.auction,
+          ),
+        if (item.banned) badge('Tiltott (banned)', foreground: Ui.danger),
+        if (item.possiblyNotFaulty) badge('Lehet, hogy nem hibás'),
+        if (item.faultSource == 'title')
+          badge('Használtként hirdetve – a hiba a címből derül ki'),
+        if (item.faultSource == 'text')
+          badge('A hiba a címből vagy a leírásból derül ki.'),
+        if ((widget.watchValue?.call() ?? widget.watchThreshold) != null)
+          badge(
+            'Figyelve · ${MoneyScope.displayOf(context).format((widget.watchValue?.call() ?? widget.watchThreshold).toString(), 'EUR')}',
+          ),
+      ],
+    ];
+    return full ? values : values.take(2).toList();
+  }
 
   @override
-  Widget build(BuildContext context) {
-    final item = details?.update(widget.item) ?? widget.item;
-    final colors = Theme.of(context).colorScheme;
-    final text = Theme.of(context).textTheme;
-    final remaining = item.end?.difference(widget.now);
-    final stale = isUnchecked(item, widget.now);
-    final archive =
-        widget.savedStatus != null &&
-        widget.now.difference(item.checkedAt) >= maxListingAge;
-    final detailsText = details?.description ?? details?.summary;
-    final translation = [details?.condition, detailsText]
-        .whereType<String>()
-        .where((value) => value.trim().isNotEmpty)
-        .join('\n\n');
-    const placeholder = ColoredBox(
-      color: Color(0xff232a35),
-      child: Center(
-        child: Icon(
-          Icons.sports_esports_outlined,
-          size: 42,
-          color: Color(0xff9aa8ba),
+  void initState() {
+    super.initState();
+    if (widget.detailed) {
+      openedAt = DateTime.now();
+      routeOpen = true;
+      ticker = Timer.periodic(const Duration(seconds: 1), (_) => changed());
+    }
+  }
+
+  Future<void> openDetails() async {
+    final money = MoneyScope.maybeOf(context);
+    final openedNow = widget.now;
+    var display = MoneyScope.displayOf(context);
+    Widget view(BuildContext page) => StatefulBuilder(
+      builder: (page, setPage) => MoneyScope(
+        display: display,
+        toggle: money?.toggle == null
+            ? null
+            : () {
+                money!.toggle!();
+                setPage(
+                  () => display = MoneyDisplay(
+                    display.huf ? 'EUR' : 'HUF',
+                    display.rate,
+                  ),
+                );
+              },
+        child: ListingCard(
+          item: widget.item,
+          now: openedNow,
+          loadDetails: widget.loadDetails,
+          onUnavailable: widget.onUnavailable,
+          unavailable: widget.unavailable,
+          favorite: favorite,
+          onFavorite: widget.onFavorite,
+          onHide: widget.onHide,
+          onWatch: widget.onWatch,
+          watchThreshold: widget.watchThreshold,
+          watchValue: widget.watchValue,
+          onOpened: widget.onOpened,
+          newLabel: widget.newLabel,
+          showDeviceGroup: widget.showDeviceGroup,
+          savedStatus: widget.savedStatus,
+          detailed: true,
         ),
       ),
     );
-    return Card(
-      margin: EdgeInsets.zero,
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(
-            height: 110,
-            child: item.image == null || archive
-                ? placeholder
-                : Image.network(
-                    item.image.toString(),
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, _, _) => placeholder,
-                    frameBuilder: (_, child, frame, synchronouslyLoaded) =>
-                        frame == null && !synchronouslyLoaded
-                        ? placeholder
-                        : child,
-                  ),
+    if (MediaQuery.sizeOf(context).width >= Ui.desktop) {
+      await showDialog<void>(
+        context: context,
+        builder: (page) => Dialog(
+          clipBehavior: Clip.antiAlias,
+          child: SizedBox(
+            width: 640,
+            height: MediaQuery.sizeOf(page).height * .9,
+            child: view(page),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
+        ),
+      );
+    } else {
+      await Navigator.of(context).push(MaterialPageRoute<void>(builder: view));
+    }
+  }
+
+  Widget action(IconData icon, String label, VoidCallback? tap) =>
+      OutlinedButton(
+        onPressed: tap,
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+          minimumSize: const Size(44, 48),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 18),
+            Text(label, style: const TextStyle(fontSize: 12)),
+          ],
+        ),
+      );
+  Widget detailView(BuildContext page) {
+    final archive = now.difference(item.checkedAt) >= maxListingAge;
+    final remaining = item.end?.difference(now);
+    final stale = isUnchecked(item, now);
+    final text = details?.description ?? details?.summary;
+    final translation = [
+      details?.condition,
+      text,
+    ].whereType<String>().where((s) => s.trim().isNotEmpty).join('\n\n');
+    return Scaffold(
+      appBar: AppBar(
+        leading: BackButton(onPressed: () => Navigator.pop(page)),
+        title: Text(
+          deviceGroupLabels[item.deviceGroup]!,
+          style: Theme.of(page).textTheme.bodyMedium,
+        ),
+      ),
+      body: ListView(
+        key: PageStorageKey('detail-${item.id}'),
+        padding: const EdgeInsets.all(16),
+        children: [
+          ClipRRect(borderRadius: BorderRadius.circular(16), child: image(190)),
+          const SizedBox(height: 14),
+          Wrap(spacing: 6, runSpacing: 6, children: badges(full: true)),
+          const SizedBox(height: 14),
+          Text(item.title, style: Theme.of(page).textTheme.titleLarge),
+          const SizedBox(height: 14),
+          if (!archive)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
                   children: [
-                    if (widget.showDeviceGroup)
-                      tag(deviceGroupLabels[item.deviceGroup]!, colors.primary),
-                    if (widget.newLabel) tag('ÚJ', colors.primary),
-                    if (widget.watchThreshold case final threshold?)
-                      PriceText(
-                        threshold.toString(),
-                        'EUR',
-                        prefix: 'Figyelve · ',
-                        style: TextStyle(
-                          color: colors.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    if (widget.savedStatus == 'ENDED')
-                      tag('Lejárt / nem elérhető', colors.error),
-                    if (widget.savedStatus == 'UNKNOWN' && !stale)
-                      tag('Nem ellenőrzött', colors.tertiary),
-                    tag(
-                      item.auction ? 'Aukció' : 'Fix ár',
-                      item.auction
-                          ? const Color(0xfff7c875)
-                          : const Color(0xff84caff),
+                    _CardValue.price(
+                      item.auction ? 'Aktuális licit' : 'Vételár',
+                      item.effectivePrice,
+                      item.currency,
                     ),
-                    if (item.type == 'console_bundle' ||
-                        [
-                          'controller_bundle',
-                          'phone_bundle',
-                          'gpu_bundle',
-                        ].contains(item.type))
-                      tag('Csomag', colors.secondary),
-                    if (item.isScuf) tag('Scuf', colors.secondary),
-                    if (item.model == 'DualSense (Egyedi)')
-                      tag('Egyedi', colors.secondary),
-                    if (item.model == 'Xbox kontroller (generáció nem ismert)')
-                      tag('Generáció nem ismert', colors.tertiary),
-                    if (item.type == 'needs_review')
-                      tag('Ellenőrzendő', colors.secondary),
-                    if (item.type == 'mainboard')
-                      tag('Alaplap', colors.secondary),
-                    if (HiddenGroup.unsupported.contains(item))
-                      tag(HiddenGroup.unsupported.title, colors.tertiary),
-                    if (HiddenGroup.accessory.contains(item))
-                      tag(HiddenGroup.accessory.title, colors.tertiary),
-                    if (HiddenGroup.notController.contains(item))
-                      tag(HiddenGroup.notController.title, colors.tertiary),
-                    if (HiddenGroup.thirdParty.contains(item))
-                      tag(HiddenGroup.thirdParty.title, colors.tertiary),
-                    if (item.shipsToHu != 'yes')
-                      tag(HiddenGroup.noShipping.title, colors.tertiary),
-                    if (item.type == 'icloud_locked')
-                      tag(HiddenGroup.locked.title, colors.error),
-                    if (item.type == 'not_supported_bundle')
-                      tag(HiddenGroup.unsupportedBundle.title, colors.tertiary),
-                    if (item.type == 'not_gpu')
-                      tag(HiddenGroup.notGpu.title, colors.tertiary),
-                    if (item.type == 'part')
-                      tag(HiddenGroup.part.title, colors.tertiary),
-                    if (item.deviceGroup == 'iphone' &&
-                        item.icloudStatus == 'free_by_seller')
-                      tag('iCloud-mentes (az eladó szerint)', Colors.green),
-                    if (item.deviceGroup == 'iphone' &&
-                        item.icloudStatus == 'unknown')
-                      tag(
-                        'Az iCloud-zár állapota nem ismert – vásárlás előtt kérdezd meg az eladót',
-                        Colors.amber,
+                    if (item.auction && item.bidCount != null)
+                      _CardValue('Licitek száma', '${item.bidCount}'),
+                    _CardValue.price(
+                      'Szállítás Magyarországra',
+                      item.shipping,
+                      item.shippingCurrency,
+                    ),
+                    if (item.total != null) ...[
+                      const Divider(),
+                      _CardValue.price(
+                        'Teljes ár',
+                        item.total,
+                        item.currency,
+                        emphasize: true,
                       ),
-                    if (item.banned) tag('Tiltott (banned)', colors.error),
-                    if (item.possiblyNotFaulty)
-                      tag('Lehet, hogy nem hibás', colors.secondary),
-                    if (item.auction &&
-                        !stale &&
-                        (widget.savedStatus == null ||
-                            widget.savedStatus == 'ACTIVE') &&
-                        !widget.unavailable &&
-                        remaining != null &&
-                        remaining > day * 2)
-                      tag(
-                        'Korai licit – a végső ár várhatóan magasabb',
-                        const Color(0xfff7c875),
-                      ),
-                    if (stale && widget.savedStatus != 'ENDED')
-                      tag('Nem ellenőrzött', colors.tertiary),
-                    if (widget.unavailable)
-                      tag('Valószínűleg lezárult', colors.error),
+                    ],
                   ],
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  item.title,
-                  style: text.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  item.model,
-                  style: text.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-                if (item.faultSource == 'text')
-                  const Text('A hiba a címből vagy a leírásból derül ki.'),
-                if (item.faultSource == 'title')
-                  const Text(
-                    'Használtként hirdetve – a hiba a címből derül ki',
-                  ),
-                const Divider(height: 24),
-                if (!archive)
-                  _CardValue.price(
-                    item.auction ? 'Aktuális licit' : 'Vételár',
-                    item.effectivePrice,
-                    item.currency,
-                  ),
-                if (!archive && item.auction && item.bidCount != null)
-                  _CardValue('Licitek száma', '${item.bidCount}'),
-                if (!archive)
-                  _CardValue.price(
-                    'Szállítás Magyarországra',
-                    item.shipping,
-                    item.shippingCurrency,
-                  ),
-                if (!archive && item.total != null)
-                  _CardValue.price(
-                    'Teljes ár',
-                    item.total,
-                    item.currency,
-                    emphasize: true,
-                  ),
-                if (!archive && item.auction && remaining != null) ...[
-                  _CardValue('Aukció vége', dateLabel(item.end!)),
-                  if (!stale &&
-                      (widget.savedStatus == null ||
-                          widget.savedStatus == 'ACTIVE') &&
-                      !widget.unavailable &&
-                      remaining > Duration.zero)
-                    _CardValue(
-                      'Hátralévő idő',
-                      countdown(remaining),
-                      emphasize: true,
-                    ),
-                ],
-                const SizedBox(height: 10),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    FilledButton.tonalIcon(
-                      onPressed: () {
-                        widget.onOpened?.call();
-                        openExternal(context, item.url);
-                      },
-                      icon: const Icon(Icons.open_in_new, size: 17),
-                      label: const Text('Megnyitás az eBay-en'),
-                    ),
-                    OutlinedButton.icon(
-                      onPressed: toggleDetails,
-                      icon: Icon(
-                        expanded ? Icons.expand_less : Icons.expand_more,
-                      ),
-                      label: const Text('Leírás'),
-                    ),
-                    if (widget.onFavorite != null)
-                      IconButton(
-                        tooltip: widget.favorite
-                            ? 'Eltávolítás a kedvencekből'
-                            : 'Kedvencekhez adás',
-                        onPressed: widget.onFavorite,
-                        icon: Icon(
-                          widget.favorite
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                        ),
-                      ),
-                    if (widget.onWatch != null &&
-                        item.auction &&
-                        !archive &&
-                        !widget.unavailable &&
-                        remaining != null &&
-                        remaining > Duration.zero)
-                      OutlinedButton.icon(
-                        onPressed: widget.onWatch,
-                        icon: const Icon(Icons.notifications_outlined),
-                        label: const Text('Figyelés'),
-                      ),
-                    if (widget.onHide != null)
-                      TextButton(
-                        onPressed: widget.onHide,
-                        child: const Text('Elrejtés'),
-                      ),
-                  ],
-                ),
-                if (expanded) ...[
-                  Text('${countryName(item.country)} · eBay'),
-                  Text('Utoljára ellenőrizve: ${dateLabel(item.checkedAt)}'),
-                  const Divider(height: 24),
-                  if (loading)
-                    const LinearProgressIndicator()
-                  else if (error != null || widget.unavailable)
-                    Text(
-                      error ?? 'A hirdetés már nem elérhető',
-                      style: TextStyle(color: colors.error),
-                    )
-                  else if (details != null) ...[
-                    Text(
-                      'Az eladó megjegyzése az állapotról',
-                      style: text.titleSmall,
-                    ),
-                    SelectableText(
-                      details?.condition?.trim().isNotEmpty == true
-                          ? details!.condition!
-                          : 'Az eladó nem adott meg megjegyzést.',
-                    ),
-                    const SizedBox(height: 10),
-                    Text('Leírás', style: text.titleSmall),
-                    SelectableText(
-                      detailsText?.trim().isNotEmpty == true
-                          ? detailsText!
-                          : 'Az eladó nem adott meg leírást.',
-                    ),
-                    if (translation.isNotEmpty)
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                          onPressed: () => openExternal(
-                            context,
-                            translationLink(translation),
-                          ),
-                          icon: const Icon(Icons.translate),
-                          label: const Text('Fordítás a Google Fordítóval'),
-                        ),
-                      ),
-                  ],
-                ],
-              ],
+              ),
             ),
+          const SizedBox(height: 14),
+          _CardValue('Modell', item.model),
+          _CardValue('Hely', '${countryName(item.country)} · eBay'),
+          if (item.auction && item.end != null)
+            _CardValue('Aukció vége', dateLabel(item.end!)),
+          if (item.auction &&
+              remaining != null &&
+              !stale &&
+              !widget.unavailable &&
+              remaining > Duration.zero)
+            _CardValue('Hátralévő idő', countdown(remaining), emphasize: true),
+          _CardValue('Utoljára ellenőrizve', dateLabel(item.checkedAt)),
+          const SizedBox(height: 14),
+          ExpansionTile(
+            key: const PageStorageKey('listing-description'),
+            tilePadding: EdgeInsets.zero,
+            title: const Text('Leírás és az eladó megjegyzése'),
+            onExpansionChanged: (_) => fetchDescription(),
+            children: [
+              if (loading)
+                const LinearProgressIndicator()
+              else if (error != null || widget.unavailable)
+                Text(error ?? 'A hirdetés már nem elérhető')
+              else if (details != null) ...[
+                Text(
+                  'Az eladó megjegyzése az állapotról',
+                  style: Theme.of(page).textTheme.titleSmall,
+                ),
+                SelectableText(
+                  key: const PageStorageKey('condition-text'),
+                  details?.condition?.trim().isNotEmpty == true
+                      ? details!.condition!
+                      : 'Az eladó nem adott meg megjegyzést.',
+                ),
+                const SizedBox(height: 10),
+                Text('Leírás', style: Theme.of(page).textTheme.titleSmall),
+                SelectableText(
+                  key: const PageStorageKey('description-text'),
+                  text?.trim().isNotEmpty == true
+                      ? text!
+                      : 'Az eladó nem adott meg leírást.',
+                ),
+                if (translation.isNotEmpty)
+                  TextButton.icon(
+                    onPressed: () =>
+                        openExternal(page, translationLink(translation)),
+                    icon: const Icon(Icons.translate),
+                    label: const Text('Google Fordító megnyitása'),
+                  ),
+              ],
+            ],
           ),
         ],
       ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          color: Ui.panel,
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: action(
+                      favorite ? Icons.favorite : Icons.favorite_border,
+                      'Kedvenc',
+                      widget.onFavorite == null ? null : toggleFavorite,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: action(
+                      Icons.notifications_outlined,
+                      'Figyelés',
+                      item.auction &&
+                              !archive &&
+                              !widget.unavailable &&
+                              remaining != null &&
+                              remaining > Duration.zero
+                          ? widget.onWatch
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: action(
+                      Icons.visibility_off_outlined,
+                      'Elrejtés',
+                      widget.onHide == null
+                          ? null
+                          : () {
+                              Navigator.pop(page);
+                              widget.onHide?.call();
+                            },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    widget.onOpened?.call();
+                    openExternal(page, item.url);
+                  },
+                  icon: const Icon(Icons.open_in_new),
+                  label: const Text('Megnyitás az eBay-en'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) {
+      if (widget.detailed) return detailView(context);
+      final desktop = MediaQuery.sizeOf(context).width >= Ui.desktop;
+      final archive = now.difference(item.checkedAt) >= maxListingAge;
+      final money = MoneyScope.displayOf(context);
+      final price = archive
+          ? 'Nem ismert'
+          : money.format(item.total ?? item.effectivePrice, item.currency);
+      final body = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(spacing: 5, runSpacing: 4, children: badges()),
+          const SizedBox(height: 5),
+          Text(
+            item.title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${item.model} · ${countryName(item.country)}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 7),
+          InkWell(
+            onTap: MoneyScope.maybeOf(context)?.toggle,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 44),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(price, style: Theme.of(context).textTheme.titleLarge),
+                  Text(
+                    archive
+                        ? 'Nem ellenőrzött'
+                        : item.shipping == null
+                        ? '+ szállítás nem ismert'
+                        : '${item.auction ? 'licit ' : ''}${money.format(item.effectivePrice, item.currency)} + ${money.format(item.shipping, item.shippingCurrency)}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (widget.showDeviceGroup)
+            Text(
+              deviceGroupLabels[item.deviceGroup]!,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+        ],
+      );
+      final heart = IconButton(
+        tooltip: favorite ? 'Eltávolítás a kedvencekből' : 'Kedvencekhez adás',
+        onPressed: widget.onFavorite == null ? null : toggleFavorite,
+        icon: Icon(favorite ? Icons.favorite : Icons.favorite_border, size: 20),
+      );
+      return Opacity(
+        opacity: isUnchecked(item, now) ? .65 : 1,
+        child: Card(
+          child: InkWell(
+            onTap: openDetails,
+            borderRadius: BorderRadius.circular(16),
+            child: desktop
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Stack(
+                        children: [
+                          image(150, width: double.infinity),
+                          Positioned(right: 0, top: 0, child: heart),
+                        ],
+                      ),
+                      Padding(padding: const EdgeInsets.all(12), child: body),
+                    ],
+                  )
+                : Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: image(76, width: 76),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(child: body),
+                        heart,
+                      ],
+                    ),
+                  ),
+          ),
+        ),
+      );
+    },
+  );
 }
 
 class _CardValue extends StatelessWidget {
@@ -406,34 +592,31 @@ class _CardValue extends StatelessWidget {
   }) : isPrice = true;
   final String label;
   final String? value, currency;
-  final bool isPrice;
-  final bool emphasize;
-
+  final bool isPrice, emphasize;
   @override
-  Widget build(BuildContext context) {
-    final style = TextStyle(
-      fontWeight: FontWeight.w600,
-      color: emphasize ? Theme.of(context).colorScheme.primary : null,
-    );
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(child: Text(label)),
-          const SizedBox(width: 10),
-          Flexible(
-            child: isPrice
-                ? PriceText(
-                    value,
-                    currency,
-                    style: style,
-                    textAlign: TextAlign.end,
-                  )
-                : Text(value!, style: style, textAlign: TextAlign.end),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Text(label, style: Theme.of(context).textTheme.bodySmall),
+        ),
+        const SizedBox(width: 12),
+        Flexible(
+          child: isPrice
+              ? PriceText(
+                  value,
+                  currency,
+                  style: TextStyle(
+                    fontWeight: emphasize ? FontWeight.w700 : FontWeight.w500,
+                    color: emphasize ? Ui.primary : Ui.text,
+                  ),
+                  textAlign: TextAlign.end,
+                )
+              : Text(value ?? 'Nem ismert', textAlign: TextAlign.end),
+        ),
+      ],
+    ),
+  );
 }

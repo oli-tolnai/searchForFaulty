@@ -12,6 +12,7 @@ import 'listings.dart';
 import 'search_filter_panel.dart';
 import 'search_filters.dart';
 import 'sync.dart';
+import 'app_theme.dart';
 
 const groupIcons = {
   'all': Icons.dashboard_outlined,
@@ -64,6 +65,13 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
   String filterGroup = 'consoles';
   HiddenGroup? hidden;
   bool busy = false, showFilters = false, confirming = false;
+  String titleQuery = '';
+  int runGeneration = 0;
+  Map<String, SearchResult>? previousDisplay;
+  Map<String, SearchResult> get displayed => busy && previousDisplay != null
+      ? previousDisplay!
+      : widget.results.groups;
+  bool requestInFlight = false;
   int filterEpoch = 0;
   String? error;
   final failures = <String, SearchResult>{};
@@ -217,17 +225,50 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
     unawaited(widget.shared?.setSearchFilter(group, GroupSearchFilter()));
   }
 
-  Widget filterPanel(VoidCallback close) {
-    final group = filterGroup;
-    return SearchFilterPanel(
-      key: ValueKey('$group-$filterEpoch'),
-      group: group,
-      read: () => filter(group),
-      change: (key, value) => changeFilter(group, key, value),
-      close: close,
-      clear: () => clearFilter(group),
-    );
-  }
+  Widget filterPanel(VoidCallback close) => StatefulBuilder(
+    builder: (context, rebuild) {
+      final group = filterGroup;
+      return Column(
+        children: [
+          if (tab == 'all')
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: DropdownButtonFormField<String>(
+                key: ValueKey('filter-group-$group'),
+                initialValue: group,
+                decoration: const InputDecoration(
+                  labelText: 'Kategória szűrői',
+                ),
+                items: [
+                  for (final key in visibleGroups)
+                    DropdownMenuItem(value: key, child: Text(label(key))),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => filterGroup = value);
+                    rebuild(() {});
+                  }
+                },
+              ),
+            ),
+          Expanded(
+            child: SearchFilterPanel(
+              key: ValueKey('$group-$filterEpoch'),
+              group: group,
+              read: () => filter(group),
+              change: (key, value) => changeFilter(group, key, value),
+              close: close,
+              clear: () => clearFilter(group),
+              count: () =>
+                  shown.where((item) => item.deviceGroup == group).length,
+              alert: widget.shared == null ? null : createAlert,
+              desktop: MediaQuery.sizeOf(context).width >= Ui.desktop,
+            ),
+          ),
+        ],
+      );
+    },
+  );
 
   int? estimate(Iterable<String> groups) =>
       configuration?.estimatedSearchCalls(groups);
@@ -249,8 +290,7 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
     final now = widget.clock();
     final unique = <String, Listing>{};
     for (final group in scopedGroups) {
-      for (final item
-          in widget.results.groups[group]?.allListings ?? <Listing>[]) {
+      for (final item in displayed[group]?.allListings ?? <Listing>[]) {
         if (visibleListing(item, now) &&
             widget.shared?.isHidden(item) != true) {
           unique['${item.source}:${item.id}'] = item;
@@ -263,7 +303,11 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
   List<Listing> get shown {
     final now = widget.clock();
     final items = active
-        .where((item) => filter(item.deviceGroup).matches(item, now))
+        .where(
+          (item) =>
+              filter(item.deviceGroup).matches(item, now) &&
+              item.title.toLowerCase().contains(titleQuery.toLowerCase()),
+        )
         .toList();
     final order = filter(tab == 'all' ? filterGroup : tab).order;
     items.sort((a, b) {
@@ -303,7 +347,7 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
   }
 
   Future<void> refreshGroups(Set<String> groups) async {
-    if (busy || confirming || groups.isEmpty) return;
+    if (busy || requestInFlight || confirming || groups.isEmpty) return;
     if (tab == 'all') {
       confirming = true;
       await loadConfig();
@@ -333,6 +377,9 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
       );
       if (ok != true || !mounted) return;
     }
+    final generation = ++runGeneration;
+    previousDisplay = Map.of(widget.results.groups);
+    requestInFlight = true;
     setState(() {
       busy = true;
       error = null;
@@ -345,7 +392,7 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
         );
         try {
           final result = await widget.search({group});
-          if (!mounted) return;
+          if (!mounted || generation != runGeneration) return;
           if (result.status == 'error') {
             failures[group] = result;
             setState(
@@ -382,6 +429,7 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
         setState(() => error = 'A keresés vagy a helyi mentés sikertelen.');
       }
     } finally {
+      requestInFlight = false;
       if (mounted) setState(() => busy = false);
     }
   }
@@ -443,94 +491,50 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
           ],
         ),
       );
-  Widget cardGrid(List<Listing> items, double width) {
-    final columns = width >= 1050
-        ? 3
-        : width >= 680
-        ? 2
-        : 1;
-    return Column(
-      children: [
-        for (var index = 0; index < items.length; index += columns)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (var offset = 0; offset < columns; offset++) ...[
-                  if (offset > 0) const SizedBox(width: 10),
-                  Expanded(
-                    child: index + offset < items.length
-                        ? widget.card(
-                            items[index + offset],
-                            widget.clock(),
-                            details,
-                            tab == 'all',
-                          )
-                        : const SizedBox(),
-                  ),
-                ],
-              ],
-            ),
-          ),
-      ],
-    );
+  String label(String group) => group == 'all' ? 'Összes' : tabLabel(group);
+  String updated(DateTime value) {
+    final local = value.toLocal(), today = widget.clock().toLocal();
+    return local.year == today.year &&
+            local.month == today.month &&
+            local.day == today.day
+        ? time(value)
+        : dateLabel(value);
   }
 
-  Widget tabs() {
-    return SingleChildScrollView(
-      key: const PageStorageKey('device-group-tabs'),
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          for (final group in ['all', ...visibleGroups])
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                key: tabKeys[group],
-                avatar: Icon(groupIcons[group], size: 18),
-                selected: tab == group,
-                onSelected: (_) => setState(() {
-                  tab = group;
-                  hidden = null;
-                  if (group != 'all') filterGroup = group;
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    final target = tabKeys[group]?.currentContext;
-                    if (mounted && target != null) {
-                      Scrollable.ensureVisible(target, alignment: .5);
-                    }
-                  });
-                }),
-                label: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(group == 'all' ? 'Összes' : tabLabel(group)),
-                    Text(
-                      group == 'all'
-                          ? '${activeFor(visibleGroups).length} találat'
-                          : '${activeFor([group]).length} · ${widget.results.groups[group] == null ? 'Még nem kerestél' : dateLabel(widget.results.groups[group]!.searchedAt)}',
-                      style: Theme.of(context).textTheme.labelSmall,
-                    ),
-                    if (group == 'all')
-                      Text(
-                        widget.results.groups.isEmpty
-                            ? 'Még nem kerestél'
-                            : 'Frissítve: ${dateLabel(widget.results.groups.values.map((r) => r.searchedAt).reduce((a, b) => a.isAfter(b) ? a : b))}',
-                        style: Theme.of(context).textTheme.labelSmall,
-                      ),
-                  ],
+  Future<void> hiddenMenu(List<Listing> items) => showDialog<void>(
+    context: context,
+    builder: (dialog) => AlertDialog(
+      title: Text('Rejtett tételek (${items.length})'),
+      content: SizedBox(
+        width: 440,
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            for (final group in HiddenGroup.values)
+              if (items.any(group.contains))
+                ListTile(
+                  title: Text(group.title),
+                  trailing: Text('${items.where(group.contains).length}'),
+                  onTap: () {
+                    Navigator.pop(dialog);
+                    setState(() => hidden = group);
+                  },
                 ),
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
-    );
-  }
-
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialog),
+          child: const Text('Bezárás'),
+        ),
+      ],
+    ),
+  );
+  String time(DateTime value) =>
+      '${value.toLocal().hour.toString().padLeft(2, '0')}:${value.toLocal().minute.toString().padLeft(2, '0')}';
   List<Listing> activeFor(Iterable<String> groups) => groups
-      .expand(
-        (group) => widget.results.groups[group]?.allListings ?? <Listing>[],
-      )
+      .expand((group) => displayed[group]?.allListings ?? <Listing>[])
       .where(
         (item) =>
             visibleListing(item, widget.clock()) &&
@@ -538,135 +542,551 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
             filter(item.deviceGroup).allowsType(item),
       )
       .toList();
+  void choose(String group) => setState(() {
+    tab = group;
+    hidden = null;
+    if (group != 'all') filterGroup = group;
+  });
+  Future<void> categories() => showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    builder: (sheet) => ConstrainedBox(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(sheet).height * .9,
+      ),
+      child: ListView(
+        shrinkWrap: true,
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 20),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Text(
+              'Mit keresel?',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          ),
+          for (final group in ['all', ...visibleGroups])
+            ListTile(
+              key: ValueKey('category-$group'),
+              minTileHeight: 64,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              selected: tab == group,
+              selectedTileColor: Ui.selected,
+              leading: Icon(groupIcons[group]),
+              title: Text(group == 'all' ? 'Összes kategória' : label(group)),
+              subtitle: Text(
+                group == 'all'
+                    ? 'A megtartott találatok együtt'
+                    : widget.results.groups[group] == null
+                    ? 'Még nem kerestél'
+                    : 'Frissítve ${updated(widget.results.groups[group]!.searchedAt)}${widget.clock().difference(widget.results.groups[group]!.searchedAt) >= uncheckedAfter ? ' · nem ellenőrzött' : ''}',
+              ),
+              trailing: Text(
+                '${activeFor(group == 'all' ? visibleGroups : [group]).length}',
+              ),
+              onTap: () {
+                choose(group);
+                Navigator.pop(sheet);
+              },
+            ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(sheet);
+              visibleCategories();
+            },
+            child: const Text('Kategóriák megjelenítése…'),
+          ),
+        ],
+      ),
+    ),
+  );
+  Future<void> visibleCategories() => showDialog<void>(
+    context: context,
+    builder: (dialog) => StatefulBuilder(
+      builder: (context, update) => AlertDialog(
+        title: const Text('Kategóriák megjelenítése'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final group in deviceGroups)
+                CheckboxListTile(
+                  title: Text(label(group)),
+                  value: visibleGroups.contains(group),
+                  onChanged: widget.shared == null
+                      ? null
+                      : (value) async {
+                          final next = visibleGroups.toSet();
+                          if (value == true) {
+                            next.add(group);
+                          } else if (next.length > 1) {
+                            next.remove(group);
+                          }
+                          await widget.shared!.setVisibleSearchGroups(
+                            next.toList(),
+                          );
+                          update(() {});
+                        },
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialog),
+            child: const Text('Kész'),
+          ),
+        ],
+      ),
+    ),
+  );
+  Widget currencySwitch() => OutlinedButton(
+    onPressed: MoneyScope.displayOf(context).rate == null
+        ? null
+        : MoneyScope.maybeOf(context)?.toggle,
+    style: OutlinedButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+    ),
+    child: const Text('EUR · Ft'),
+  );
+  Widget categoryHeader(bool wide) => Padding(
+    padding: EdgeInsets.fromLTRB(
+      wide ? 24 : 16,
+      wide ? 20 : 12,
+      wide ? 24 : 16,
+      8,
+    ),
+    child: Row(
+      children: [
+        Expanded(
+          child: wide
+              ? Text(
+                  'Keresés',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                )
+              : Semantics(
+                  button: true,
+                  label: 'Kategória választása',
+                  child: InkWell(
+                    key: const ValueKey('category-picker'),
+                    onTap: categories,
+                    borderRadius: BorderRadius.circular(12),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 44),
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              label(tab),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.headlineSmall,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Ui.surface,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              '${activeFor(scopedGroups).length}',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ),
+                          const Icon(Icons.expand_more, size: 22),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+        ),
+        const SizedBox(width: 8),
+        currencySwitch(),
+      ],
+    ),
+  );
+  Widget desktopTabs() => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+    child: Wrap(
+      spacing: 6,
+      runSpacing: 4,
+      children: [
+        for (final group in ['all', ...visibleGroups])
+          ChoiceChip(
+            label: Text(label(group)),
+            selected: tab == group,
+            onSelected: (_) => choose(group),
+          ),
+      ],
+    ),
+  );
+  Widget searchField() => TextField(
+    key: const ValueKey('title-search'),
+    decoration: const InputDecoration(
+      hintText: 'Keresés a címekben',
+      prefixIcon: Icon(Icons.search),
+      constraints: BoxConstraints(minHeight: 44),
+    ),
+    onChanged: (value) => setState(() => titleQuery = value),
+  );
+  Widget sortButton() => SizedBox(
+    width: 180,
+    child: PopupMenuButton<ListingOrder>(
+      tooltip: 'Rendezés',
+      initialValue: filter(filterGroup).order,
+      onSelected: (value) => changeFilter(filterGroup, 'order', value.name),
+      itemBuilder: (_) => [
+        for (final order in ListingOrder.values)
+          PopupMenuItem(value: order, child: Text(order.label)),
+      ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.sort, size: 18),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                filter(filterGroup).order.label,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+  Set<String> get requestedGroups =>
+      tab == 'all' ? selected.where(visibleGroups.contains).toSet() : {tab};
+  Widget searchButton({
+    bool wide = false,
+    bool initial = false,
+  }) => FilledButton.icon(
+    key: const ValueKey('run-search'),
+    onPressed: busy || requestInFlight
+        ? null
+        : () => refreshGroups(requestedGroups),
+    icon: const Icon(Icons.refresh, size: 16),
+    label: Text(
+      initial
+          ? 'Keresés indítása'
+          : wide
+          ? 'Keresés · ${estimate(requestedGroups) == null ? 'becslés nincs' : 'kb. ${estimate(requestedGroups)} hívás'}'
+          : 'Keresés',
+    ),
+  );
+  Widget activeChips() => Wrap(
+    spacing: 6,
+    runSpacing: 4,
+    children: [
+      for (final group in scopedGroups)
+        for (final entry in filter(group).active.entries)
+          InputChip(
+            deleteButtonTooltipMessage: 'Feltétel eltávolítása',
+            label: Text(
+              '${tab == 'all' ? '${label(group)} · ' : ''}${filterLabels[entry.key] ?? entry.key}: ${chipValue(entry.key, entry.value)}',
+            ),
+            onDeleted: () {
+              changeFilter(
+                group,
+                entry.key,
+                GroupSearchFilter.defaults[entry.key],
+              );
+              setState(() => filterEpoch++);
+            },
+          ),
+      if (scopedGroups.any((group) => filter(group).active.isNotEmpty))
+        TextButton(
+          onPressed: () {
+            for (final group in scopedGroups) {
+              clearFilter(group);
+            }
+          },
+          child: const Text('Szűrők törlése'),
+        ),
+    ],
+  );
+  Widget empty(bool wide) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 52, horizontal: 16),
+    child: Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Ui.surface,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Icon(groupIcons[tab], size: 40, color: Ui.primary),
+        ),
+        const SizedBox(height: 24),
+        Text(
+          'Ebben a csoportban még nem kerestél',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          '${label(tab)} keresése az EU országaiban, Magyarországra szállítással.',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 24),
+        searchButton(initial: true),
+        const SizedBox(height: 12),
+        Text(
+          'kb. ${estimate(requestedGroups) ?? 'Nem ismert'} eBay-hívás · ma ${todayUsage ?? 'Nem ismert'} / 5000 felhasználva',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        TextButton(
+          onPressed: () => openFilters(wide),
+          child: const Text('Előbb beállítom a szűrőket'),
+        ),
+      ],
+    ),
+  );
+  Widget progress() => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Keresés folyamatban…',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              TextButton(
+                onPressed: () => setState(() {
+                  runGeneration++;
+                  busy = false;
+                  error = 'A keresés megszakítva. A már elküldött szerverkérés még befejeződhet.';
+                }),
+                child: const Text('Mégse'),
+              ),
+            ],
+          ),
+          const LinearProgressIndicator(),
+          const SizedBox(height: 10),
+          const Text(
+            'Az országok eredményei együtt érkeznek. A korábbi találatok a keresés végéig látszanak.',
+          ),
+        ],
+      ),
+    ),
+  );
+  Widget skeleton() => Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Container(
+              width: 76,
+              height: 76,
+              decoration: BoxDecoration(
+                color: Ui.border,
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                children: [
+                  for (final fraction in [.9, .7, .5])
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: FractionallySizedBox(
+                        widthFactor: fraction,
+                        child: Container(height: 12, color: Ui.border),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+  Widget runDetails(Map<String, SearchResult> runs) => ExpansionTile(
+    key: PageStorageKey('search-details-$tab'),
+    title: const Text('Keresés részletei'),
+    children: [
+      Text('Mai API-felhasználás: ${todayUsage ?? 'Nem ismert'}'),
+      if (MoneyScope.displayOf(context).rate != null)
+        Text(MoneyScope.displayOf(context).rateLabel),
+      if (tab == 'all')
+        Wrap(
+          spacing: 6,
+          children: [
+            for (final group in visibleGroups)
+              FilterChip(
+                label: Text(label(group)),
+                selected: selected.contains(group),
+                onSelected: (value) {
+                  if (!value && selected.length == 1) return;
+                  setState(
+                    () => value ? selected.add(group) : selected.remove(group),
+                  );
+                  unawaited(
+                    widget.shared?.setSelectedSearchGroups(selected.toList()),
+                  );
+                },
+              ),
+          ],
+        ),
+      if (tab == 'all')
+        DropdownButton<String>(
+          value: filterGroup,
+          items: [
+            for (final group in visibleGroups)
+              DropdownMenuItem(
+                value: group,
+                child: Text('${label(group)} szűrői'),
+              ),
+          ],
+          onChanged: (value) => setState(() => filterGroup = value!),
+        ),
+      for (final group in scopedGroups)
+        if ((failures[group] ?? runs[group]) case final result?) ...[
+          Text(
+            '${label(group)} · ${statusLabel(result.status)} · ${result.apiCalls} hívás',
+          ),
+          for (final country in result.countries)
+            ExpansionTile(
+              key: PageStorageKey('country-$tab-$group-${country.country}'),
+              title: Text(
+                '${countryName(country.country)} · ${statusLabel(country.status)}',
+              ),
+              children: [
+                for (final query in country.queries)
+                  ListTile(
+                    title: Text(
+                      '${query.query} · ${statusLabel(query.status)}',
+                    ),
+                    subtitle: Text(
+                      '${query.error ?? '${query.count} találat'}${query.warnings.isEmpty ? '' : '\n${query.warnings.join('\n')}'}',
+                    ),
+                  ),
+              ],
+            ),
+        ],
+    ],
+  );
   @override
   Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      final wide = constraints.maxWidth >= 900;
+    builder: (context, box) {
+      final wide = box.maxWidth >= 1000;
       final listings = shown;
       final runs = {
         for (final group in scopedGroups)
-          if (widget.results.groups[group] != null)
-            group: widget.results.groups[group]!,
+          if (displayed[group] != null) group: displayed[group]!,
       };
-      final calls = runs.values.fold(0, (sum, result) => sum + result.apiCalls);
       final last = runs.isEmpty
           ? null
           : runs.values
                 .map((r) => r.searchedAt)
                 .reduce((a, b) => a.isAfter(b) ? a : b);
+      final hiddenRows = active
+          .where((item) => !filter(item.deviceGroup).allowsType(item))
+          .toList();
       final mainCount = active
           .where((item) => filter(item.deviceGroup).allowsType(item))
           .length;
-      final hiddenRows = active
-          .where(
-            (item) =>
-                !inMainResults(
-                  item,
-                  mainboards: filter(item.deviceGroup)
-                      .flag('include_mainboards'),
-                ) &&
-                !(filter(item.deviceGroup).flag('include_third_party') &&
-                    item.type == 'third_party' &&
-                    item.shipsToHu == 'yes'),
-          )
-          .toList();
-      final cost = estimate(
-        tab == 'all' ? selected.where(visibleGroups.contains) : [tab],
+      final unsearched = runs.isEmpty;
+      Widget hiddenFooter() => ExpansionTile(
+        key: PageStorageKey('hidden-footer-$tab'),
+        title: Text('Rejtett tételek (${hiddenRows.length})'),
+        children: [
+          for (final group in HiddenGroup.values)
+            if (hiddenRows.any(group.contains))
+              ListTile(
+                title: Text(group.title),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('${hiddenRows.where(group.contains).length}'),
+                    const Icon(Icons.chevron_right),
+                  ],
+                ),
+                onTap: () => setState(() => hidden = group),
+              ),
+        ],
       );
       Widget body(double width) {
+        final columns = wide
+            ? (width >= 900
+                  ? 4
+                  : width >= 650
+                  ? 3
+                  : 2)
+            : 1;
+        final rows = hidden == null
+            ? listings
+            : hiddenRows.where(hidden!.contains).toList();
+        final known = hidden == null
+            ? rows.where((i) => i.shipping != null).toList()
+            : rows;
+        final unknown = hidden == null
+            ? rows.where((i) => i.shipping == null).toList()
+            : <Listing>[];
         final headers = <Widget>[
-          tabs(),
-          if (scopedGroups.any(cachedGroups.contains))
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                'Korábban mentett eredmény is látható – a csoportok frissessége eltérhet.',
-              ),
-            ),
-          const SizedBox(height: 18),
           if (hidden == null) ...[
-            if (tab == 'all')
-              Wrap(
-                spacing: 8,
+            if (!unsearched) ...[
+              Row(
                 children: [
-                  for (final group in visibleGroups)
-                    FilterChip(
-                      label: Text(deviceGroupLabels[group]!),
-                      selected: selected.contains(group),
-                      onSelected: (value) {
-                        if (!value && selected.length == 1) return;
-                        setState(
-                          () => value
-                              ? selected.add(group)
-                              : selected.remove(group),
-                        );
-                        unawaited(
-                          widget.shared?.setSelectedSearchGroups(
-                            selected.toList(),
-                          ),
-                        );
-                      },
+                  Expanded(child: searchField()),
+                  const SizedBox(width: 8),
+                  if (wide) ...[
+                    sortButton(),
+                    const SizedBox(width: 8),
+                    searchButton(wide: true),
+                  ] else
+                    OutlinedButton.icon(
+                      onPressed: () => openFilters(false),
+                      icon: const Icon(Icons.tune, size: 18),
+                      label: Text(
+                        'Szűrők${filter(filterGroup).active.isEmpty ? '' : ' (${filter(filterGroup).active.length})'}',
+                      ),
                     ),
                 ],
               ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 10,
-              runSpacing: 8,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                FilledButton.icon(
-                  onPressed: busy
-                      ? null
-                      : () => refreshGroups(
-                          tab == 'all'
-                              ? selected.where(visibleGroups.contains).toSet()
-                              : {tab},
-                        ),
-                  icon: busy
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.refresh),
-                  label: Text(
-                    '${tab == 'all' ? 'Összes kijelölt frissítése' : 'Keresés'} · ${cost == null ? 'Becslés nem ismert' : '~$cost hívás'}',
+              const SizedBox(height: 8),
+              activeChips(),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${listings.length} találat · frissítve ${last == null ? '–' : time(last)}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
-                ),
-                OutlinedButton.icon(
-                  onPressed: () => openFilters(wide),
-                  icon: const Icon(Icons.tune),
-                  label: const Text('Szűrők'),
-                ),
-                if (widget.shared != null)
-                  TextButton.icon(
-                    onPressed: createAlert,
-                    icon: const Icon(Icons.add_alert_outlined),
-                    label: const Text('Értesítés ilyen találatokról'),
-                  ),
-                if (tab == 'all')
-                  DropdownButton<String>(
-                    value: filterGroup,
-                    items: visibleGroups
-                        .map(
-                          (group) => DropdownMenuItem(
-                            value: group,
-                            child: Text('${deviceGroupLabels[group]} szűrői'),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) => setState(() => filterGroup = value!),
-                  ),
-              ],
-            ),
-            if (busy) ...[
-              const SizedBox(height: 12),
-              const LinearProgressIndicator(),
-              const Text(
-                'Keresés folyamatban… a többi csoport eredménye megmarad.',
+                  if (wide)
+                    TextButton(
+                      onPressed: () => hiddenMenu(hiddenRows),
+                      child: Text('Rejtett tételek (${hiddenRows.length})'),
+                    )
+                  else
+                    searchButton(),
+                ],
               ),
             ],
+            if (busy) ...[progress(), const SizedBox(height: 12)],
             if (error != null)
               banner(widget.sanitize?.call(error!) ?? error!, warning: true),
             for (final group in scopedGroups)
@@ -676,7 +1096,8 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
                       ) >=
                       uncheckedAfter)
                 banner(
-                  '${deviceGroupLabels[group]}: Utoljára frissítve ${widget.clock().difference(widget.results.groups[group]!.searchedAt).inHours} órája – a tételek nem ellenőrzöttek',
+                  '${label(group)}: ${widget.clock().difference(widget.results.groups[group]!.searchedAt).inHours} órája frissítve – az árak és állapotok nem ellenőrzöttek.',
+                  warning: true,
                   action: TextButton(
                     onPressed: busy ? null : () => refreshGroups({group}),
                     child: const Text('Frissítés'),
@@ -684,116 +1105,25 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
                 ),
             if (runs.values.any((r) => r.status != 'success'))
               banner(
-                'Részleges keresés – néhány lekérdezés nem sikerült. A részletek lent megnyithatók.',
+                'Részleges keresés – néhány lekérdezés nem sikerült.',
                 warning: true,
               ),
-            if (tab != 'all' && widget.results.groups[tab] == null)
-              banner('Ebben a csoportban még nem kerestél'),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '${listings.length} / $mainCount találat · $calls hívás · ${last == null ? 'Még nincs keresés' : dateLabel(last)}',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                SizedBox(
-                  width: width < 600 ? 155 : 235,
-                  child: DropdownButton<ListingOrder>(
-                    isExpanded: true,
-                    value: filter(filterGroup).order,
-                    items: ListingOrder.values
-                        .map(
-                          (order) => DropdownMenuItem(
-                            value: order,
-                            child: Text(
-                              order.label,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (value) =>
-                        changeFilter(filterGroup, 'order', value!.name),
-                  ),
-                ),
-              ],
-            ),
-            Wrap(
-              spacing: 6,
-              runSpacing: 4,
-              children: [
-                for (final group in scopedGroups)
-                  for (final entry in filter(group).active.entries)
-                    InputChip(
-                      label: Text(
-                        '${tab == 'all' ? '${deviceGroupLabels[group]} · ' : ''}${filterLabels[entry.key]}: ${chipValue(entry.key, entry.value)}',
-                      ),
-                      onDeleted: () {
-                        changeFilter(
-                          group,
-                          entry.key,
-                          GroupSearchFilter.defaults[entry.key],
-                        );
-                        setState(() => filterEpoch++);
-                      },
-                    ),
-                if (scopedGroups.any(
-                  (group) => filter(group).active.isNotEmpty,
-                ))
-                  TextButton(
-                    onPressed: () {
-                      for (final group in scopedGroups) {
-                        clearFilter(group);
-                      }
-                    },
-                    child: const Text('Szűrők törlése'),
-                  ),
-              ],
-            ),
-            ExpansionTile(
-              key: PageStorageKey('search-details-$tab'),
-              title: const Text('Keresés részletei'),
-              children: [
-                Text('Mai API-felhasználás: ${todayUsage ?? 'Nem ismert'}'),
-                if (MoneyScope.displayOf(context).rate != null)
-                  Text(MoneyScope.displayOf(context).rateLabel),
-                for (final group in scopedGroups)
-                  if ((failures[group] ?? widget.results.groups[group])
-                      case final result?) ...[
-                    Text(
-                      '${deviceGroupLabels[group]} · ${statusLabel(result.status)} · ${result.apiCalls} hívás',
-                    ),
-                    for (final country in result.countries)
-                      ExpansionTile(
-                        key: PageStorageKey(
-                          'country-$tab-$group-${country.country}',
-                        ),
-                        title: Text(
-                          '${countryName(country.country)} · ${statusLabel(country.status)}',
-                        ),
-                        children: [
-                          for (final query in country.queries)
-                            ListTile(
-                              title: Text(
-                                '${query.query} · ${statusLabel(query.status)}',
-                              ),
-                              subtitle: Text(
-                                '${query.error ?? '${query.count} találat'}${query.warnings.isEmpty ? '' : '\n${query.warnings.join('\n')}'}',
-                              ),
-                            ),
-                        ],
-                      ),
-                  ],
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (listings.isEmpty && runs.isNotEmpty)
+            if (unsearched && !busy) empty(wide),
+            if (busy && unsearched)
+              for (var i = 0; i < 3; i++) skeleton(),
+            if (listings.isEmpty && !unsearched && !busy)
               const Padding(
                 padding: EdgeInsets.all(24),
                 child: Text(
                   'A jelenlegi szűrőkkel nincs megjeleníthető találat.',
+                ),
+              ),
+            if (scopedGroups.any(cachedGroups.contains) && !unsearched)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'Korábban mentett eredmény · $mainCount alaplistás tétel',
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
           ] else ...[
@@ -809,103 +1139,105 @@ class _SearchWorkspaceState extends State<SearchWorkspace> {
                 ),
               ],
             ),
-            if (hiddenRows.where(hidden!.contains).isEmpty)
-              const Text('Ebben a csoportban nincs megjeleníthető tétel.'),
+            const SizedBox(height: 12),
           ],
         ];
-        final rows = hidden == null
-            ? listings
-            : hiddenRows.where(hidden!.contains).toList();
-        final columns = width >= 1050
-            ? 3
-            : width >= 680
-            ? 2
-            : 1;
-        final known = hidden == null
-            ? rows.where((item) => item.shipping != null).toList()
-            : rows;
-        final unknown = hidden == null
-            ? rows.where((item) => item.shipping == null).toList()
-            : <Listing>[];
-        final knownRows = (known.length / columns).ceil();
-        final unknownRows = (unknown.length / columns).ceil();
-        final rowCount = knownRows + unknownRows + (unknown.isEmpty ? 0 : 1);
+        final knownRows = (known.length / columns).ceil(),
+            unknownRows = (unknown.length / columns).ceil();
+        final count = knownRows + unknownRows + (unknown.isEmpty ? 0 : 1);
         return ListView.builder(
           key: PageStorageKey('$tab-${hidden?.name}'),
-          padding: const EdgeInsets.all(20),
-          itemCount: headers.length + rowCount + 1,
+          padding: EdgeInsets.all(wide ? 0 : 16),
+          itemCount: headers.length + count + 1,
           itemBuilder: (context, index) {
             if (index < headers.length) return headers[index];
-            if (index == headers.length + rowCount) {
+            if (index == headers.length + count) {
               return hidden == null
-                  ? ExpansionTile(
-                      key: PageStorageKey('hidden-footer-$tab'),
-                      title: Text('Rejtett tételek (${hiddenRows.length})'),
+                  ? Column(
                       children: [
-                        for (final group in HiddenGroup.values)
-                          ListTile(
-                            title: Text(group.title),
-                            trailing: Text(
-                              '${hiddenRows.where(group.contains).length}',
+                        hiddenFooter(),
+                        if (!unsearched) ...[
+                          if (!wide)
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: sortButton(),
                             ),
-                            onTap: () => setState(() => hidden = group),
-                          ),
+                          runDetails(runs),
+                        ],
                       ],
                     )
                   : const SizedBox();
             }
-            final position = index - headers.length;
-            if (unknown.isNotEmpty && position == knownRows) {
+            final row = index - headers.length;
+            if (unknown.isNotEmpty && row == knownRows) {
               return const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
+                padding: EdgeInsets.symmetric(vertical: 12),
                 child: Text(
                   'Ismeretlen szállítási díj – a hirdetésben ellenőrizd',
                 ),
               );
             }
-            final inKnown = position < knownRows;
-            final offset =
-                (inKnown ? position : position - knownRows - 1) * columns;
-            return cardGrid(
-              (inKnown ? known : unknown).skip(offset).take(columns).toList(),
-              width,
+            final inKnown = row < knownRows;
+            final offset = (inKnown ? row : row - knownRows - 1) * columns;
+            final items = (inKnown ? known : unknown)
+                .skip(offset)
+                .take(columns)
+                .toList();
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var i = 0; i < columns; i++) ...[
+                    if (i > 0) const SizedBox(width: 14),
+                    Expanded(
+                      child: i < items.length
+                          ? widget.card(
+                              items[i],
+                              widget.clock(),
+                              details,
+                              tab == 'all',
+                            )
+                          : const SizedBox(),
+                    ),
+                  ],
+                ],
+              ),
             );
           },
         );
       }
 
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Console Deal Finder'),
-          actions: [
-            if (widget.onSettings != null)
-              IconButton(
-                onPressed: widget.onSettings,
-                icon: const Icon(Icons.settings_outlined),
-                tooltip: 'Beállítások',
-              ),
-          ],
-        ),
         bottomNavigationBar: widget.navigation,
         body: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, box) => Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, inner) => body(inner.maxWidth),
-                  ),
-                ),
-                if (wide && showFilters)
-                  SizedBox(
-                    width: 350,
-                    child: filterPanel(
-                      () => setState(() => showFilters = false),
-                    ),
-                  ),
-              ],
-            ),
+          child: Column(
+            children: [
+              categoryHeader(wide),
+              if (wide) desktopTabs(),
+              Expanded(
+                child: wide
+                    ? Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            SizedBox(width: 272, child: filterPanel(() {})),
+                            const SizedBox(width: 24),
+                            Expanded(
+                              child: LayoutBuilder(
+                                builder: (context, inner) =>
+                                    body(inner.maxWidth),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : LayoutBuilder(
+                        builder: (context, inner) => body(inner.maxWidth),
+                      ),
+              ),
+            ],
           ),
         ),
       );

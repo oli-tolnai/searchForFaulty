@@ -14,6 +14,7 @@ class SettingsScreen extends StatefulWidget {
     this.initialError,
     this.shared,
     this.navigation,
+    this.openHidden,
     this.sendTestNotification,
     this.notificationsEnabled = true,
     this.changeNotifications,
@@ -25,6 +26,7 @@ class SettingsScreen extends StatefulWidget {
   final String? initialError;
   final SharedState? shared;
   final Widget? navigation;
+  final VoidCallback? openHidden;
   final Future<void> Function(WebappSettings settings) save;
   final Future<void> Function(WebappSettings settings)? sendTestNotification;
   final bool notificationsEnabled;
@@ -195,6 +197,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               padding: const EdgeInsets.fromLTRB(20, 38, 20, 24),
               children: [
                 Text('Beállítások', style: theme.textTheme.headlineMedium),
+                if (widget.openHidden != null)
+                  ListTile(
+                    leading: const Icon(Icons.visibility_off_outlined),
+                    title: const Text('Elrejtett hirdetések'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: widget.openHidden,
+                  ),
                 const SizedBox(height: 8),
                 Text(
                   'Add meg a telepített Apps Script webapp címét és kliens-tokenjét.',

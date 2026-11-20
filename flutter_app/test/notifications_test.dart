@@ -1,3 +1,5 @@
+import 'fixtures/ui_actions.dart';
+
 import 'package:flutter_app/api/models.dart';
 import 'package:flutter_app/api/webapp.dart';
 import 'package:flutter_app/search_screen.dart';
@@ -58,8 +60,7 @@ void main() {
         loadDetails: (_) async => ListingDetails.fromJson(details),
       ),
     );
-    await tester.drag(find.byType(ListView).first, const Offset(0, -750));
-    await tester.pumpAndSettle();
+    await openListing(tester, title: 'Figyelt aukció');
     await tap(tester, find.widgetWithText(OutlinedButton, 'Figyelés'));
     expect(find.text('Aukció figyelése'), findsOneWidget);
     await tester.enterText(find.byType(TextFormField), '101,50');
@@ -67,7 +68,12 @@ void main() {
 
     expect(shared.watches.single.threshold, 101.5);
     expect(shared.watches.single.lead, 120);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    await openListing(tester, title: 'Figyelt aukció');
     expect(find.text('Figyelve · 101,5 €'), findsOneWidget);
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
     await tap(
       tester,
       find.descendant(

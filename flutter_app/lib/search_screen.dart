@@ -8,6 +8,7 @@ import 'group_results.dart';
 import 'listing_card.dart';
 import 'search_workspace.dart';
 import 'sync.dart';
+import 'app_theme.dart';
 import 'watch_screen.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -36,7 +37,8 @@ class SearchScreen extends StatefulWidget {
   final Future<ListingDetails> Function(String) loadDetails;
   final Future<void> Function(SearchResult)? saveResult;
   final VoidCallback? openSettings;
-  final Widget Function(Widget? navigation)? settingsPage;
+  final Widget Function(Widget? navigation, VoidCallback openHidden)?
+  settingsPage;
   final SharedState? shared;
   final String Function(String)? sanitize;
   final Listenable? watchNavigation;
@@ -159,10 +161,18 @@ class _SearchScreenState extends State<SearchScreen>
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      final wide = constraints.maxWidth >= 1000;
+      final wide = constraints.maxWidth >= Ui.desktop;
       wideLayout = wide;
-      final content = section == 4 && widget.settingsPage != null
-          ? widget.settingsPage!(navigation())
+      final content = section == 4
+          ? widget.settingsPage?.call(navigation(), () => selectSection(3)) ??
+                Scaffold(
+                  appBar: AppBar(title: const Text('Beállítások')),
+                  bottomNavigationBar: navigation(),
+                  body: ListTile(
+                    title: const Text('Elrejtett hirdetések'),
+                    onTap: () => selectSection(3),
+                  ),
+                )
           : section == 2 && widget.shared != null
           ? WatchScreen(
               shared: widget.shared!,
@@ -198,8 +208,9 @@ class _SearchScreenState extends State<SearchScreen>
             ? Row(
                 children: [
                   NavigationRail(
-                    selectedIndex: section,
-                    onDestinationSelected: selectSection,
+                    selectedIndex: section >= 3 ? 3 : section,
+                    onDestinationSelected: (index) =>
+                        selectSection(index == 3 ? 4 : index),
                     labelType: NavigationRailLabelType.all,
                     destinations: const [
                       NavigationRailDestination(
@@ -213,10 +224,6 @@ class _SearchScreenState extends State<SearchScreen>
                       NavigationRailDestination(
                         icon: Icon(Icons.notifications_outlined),
                         label: Text('Figyelés'),
-                      ),
-                      NavigationRailDestination(
-                        icon: Icon(Icons.visibility_off_outlined),
-                        label: Text('Elrejtett'),
                       ),
                       NavigationRailDestination(
                         icon: Icon(Icons.settings_outlined),
@@ -256,6 +263,7 @@ class _SearchScreenState extends State<SearchScreen>
         : () => unawaited(widget.shared!.toggleFavorite(item)),
     onHide: widget.shared == null ? null : () => hide(item),
     watchThreshold: widget.shared?.watchFor(item)?.threshold,
+    watchValue: () => widget.shared?.watchFor(item)?.threshold,
     onWatch: widget.shared == null || item.status != 'ACTIVE'
         ? null
         : () => watchAuction(item),
@@ -291,7 +299,9 @@ class _SearchScreenState extends State<SearchScreen>
   }
 
   void selectSection(int value) {
-    if (value == 4 && widget.settingsPage == null) {
+    if (value == 4 &&
+        widget.settingsPage == null &&
+        widget.openSettings != null) {
       widget.openSettings?.call();
       return;
     }
@@ -305,8 +315,8 @@ class _SearchScreenState extends State<SearchScreen>
       return null;
     }
     return NavigationBar(
-      selectedIndex: section,
-      onDestinationSelected: selectSection,
+      selectedIndex: section >= 3 ? 3 : section,
+      onDestinationSelected: (index) => selectSection(index == 3 ? 4 : index),
       destinations: const [
         NavigationDestination(icon: Icon(Icons.search), label: 'Keresés'),
         NavigationDestination(
@@ -316,10 +326,6 @@ class _SearchScreenState extends State<SearchScreen>
         NavigationDestination(
           icon: Icon(Icons.notifications_outlined),
           label: 'Figyelés',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.visibility_off_outlined),
-          label: 'Elrejtett',
         ),
         NavigationDestination(
           icon: Icon(Icons.settings_outlined),

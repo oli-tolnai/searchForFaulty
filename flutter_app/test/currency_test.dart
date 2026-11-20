@@ -1,3 +1,5 @@
+import 'fixtures/ui_actions.dart';
+
 import 'package:flutter_app/api/models.dart';
 import 'package:flutter_app/api/webapp.dart';
 import 'package:flutter_app/currency.dart';
@@ -95,9 +97,9 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Konzol'));
+      await selectCategory(tester, 'Konzol');
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Szűrők'));
+      await openFilters(tester);
       await tester.pumpAndSettle();
       Finder amount(String label) => find.widgetWithText(
         TextFormField,
@@ -107,6 +109,8 @@ void main() {
 
       await tester.enterText(maxPrice, '100');
       await tester.pumpAndSettle();
+      expect(find.text('87 €'), findsOneWidget);
+      await openListing(tester);
       expect(find.text('75 €'), findsOneWidget);
       await tester.tap(find.text('75 €'));
       await tester.pumpAndSettle();
@@ -114,6 +118,8 @@ void main() {
       expect(find.text('30 000 Ft'), findsOneWidget);
       expect(find.text('4 800 Ft'), findsOneWidget);
       expect(find.text('34 800 Ft'), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
       expect(
         tester
             .widget<EditableText>(
@@ -131,7 +137,10 @@ void main() {
       await tester.enterText(amount('Max. teljes ár'), '36 001');
       await tester.pumpAndSettle();
       expect(state.searchFilter('consoles').amount('max_total_price'), 90.0025);
+      await openListing(tester);
       await tester.tap(find.text('4 800 Ft'));
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
       await tester.pumpAndSettle();
       expect(state.currency, 'EUR');
       expect(
@@ -147,6 +156,7 @@ void main() {
         '90',
       );
       expect(state.searchFilter('consoles').amount('max_total_price'), 90.0025);
+      await openListing(tester);
       expect(find.text('12 €'), findsOneWidget);
     },
   );

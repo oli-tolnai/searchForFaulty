@@ -12,6 +12,7 @@ import 'search_screen.dart';
 import 'settings_screen.dart';
 import 'group_results.dart';
 import 'storage.dart';
+import 'app_theme.dart';
 import 'sync.dart';
 
 void main() {
@@ -24,41 +25,13 @@ class ConsoleDealFinder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme =
-        ColorScheme.fromSeed(
-          seedColor: const Color(0xffb9ee7b),
-          brightness: Brightness.dark,
-        ).copyWith(
-          primary: const Color(0xffb9ee7b),
-          onPrimary: const Color(0xff18280c),
-          surface: const Color(0xff191e27),
-          outlineVariant: const Color(0xff303847),
-        );
     return MaterialApp(
       title: 'Console Deal Finder',
       debugShowCheckedModeBanner: false,
       locale: const Locale('hu'),
       supportedLocales: const [Locale('hu')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: scheme,
-        scaffoldBackgroundColor: const Color(0xff101319),
-        cardTheme: CardThemeData(
-          color: scheme.surface,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: scheme.outlineVariant),
-          ),
-        ),
-        inputDecorationTheme: const InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-          ),
-        ),
-        appBarTheme: const AppBarTheme(backgroundColor: Color(0xff101319)),
-      ),
+      theme: Ui.theme,
       home: const _Home(),
     );
   }
@@ -358,7 +331,8 @@ class _HomeState extends State<_Home> with WidgetsBindingObserver {
       sanitize: settings!.safeText,
       saveResult: cache.write,
       openSettings: openSettings,
-      settingsPage: (navigation) => SettingsScreen(
+      settingsPage: (navigation, openHidden) => SettingsScreen(
+        openHidden: openHidden,
         initial: settings,
         shared: shared,
         navigation: navigation,

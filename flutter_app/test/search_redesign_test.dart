@@ -1,3 +1,5 @@
+import 'fixtures/ui_actions.dart';
+
 import 'package:flutter_app/api/models.dart';
 import 'package:flutter_app/group_results.dart';
 import 'package:flutter_app/search_filters.dart';
@@ -60,8 +62,8 @@ void main() {
         ),
       ),
     );
-    await tester.ensureVisible(find.widgetWithText(ChoiceChip, 'Switch'));
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Switch'));
+
+    await selectCategory(tester, 'Switch');
     await tester.pumpAndSettle();
     await tester.tap(find.text('Értesítés ilyen találatokról'));
     await tester.pumpAndSettle();
@@ -271,7 +273,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.textContaining('Összes kijelölt frissítése'));
+      await tester.tap(find.byKey(const ValueKey('run-search')));
       await tester.pumpAndSettle();
       expect(
         find.descendant(
@@ -284,11 +286,10 @@ void main() {
       expect(requests, isEmpty);
       await tester.tap(find.text('Mégse'));
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.widgetWithText(ChoiceChip, 'Switch'));
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Switch'));
+      await selectCategory(tester, 'Switch');
       await tester.pumpAndSettle();
       expect(find.text('Ebben a csoportban még nem kerestél'), findsOneWidget);
-      await tester.tap(find.textContaining('Keresés ·'));
+      await tester.tap(find.byKey(const ValueKey('run-search')));
       await tester.pumpAndSettle();
       expect(requests, [
         {'switch'},
@@ -337,10 +338,9 @@ void main() {
             ),
           ),
         );
-        await tester.ensureVisible(find.widgetWithText(ChoiceChip, 'Konzol'));
-        await tester.tap(find.widgetWithText(ChoiceChip, 'Konzol'));
+        await selectCategory(tester, 'Konzol');
         await tester.pumpAndSettle();
-        await tester.tap(find.text('Szűrők'));
+        await openFilters(tester);
         await tester.pumpAndSettle();
         expect(
           find.byType(BottomSheet),
@@ -351,7 +351,9 @@ void main() {
         await tester.pumpAndSettle();
         expect(searches, 0);
         if (width < 1000) {
-          await tester.tap(find.byTooltip('Szűrők bezárása'));
+          if (find.byTooltip('Szűrők bezárása').evaluate().isNotEmpty) {
+            await tester.tap(find.byTooltip('Szűrők bezárása'));
+          }
           await tester.pumpAndSettle();
         }
         expect(find.text('Drága készülék'), findsNothing);
@@ -360,36 +362,33 @@ void main() {
       await tester.binding.setSurfaceSize(null);
     },
   );
-  testWidgets('horizontal tabs keep an independent scroll offset', (
-    tester,
-  ) async {
-    await tester.binding.setSurfaceSize(const Size(430, 900));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    await tester.pumpWidget(
-      MaterialApp(
-        home: SearchScreen(
-          clock: () => testTime,
-          search: (_) async => SearchResult.fromJson(search()),
-          loadDetails: (_) async => ListingDetails.fromJson(details),
+  testWidgets(
+    'category picker replaces horizontal tabs and retains group selection',
+    (tester) async {
+      await tester.binding.setSurfaceSize(const Size(430, 900));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: SearchScreen(
+            clock: () => testTime,
+            search: (_) async => SearchResult.fromJson(search()),
+            loadDetails: (_) async => ListingDetails.fromJson(details),
+          ),
         ),
-      ),
-    );
-    await tester.pumpAndSettle();
-    final tabs = find.byKey(const PageStorageKey('device-group-tabs'));
-    await tester.drag(tabs, const Offset(-620, 0));
-    await tester.pumpAndSettle();
-    await tester.ensureVisible(find.widgetWithText(ChoiceChip, 'Switch'));
-    await tester.tap(find.widgetWithText(ChoiceChip, 'Switch'));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('Keresés ·').hitTestable(), findsOneWidget);
-    expect(
-      find.widgetWithText(ChoiceChip, 'Switch').hitTestable(),
-      findsOneWidget,
-    );
-    expect(
-      find.text('Ebben a csoportban még nem kerestél').hitTestable(),
-      findsOneWidget,
-    );
-    expect(tester.takeException(), isNull);
-  });
+      );
+      await tester.pumpAndSettle();
+      await selectCategory(tester, 'Switch');
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('run-search')).hitTestable(),
+        findsOneWidget,
+      );
+      expect(find.text('Switch').hitTestable(), findsOneWidget);
+      expect(
+        find.text('Ebben a csoportban még nem kerestél').hitTestable(),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
