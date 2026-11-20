@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<title>Szűrők panel</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#0b0d11;font-family:Inter,system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+.lbl{font-size:13px;font-weight:600;color:#C9CED6}
+.mc{height:36px;border-radius:999px;padding:0 12px;font-size:14px;background:#171A21;border:1px solid #2A303B;color:#C9CED6}
+.mon{background:#2C3B1A;border-color:#A8E063;color:#D7F5B5;font-weight:600}
+.fld{flex:1;height:44px;border-radius:12px;background:#171A21;border:1px solid #2A303B;color:#E8EAED;font-size:15px;padding:0 12px;font-family:inherit;min-width:0}
+.seg{flex:1;height:40px;border:0;background:transparent;color:#C9CED6;font-size:14px;border-radius:9px}
+.son{background:#2A303B;color:#E8EAED;font-weight:600}
+</style>
+</helmet>
+<div style="width:390px;height:844px;background:#0F1115;color:#E8EAED;position:relative;overflow:hidden">
+  <div style="padding:20px 16px;opacity:.35">
+    <h1 style="margin:0 0 16px;font-size:22px;font-weight:700">Keresés</h1>
+    <div style="height:76px;border-radius:16px;background:#171A21;margin-bottom:10px"></div>
+    <div style="height:76px;border-radius:16px;background:#171A21"></div>
+  </div>
+  <div style="position:absolute;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.45)"></div>
+  <div style="position:absolute;left:0;right:0;bottom:0;height:720px;background:#12151B;border-radius:20px 20px 0 0;border-top:1px solid #262B35;display:flex;flex-direction:column">
+    <div style="width:40px;height:4px;border-radius:2px;background:#3A404C;margin:10px auto 4px"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px 4px">
+      <h2 style="margin:0;font-size:19px;font-weight:700">Szűrők · Konzol</h2>
+      <button aria-label="Bezárás" style="width:44px;height:44px;border:0;background:transparent;color:#9AA3AF;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div style="flex:1;overflow:hidden;padding:4px 16px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span class="lbl">Modell</span>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <button class="mc">PS5</button><button class="mc mon">PS5 Slim</button><button class="mc">PS5 Pro</button><button class="mc">Xbox Series X</button><button class="mc">Xbox Series S</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span class="lbl">Ár (vételár vagy licit)</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="fld" aria-label="Ár ettől" placeholder="ettől €">
+          <span style="color:#9AA3AF">–</span>
+          <input class="fld" aria-label="Ár eddig" placeholder="eddig €">
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label class="lbl" for="mt">Max. teljes ár szállítással</label>
+        <input id="mt" class="fld" value="200 €" style="flex:none">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span class="lbl">Hirdetéstípus</span>
+        <div style="display:flex;gap:4px;padding:4px;border-radius:12px;background:#171A21;border:1px solid #2A303B">
+          <button class="seg son">Mind</button><button class="seg">Aukció</button><button class="seg">Fix ár</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span class="lbl">Aukció zárása</span>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <button class="mc mon">Bármikor</button><button class="mc">24 órán belül</button><button class="mc">48 órán belül</button>
+        </div>
+      </div>
+      <button style="height:48px;border-radius:12px;border:1px solid #2A303B;background:transparent;color:#C9CED6;font-size:14px;display:flex;align-items:center;justify-content:space-between;padding:0 14px">
+        <span>További beállítások <span style="color:#9AA3AF">(ország, kulcsszó, jelölések)</span></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <button style="height:44px;border:0;background:transparent;color:#A8E063;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;padding:0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+        Értesítés ilyen találatokról
+      </button>
+    </div>
+    <div style="display:flex;gap:10px;padding:12px 16px 24px;border-top:1px solid #222731">
+      <button style="height:52px;flex:1;border-radius:14px;border:1px solid #2A303B;background:transparent;color:#E8EAED;font-size:15px;font-weight:600">Törlés</button>
+      <button style="height:52px;flex:2;border-radius:14px;border:0;background:#A8E063;color:#11160B;font-size:15px;font-weight:700">12 találat mutatása</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

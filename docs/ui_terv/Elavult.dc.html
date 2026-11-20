@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<title>Elavult eredmény és rejtett tételek</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#0b0d11;font-family:Inter,system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+.tab{flex:none;border-radius:999px;padding:0 14px;height:36px;font-size:14px;background:#171A21;border:1px solid #262B35;color:#C9CED6;display:flex;gap:6px;align-items:center}
+.on{background:#A8E063;color:#11160B;border-color:#A8E063;font-weight:600}
+.card{display:flex;gap:12px;padding:12px;background:#171A21;border:1px solid #232833;border-radius:16px}
+.th{width:64px;height:64px;border-radius:12px;background:#232833;flex:none}
+.hg{width:100%;height:52px;border:0;border-top:1px solid #222731;background:transparent;color:#E8EAED;font-size:14px;display:flex;align-items:center;justify-content:space-between;padding:0 14px}
+.n{color:#9AA3AF;margin-right:6px}
+.ni{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:#9AA3AF;min-width:72px;background:none;border:0;padding:4px}
+</style>
+</helmet>
+<div style="width:390px;height:844px;background:#0F1115;color:#E8EAED;display:flex;flex-direction:column;overflow:hidden">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 16px 8px">
+    <h1 style="margin:0"><button aria-label="Kategória választása" style="border:0;background:transparent;color:#E8EAED;padding:0;display:flex;align-items:center;gap:8px;height:44px"><span style="font-size:24px;font-weight:700">Konzol</span><span style="font-size:13px;color:#9AA3AF;font-weight:500;background:#1E2430;border-radius:999px;padding:2px 8px">12</span><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></h1>
+    <button style="border:1px solid #2A303B;border-radius:999px;height:32px;padding:0 12px;font-size:13px;background:transparent;color:#C9CED6">EUR · Ft</button>
+  </div>
+  <div style="margin:8px 16px;padding:12px 14px;border-radius:14px;background:#2E2614;border:1px solid #5A4718;display:flex;align-items:center;gap:12px">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F2C35B" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
+    <div style="flex:1;font-size:13px;line-height:1.4;color:#F5DFA8">3 órája frissítve – az árak és állapotok nem ellenőrzöttek.</div>
+    <button style="height:36px;border-radius:10px;border:0;background:#F2C35B;color:#211A08;font-size:13px;font-weight:700;padding:0 12px">Frissítés</button>
+  </div>
+  <div style="padding:0 16px;display:flex;flex-direction:column;gap:10px;opacity:.6">
+    <div class="card"><div class="th"></div><div style="flex:1;display:flex;flex-direction:column;gap:4px"><p style="margin:0;font-size:14px;font-weight:600">Sony PlayStation 5 Slim Digital DEFEKT!</p><span style="font-size:12px;color:#9AA3AF">Nem ellenőrzött · 307,95 €</span></div></div>
+    <div class="card"><div class="th"></div><div style="flex:1;display:flex;flex-direction:column;gap:4px"><p style="margin:0;font-size:14px;font-weight:600">Microsoft Xbox Series S 512GB DEFEKT!</p><span style="font-size:12px;color:#9AA3AF">Nem ellenőrzött · 123,95 €</span></div></div>
+  </div>
+  <div style="margin:14px 16px 0;border-radius:16px;background:#171A21;border:1px solid #262B35;overflow:hidden">
+    <button style="width:100%;height:52px;border:0;background:transparent;color:#E8EAED;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:space-between;padding:0 14px">
+      <span>Rejtett tételek (78)</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>
+    </button>
+    <button class="hg"><span>Valószínűleg nem szállít Magyarországra</span><span><span class="n">41</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button>
+    <button class="hg"><span>Nem támogatott modell (PS3, PS4 …)</span><span><span class="n">19</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button>
+    <button class="hg"><span>Nem konzol (doboz, alkatrész)</span><span><span class="n">11</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button>
+    <button class="hg"><span>Alaplap</span><span><span class="n">7</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span></button>
+  </div>
+  <div style="flex:1"></div>
+  <nav style="display:flex;justify-content:space-around;border-top:1px solid #222731;padding:8px 0 16px;background:#12151B">
+    <button class="ni" style="color:#A8E063"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Keresés</button>
+    <button class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Kedvencek</button>
+    <button class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>Figyelés</button>
+    <button class="ni"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Beállítások</button>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

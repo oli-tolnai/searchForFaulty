@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<title>Asztali nézet</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#0b0d11;font-family:Inter,system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+.ri{width:72px;height:60px;border:0;background:transparent;color:#9AA3AF;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:12px}
+.tab{flex:none;border-radius:999px;padding:0 16px;height:38px;font-size:14px;background:#171A21;border:1px solid #262B35;color:#C9CED6;display:flex;gap:6px;align-items:center}
+.on{background:#A8E063;color:#11160B;border-color:#A8E063;font-weight:600}
+.lbl{font-size:12px;font-weight:600;color:#C9CED6;text-transform:none}
+.mc{height:32px;border-radius:999px;padding:0 10px;font-size:13px;background:#171A21;border:1px solid #2A303B;color:#C9CED6}
+.mon{background:#2C3B1A;border-color:#A8E063;color:#D7F5B5;font-weight:600}
+.fld{height:40px;border-radius:10px;background:#171A21;border:1px solid #2A303B;color:#E8EAED;font-size:14px;padding:0 10px;font-family:inherit;min-width:0;flex:1}
+.card{background:#171A21;border:1px solid #232833;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.img{height:150px;background:#1B1F27}
+.badge{font-size:12px;font-weight:600;border-radius:6px;padding:3px 7px}
+</style>
+</helmet>
+<div style="width:1440px;height:900px;background:#0F1115;color:#E8EAED;display:flex;overflow:hidden">
+  <nav style="width:88px;background:#12151B;border-right:1px solid #222731;display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:20px">
+    <button class="ri" style="color:#A8E063;background:#1B2216"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Keresés</button>
+    <button class="ri"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Kedvencek</button>
+    <button class="ri"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>Figyelés</button>
+    <button class="ri"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Beállítások</button>
+  </nav>
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:22px 28px 10px">
+      <h1 style="margin:0;font-size:24px;font-weight:700">Keresés</h1>
+      <button style="border:1px solid #2A303B;border-radius:999px;height:34px;padding:0 14px;font-size:13px;background:transparent;color:#C9CED6">EUR · Ft</button>
+    </div>
+    <div style="display:flex;gap:8px;padding:6px 28px 14px">
+      <button class="tab">Összes</button>
+      <button class="tab on">Konzol <span style="font-size:12px;opacity:.75">12</span></button>
+      <button class="tab">Kontroller <span style="font-size:12px;opacity:.75">40</span></button>
+      <button class="tab">Switch <span style="font-size:12px;opacity:.75">54</span></button>
+      <button class="tab">Steam Deck</button>
+      <button class="tab">iPhone</button>
+      <button class="tab">Videokártya</button>
+    </div>
+    <div style="flex:1;display:flex;gap:24px;padding:0 28px 24px;min-height:0">
+      <aside style="width:272px;flex:none;background:#12151B;border:1px solid #222731;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0;font-size:16px;font-weight:700">Szűrők</h2><button style="border:0;background:transparent;color:#A8E063;font-size:13px;font-weight:600;height:32px">Törlés</button></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Modell</span><div style="display:flex;flex-wrap:wrap;gap:6px"><button class="mc">PS5</button><button class="mc mon">PS5 Slim</button><button class="mc">PS5 Pro</button><button class="mc">Series X</button><button class="mc">Series S</button></div></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Ár</span><div style="display:flex;gap:6px;align-items:center"><input class="fld" aria-label="Ár ettől" placeholder="ettől €"><span style="color:#9AA3AF">–</span><input class="fld" aria-label="Ár eddig" placeholder="eddig €"></div></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><label class="lbl" for="dmt">Max. teljes ár</label><input id="dmt" class="fld" value="200 €" style="flex:none"></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Hirdetéstípus</span><div style="display:flex;gap:6px"><button class="mc mon">Mind</button><button class="mc">Aukció</button><button class="mc">Fix ár</button></div></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><span class="lbl">Aukció zárása</span><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="mc mon">Bármikor</button><button class="mc">24 óra</button><button class="mc">48 óra</button></div></div>
+        <button style="height:40px;border-radius:10px;border:1px solid #2A303B;background:transparent;color:#C9CED6;font-size:13px;text-align:left;padding:0 12px">További beállítások…</button>
+        <div style="flex:1"></div>
+        <button style="height:40px;border:0;background:transparent;color:#A8E063;font-size:13px;font-weight:600;text-align:left;padding:0">Értesítés ilyen találatokról</button>
+      </aside>
+      <main style="flex:1;min-width:0;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;gap:10px;align-items:center">
+          <label style="flex:1;height:44px;border-radius:12px;background:#171A21;border:1px solid #262B35;display:flex;align-items:center;gap:8px;padding:0 12px;color:#9AA3AF">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input placeholder="Keresés a címekben" aria-label="Keresés a címekben" style="flex:1;background:transparent;border:0;outline:none;color:#E8EAED;font-size:15px;font-family:inherit">
+          </label>
+          <button style="height:44px;border-radius:12px;border:1px solid #2A303B;background:#171A21;color:#E8EAED;font-size:14px;padding:0 14px">Legalacsonyabb teljes ár</button>
+          <button style="height:44px;border-radius:12px;border:0;background:#A8E063;color:#11160B;font-size:14px;font-weight:700;padding:0 16px">Keresés · kb. 54 hívás</button>
+        </div>
+        <div style="font-size:13px;color:#9AA3AF">12 találat · frissítve 14:32 · <span style="color:#C9CED6">Rejtett tételek (78)</span></div>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px">
+          <div class="card"><div class="img"></div><div style="padding:12px;display:flex;flex-direction:column;gap:6px"><div style="display:flex;gap:6px"><span class="badge" style="background:#3A2F14;color:#F2C35B">Aukció · 32 p</span><span class="badge" style="background:#2C3B1A;color:#B8EC7E">ÚJ</span></div><p style="margin:0;font-size:14px;font-weight:600;line-height:1.3">Microsoft Xbox Series S 512GB White DEFEKT!</p><span style="font-size:12px;color:#9AA3AF">Xbox Series S · Németország</span><span style="font-size:19px;font-weight:700">123,95 €</span><span style="font-size:12px;color:#9AA3AF">licit 119 € + 4,95 €</span></div></div>
+          <div class="card"><div class="img"></div><div style="padding:12px;display:flex;flex-direction:column;gap:6px"><div style="display:flex;gap:6px"><span class="badge" style="background:#3A2F14;color:#F2C35B">Aukció · 2 nap</span></div><p style="margin:0;font-size:14px;font-weight:600;line-height:1.3">Sony PlayStation 5 Slim Digital Edition DEFEKT!</p><span style="font-size:12px;color:#9AA3AF">PS5 Slim Digital · Németország</span><span style="font-size:19px;font-weight:700">307,95 €</span><span style="font-size:12px;color:#9AA3AF">licit 303 € + 4,95 €</span></div></div>
+          <div class="card"><div class="img"></div><div style="padding:12px;display:flex;flex-direction:column;gap:6px"><div style="display:flex;gap:6px"><span class="badge" style="background:#16304A;color:#8CC4FF">Fix ár</span></div><p style="margin:0;font-size:14px;font-weight:600;line-height:1.3">MICROSOFT XBOX SERIES X 1TB DISC Teildefekt</p><span style="font-size:12px;color:#9AA3AF">Xbox Series X · Németország</span><span style="font-size:19px;font-weight:700">516,85 €</span><span style="font-size:12px;color:#9AA3AF">499,95 € + 16,90 €</span></div></div>
+          <div class="card"><div class="img"></div><div style="padding:12px;display:flex;flex-direction:column;gap:6px"><div style="display:flex;gap:6px"><span class="badge" style="background:#16304A;color:#8CC4FF">Fix ár</span></div><p style="margin:0;font-size:14px;font-weight:600;line-height:1.3">Xbox Series S Konsole mit 512 GB Festplatte</p><span style="font-size:12px;color:#9AA3AF">Xbox Series S · Németország</span><span style="font-size:19px;font-weight:700">410,53 €</span><span style="font-size:12px;color:#9AA3AF">389,58 € + 20,95 €</span></div></div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

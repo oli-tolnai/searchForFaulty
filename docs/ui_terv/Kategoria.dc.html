@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<title>Kategória választása</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#0b0d11;font-family:Inter,system-ui,sans-serif}
+button{font-family:inherit;cursor:pointer}
+.cr{width:100%;height:64px;border:0;border-radius:14px;background:transparent;color:#E8EAED;display:flex;align-items:center;gap:14px;padding:0 12px;text-align:left}
+.ic{width:40px;height:40px;border-radius:12px;background:#1E2430;color:#C9CED6;display:flex;align-items:center;justify-content:center;flex:none}
+.nm{font-size:16px;font-weight:600}
+.sb{font-size:13px;color:#9AA3AF}
+.ct{margin-left:auto;font-size:14px;font-weight:600;color:#C9CED6}
+</style>
+</helmet>
+<div style="width:390px;height:844px;background:#0F1115;color:#E8EAED;position:relative;overflow:hidden">
+  <div style="padding:20px 16px;opacity:.35">
+    <div style="font-size:24px;font-weight:700;margin-bottom:16px">Konzol</div>
+    <div style="height:76px;border-radius:16px;background:#171A21;margin-bottom:10px"></div>
+    <div style="height:76px;border-radius:16px;background:#171A21"></div>
+  </div>
+  <div style="position:absolute;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.45)"></div>
+  <div style="position:absolute;left:0;right:0;bottom:0;background:#12151B;border-radius:20px 20px 0 0;border-top:1px solid #262B35;padding:0 8px 24px;display:flex;flex-direction:column">
+    <div style="width:40px;height:4px;border-radius:2px;background:#3A404C;margin:10px auto 6px"></div>
+    <h2 style="margin:6px 12px 8px;font-size:19px;font-weight:700">Mit keresel?</h2>
+    <button class="cr"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></span><span><span class="nm" style="display:block">Összes kategória</span><span class="sb">A megtartott találatok együtt</span></span><span class="ct">160</span></button>
+    <button class="cr" style="background:#1B2216;outline:1px solid #3F5A25"><span class="ic" style="background:#2C3B1A;color:#B8EC7E"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="8" y="3" width="8" height="18" rx="2"/><path d="M8 8h8"/></svg></span><span><span class="nm" style="display:block">Konzol</span><span class="sb">PS5 · Xbox Series · frissítve 14:32</span></span><span class="ct">12</span></button>
+    <button class="cr"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 9h10a4 4 0 0 1 4 4v1a3 3 0 0 1-5.4 1.8L14.5 14h-5l-1.1 1.8A3 3 0 0 1 3 14v-1a4 4 0 0 1 4-4z"/><path d="M8 11v3M6.5 12.5h3"/></svg></span><span><span class="nm" style="display:block">Kontroller</span><span class="sb">DualSense · Xbox · frissítve 14:20</span></span><span class="ct">40</span></button>
+    <button class="cr"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="M8 6v12M16 6v12"/></svg></span><span><span class="nm" style="display:block">Nintendo Switch</span><span class="sb">frissítve tegnap · nem ellenőrzött</span></span><span class="ct">54</span></button>
+    <button class="cr"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="7" width="20" height="10" rx="3"/><circle cx="7" cy="12" r="1.5"/><circle cx="17" cy="12" r="1.5"/></svg></span><span><span class="nm" style="display:block">Steam Deck</span><span class="sb">Még nem kerestél</span></span><span class="ct" style="color:#5B6472">–</span></button>
+    <button class="cr"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg></span><span><span class="nm" style="display:block">iPhone</span><span class="sb">Még nem kerestél</span></span><span class="ct" style="color:#5B6472">–</span></button>
+    <button class="cr"><span class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="7" width="20" height="10" rx="2"/><circle cx="9" cy="12" r="2.5"/><circle cx="16" cy="12" r="2.5"/><path d="M5 17v3"/></svg></span><span><span class="nm" style="display:block">Videokártya</span><span class="sb">Még nem kerestél</span></span><span class="ct" style="color:#5B6472">–</span></button>
+    <button style="height:44px;margin:8px 12px 0;border:0;background:transparent;color:#A8E063;font-size:14px;font-weight:600;text-align:left;padding:0">Kategóriák megjelenítése…</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
